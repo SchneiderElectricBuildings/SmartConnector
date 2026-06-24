@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>Quickstart.HelloEws</RootNamespace>
+    <AssemblyName>Quickstart.HelloEws</AssemblyName>
+    <AssemblyTitle>SmartConnector HelloEws Quick Start Sample</AssemblyTitle>
+    <Description>Minimal Smart Connector quick-start sample that self-provisions its own EWS Server and writes the current UTC time to a value on every execution.</Description>
+    <Company>Schneider Electric</Company>
+    <Product>EcoStruxure Smart Connector SDK Sample</Product>
+    <Copyright>Provided as a sample for the EcoStruxure Smart Connector SDK. (c) 2026 Schneider Electric. Use at your own risk.</Copyright>
+    <Version>1.0.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Mongoose.Process provides the Processor base class; Mongoose.Ews.Server.Data
+         provides EwsServerDataAdapter. SxL.Common provides Logger. -->
+    <PackageReference Include="Mongoose.Process" Version="2.6.*" />
+    <PackageReference Include="Mongoose.Ews.Server.Data" Version="2.6.*" />
+    <PackageReference Include="SxL.Common" Version="2.6.*" />
+  </ItemGroup>
+</Project>

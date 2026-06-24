@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+  NuGet configuration template for Smart Connector SDK packages.
+  
+  INSTRUCTIONS:
+  1. Copy this file to nuget.config (which is gitignored).
+  2. Replace YOUR_GITHUB_USERNAME with your GitHub username.
+  3. Set the GITHUB_PACKAGES_PAT environment variable to your GitHub PAT 
+     (scope: read:packages).
+  
+  Alternatively, use the dotnet CLI to add the source with encrypted credentials:
+    dotnet nuget add source "https://nuget.pkg.github.com/SchneiderElectricBuildings/index.json" \
+      - -name "SmartConnector" - -username YOUR_USERNAME - -password YOUR_PAT
+-->
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="SmartConnector" value="https://nuget.pkg.github.com/SchneiderElectricBuildings/index.json" />
+  </packageSources>
+  <packageSourceCredentials>
+    <SmartConnector>
+      <add key="Username" value="YOUR_GITHUB_USERNAME" />
+      <add key="ClearTextPassword" value="%GITHUB_PACKAGES_PAT%" />
+    </SmartConnector>
+  </packageSourceCredentials>
+</configuration>

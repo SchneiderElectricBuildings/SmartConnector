@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>SmartConnector.GridStatusExtension</RootNamespace>
+    <AssemblyName>SmartConnector.GridStatusExtension</AssemblyName>
+    <AssemblyTitle>SmartConnector Grid Status Extension</AssemblyTitle>
+    <Description>Smart Connector extension that integrates with the GridStatus.io API to provide grid signals (pricing, load, fuel mix, carbon intensity, and grid status) for North American ISOs to EWS clients.</Description>
+    <Company>Schneider Electric</Company>
+    <Product>EcoStruxure Smart Connector</Product>
+    <Copyright>Copyright (c) Schneider Electric 2026</Copyright>
+    <Version>1.0.0</Version>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mongoose.Process" Version="2.6.*" />
+    <PackageReference Include="Mongoose.Ews.Server.Data" Version="2.6.*" />
+    <PackageReference Include="SxL.Common" Version="2.6.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>SmartConnector.WeatherExtension.Tests</RootNamespace>
+    <AssemblyName>SmartConnector.WeatherExtension.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.*" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="Mongoose.Test" Version="2.6.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartConnector.WeatherExtension\SmartConnector.WeatherExtension.csproj" />
+  </ItemGroup>
+</Project>

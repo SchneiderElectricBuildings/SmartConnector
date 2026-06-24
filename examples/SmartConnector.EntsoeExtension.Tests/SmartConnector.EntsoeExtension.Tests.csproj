@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <RootNamespace>SmartConnector.EntsoeExtension.Tests</RootNamespace>
+    <AssemblyName>SmartConnector.EntsoeExtension.Tests</AssemblyName>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.*" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.*" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="Mongoose.Test" Version="2.6.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SmartConnector.EntsoeExtension\SmartConnector.EntsoeExtension.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
