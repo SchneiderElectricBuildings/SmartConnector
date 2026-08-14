@@ -60,3 +60,5 @@ See [SECURITY.md](SECURITY.md) for vulnerability reporting.
 
 Copyright &copy; 2017&ndash;2026 Schneider Electric. All rights reserved.
 
+The examples and documentation in this repository are released under the [MIT License](LICENSE), so you are free to use, copy, and modify them in your own projects, including commercial ones.
+
