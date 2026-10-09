@@ -11,16 +11,16 @@ This document describes the security posture of the HelloEws quick-start sample.
 
 - No hardcoded credentials exist anywhere in the source code.
 - No default passwords are used. Credentials must be configured by the operator during Portal setup.
-- The `[EncryptedString]` attribute masks the field in the Portal UI and stores it encrypted in the database.
+- The `[EncryptedString]` attribute stores the value encrypted in the database. Portal users can display it, so grant Portal access only to people trusted with the credentials it holds.
 
 ## Network Security
 
 | Connection | Protocol | Authentication |
 | --- | --- | --- |
-| EWS Server (local) | HTTP | HTTP Digest (realm + username + password) |
+| EWS Server | HTTP, or HTTPS with a certificate binding | HTTP Digest (realm + username + password) |
 
 - The sample makes **no outbound calls** to any third-party service.
-- The EWS Server is created at the configured `EwsAddress` (localhost by default) and is not exposed to external networks. It uses HTTP Digest authentication with a configurable realm.
+- The EWS Server is created at the configured `EwsAddress`. Its listener accepts connections on every network interface of the host, whatever host name `EwsAddress` uses, so allow the port in the Windows Firewall only for the EBO servers and other EWS clients that need it. It uses HTTP Digest authentication with a configurable realm.
 
 ## Input Validation
 
@@ -77,7 +77,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | **Spoofing** | An unauthorised EWS client reads or writes data (2) | The EWS endpoint requires HTTP Digest authentication | Mitigated |
 | **Tampering** | EWS values modified by an unauthorised client (2) | EWS writes require authentication; the value is server-generated, not externally supplied | Mitigated |
-| **Repudiation** | An action cannot be traced to a cause | Smart Connector audit log records authentication and actions; the processor logs each write | Mitigated |
+| **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor logs each write | Partly mitigated |
 | **Information Disclosure** | The EWS password leaks via logs or configuration export | `[EncryptedString]` at rest; no credential in any `Logger` call | Mitigated |
 | **Denial of Service** | A very frequent schedule writes the value repeatedly | One value write per cycle, no external calls, no unbounded history growth (the sample provisions no trend logs) | Mitigated |
 | **Elevation of Privilege** | The extension runs with the Smart Connector service account | No external input and no dynamic code loading; run the service under a least-privilege account | Mitigated (deployment) |

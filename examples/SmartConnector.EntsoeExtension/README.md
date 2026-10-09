@@ -55,7 +55,7 @@ Obtaining a security token is a multi-step process that involves registration, e
 >
 > For the full walkthrough with screenshots, see [How to get security token?](https://transparencyplatform.zendesk.com/hc/en-us/articles/12845911031188-How-to-get-security-token) on the Transparency Platform Help Center.
 
-> **Security:** The API token is stored encrypted in the Smart Connector database via the `[EncryptedString]` attribute. It never appears in plain text in logs, configuration exports, or the Portal UI.
+> **Security:** The API token is stored encrypted in the Smart Connector database via the `[EncryptedString]` attribute. The extension never writes it to a log. Portal users can display it, so grant Portal access only to people trusted with it.
 
 ## Build
 

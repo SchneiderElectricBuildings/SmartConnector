@@ -160,15 +160,15 @@ See [Developer Guide — EwsServerDataAdapter](developer-guide/smartconnector-de
 
 ## 6 Security Configuration Defaults
 
-v2.6 ships with hardened security defaults. These affect the Smart Connector runtime, not your extension code — but your users and administrators should be aware:
+SmartConnector 2.5.6 introduced the following security settings, and 2.6 keeps them. They affect the Smart Connector runtime, not your extension code, but your users and administrators should know them.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Account lockout | 3 failed attempts → 10 min lockout | Prevents brute-force login attacks on the Portal and REST endpoints |
-| Password complexity | Minimum 6 characters; uppercase, lowercase, digit, and special character required | Applies to Portal user accounts and REST API credentials |
+| Account lockout | 3 failed attempts → 10 min lockout | Slows password guessing at Portal sign-in. Protect REST endpoints with a throttling policy and an IP allow list |
+| Password complexity | Minimum 6 characters; uppercase, lowercase, digit, and special character required | Applies to Portal user accounts. EWS Server user passwords follow their own fixed rule |
 | Authentication timing | Randomised delay on failed authentication | Prevents timing-based username enumeration |
 
-These defaults can be adjusted through the Smart Connector configuration. See [Developer Guide — Security Configuration](developer-guide/smartconnector-developers-guide.md#1115-security-configuration).
+Adjust them in the Portal under **Settings > Service Settings**. See [Developer Guide, Security Configuration](developer-guide/smartconnector-developers-guide.md#1115-security-configuration).
 
 ---
 

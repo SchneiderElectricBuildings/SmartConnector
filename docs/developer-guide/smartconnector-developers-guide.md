@@ -522,7 +522,7 @@ Applying STRIDE to the elements and flows yields, for example:
 | --- | --- | --- |
 | **Spoofing** | A spoofed weather endpoint (flow 2) feeds false data; an unauthorised EWS client (flow 4) | TLS 1.2 with certificate validation; HTTP Digest auth on the EWS endpoint |
 | **Tampering** | Data altered in transit (flows 2, 4) | TLS in transit; validate and bound API values before persisting |
-| **Repudiation** | An action cannot be traced | Runtime audit log; the processor records last-update, health, and counters to `Meta/*` |
+| **Repudiation** | An action cannot be traced | The application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records last-update, health, and counters to `Meta/*` |
 | **Information Disclosure** | The API key or EWS password leaks (flows 1, 4) | `[EncryptedString]` at rest; no credential in any log call; credentials only over TLS |
 | **Denial of Service** | The API is unreachable or floods the worker; an oversized response (flow 2) | Fail gracefully (a `MayNotContinue` prompt, not an infinite retry); HTTP timeout; bounded response parsing; guard against overlapping runs |
 | **Elevation of Privilege** | A crafted response or dependency runs as the service account | Treat all external data as untrusted and validate it; trusted dependencies only; least-privilege service account |
@@ -553,7 +553,7 @@ Every property that holds a password, API key, OAuth token, client secret, or co
 public string Password { get; set; }
 ```
 
-The runtime encrypts the value at write-time and decrypts it only when the property is read by your code. The Portal masks the field in the UI. The value never appears in plain text in the database, in configuration exports, or in audit log entries.
+The runtime encrypts the value at write-time and decrypts it only when the property is read by your code, so the database holds it encrypted. Portal users can display the stored value, so grant Portal access only to people trusted with every secret it holds.
 
 `[EncryptedString]` is in `Mongoose.Common.Attributes`. See [Section 11.3 Smart Connector Attributes](#113-smart-connector-attributes) for the full attribute reference.
 
@@ -585,7 +585,7 @@ The PAT used to pull Smart Connector NuGet packages from GitHub Packages is itse
 
 ### 5.3 Data Protection and Privacy
 
-Extension authors are responsible for the data their code handles. The Smart Connector runtime manages its own internal data (Portal user accounts, audit logs, HTTP access logs); you cannot change how that data is stored or logged. This section covers the data *you* control.
+Extension authors are responsible for the data their code handles. The Smart Connector runtime manages its own internal data (Portal user accounts and its application log); you cannot change how that data is stored or logged. This section covers the data *you* control.
 
 #### 5.3.1 Data Your Extension Controls
 
@@ -602,8 +602,7 @@ Extension authors are responsible for the data their code handles. The Smart Con
 The following are managed by the Smart Connector runtime. Extension code cannot change their behaviour and should not attempt to duplicate them:
 
 - Portal user account storage and password hashing
-- Audit log entries (username + action + timestamp)
-- HTTP access logging (client IP, user agent, principal name)
+- Logging of failed Portal sign-ins and attempts on locked accounts, when the `Portal` log category is included
 - Account lockout and password complexity enforcement
 
 #### 5.3.3 Data in Transit
@@ -689,7 +688,7 @@ Before submitting any extension for deployment, walk this checklist:
 - [ ] All public properties have `[Required]`, `[StringLength]`, or `[Range]` as appropriate.
 - [ ] `nuget.config` is gitignored and a `.template` is committed in its place.
 - [ ] PAT used for NuGet has `read:packages` scope only and an expiry.
-- [ ] Extension does not duplicate Smart Connector audit log entries to its own log files.
+- [ ] Extension logs its own events through `Logger` and does not duplicate what the runtime already logs.
 - [ ] `IsLicensed` is intentionally set (see [Section 10 Licensing Your Extension](#10-licensing-your-extension)).
 - [ ] HTTP endpoints exposed by your extension enforce authentication ([Section 11.18 REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling)).
 - [ ] Service settings reviewed for production: account lockout, password complexity, syslog ([Section 11.15 Security Configuration](#1115-security-configuration)).
@@ -1130,7 +1129,7 @@ Some are required, some optional, and two (`Password`, `ApiKey`) hold sensitive 
 
 ##### 7.5.3.3 EncryptedStringAttribute
 
-`EncryptedStringAttribute` (from `Mongoose.Common.Attributes`) marks a property whose value is encrypted when written to the Smart Connector database and decrypted when read by your code. The Portal masks the field. Apply it to **both** `Password` and `ApiKey`.
+`EncryptedStringAttribute` (from `Mongoose.Common.Attributes`) marks a property whose value is encrypted when written to the Smart Connector database and decrypted when read by your code. Portal users can display the stored value. Apply it to **both** `Password` and `ApiKey`.
 
 #### 7.5.4 Validation
 
@@ -2642,7 +2641,7 @@ See `Mongoose.Common.IActionBroker` interface for all available properties and m
 
 ### 11.9 Logging
 
-Smart Connector extensively logs all activity. The Portal and Smart Connector Service log every request and response in addition to all errors. Additionally, this NLog-based logging framework is available to all extension developers so they too can log to the same location.
+Smart Connector logs all errors. At the `Debug` level, the Portal and the service also log each request and response for the log categories that are included. Additionally, this NLog-based logging framework is available to all extension developers so they too can log to the same location.
 
 What gets logged is determined by a combination of the global Logging Level Service Setting and Logging Filters.
 
@@ -2856,9 +2855,9 @@ After a configurable number of failed login attempts, a user account is temporar
 | `AccountLockoutTimeInMinutes` | 10 | Duration (minutes) the account remains locked |
 
 **Behaviour:**
-- After the configured number of failed attempts, the account is locked for the specified duration.
+- After the configured number of failed attempts, the account is locked for the specified duration, or until another Portal user unlocks it on the Users page.
 - The lockout counter resets after a successful authentication.
-- Lockout applies to both Portal logins and REST API token requests.
+- Lockout applies to Portal sign-in. Protect REST endpoints with a throttling policy and an IP allow list, see [Section 11.18 REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling).
 
 #### Password Complexity
 
@@ -2872,7 +2871,7 @@ New and changed passwords must meet complexity requirements:
 | `PasswordRequireUppercase` | True | Must contain at least one uppercase letter |
 | `PasswordRequireNonLetterOrDigit` | True | Must contain at least one special character |
 
-These settings are enforced when creating a new Portal user, changing a password, or creating EWS Server credentials.
+These settings apply to Portal users, when a user is created or a password is changed. EWS Server user passwords follow a fixed rule instead, at least 8 characters with three of uppercase letters, lowercase letters, digits, and other characters.
 
 #### Authentication Timing
 
@@ -2881,7 +2880,7 @@ Smart Connector introduces a randomised delay on failed authentication responses
 #### Implications for Extension Developers
 
 1. **Test accounts may lock out** during development if automated tests use incorrect credentials. Wait for the lockout period or adjust settings in a development environment.
-2. **EWS Server passwords** created via `EwsServerDataAdapter.ConnectNew()` must meet the password complexity requirements.
+2. **EWS Server passwords** passed to `EwsServerDataAdapter.ConnectNew()` must have at least 8 characters with three of the four character classes. The Portal complexity settings do not apply to them.
 3. **Never log passwords or tokens** at any log level in your extension code.
 
 ### 11.16 Syslog Logging
@@ -3215,7 +3214,7 @@ Log files are named by date (e.g., `2026-05-12.log`). Each line contains a times
 
 **Cause:** The `MaxFailedAccessAttemptsBeforeLockout` setting (default: 3) was exceeded.
 
-**Fix:** Wait for the lockout period to expire (default: 10 minutes), or adjust the lockout settings in the Portal for your development environment. See [Section 11.15 Security Configuration](#1115-security-configuration).
+**Fix:** Wait for the lockout period to expire (10 minutes by default), have another Portal user unlock the account on the Users page, or adjust the lockout settings in the Portal for your development environment. See [Section 11.15 Security Configuration](#1115-security-configuration).
 
 ##### HTTP 429 or 403 from an External System
 

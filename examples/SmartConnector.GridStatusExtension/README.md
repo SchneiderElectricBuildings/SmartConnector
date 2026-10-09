@@ -47,7 +47,7 @@ The extension fetches wholesale grid data from the GridStatus.io API and publish
 
 The free tier provides 1,000,000 rows per month — sufficient for most single-market deployments.
 
-> **Security:** The API key is stored encrypted in the Smart Connector database via the `[EncryptedString]` attribute. It never appears in plain text in logs, configuration exports, or the Portal UI.
+> **Security:** The API key is stored encrypted in the Smart Connector database via the `[EncryptedString]` attribute. The extension never writes it to a log. Portal users can display it, so grant Portal access only to people trusted with it.
 
 ## Build
 
