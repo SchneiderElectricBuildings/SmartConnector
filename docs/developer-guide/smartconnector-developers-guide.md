@@ -2702,30 +2702,11 @@ If you set a different target framework, your extension will fail to load at run
 
 > **Note:** Earlier versions of Smart Connector (prior to v2.5.5.93) targeted .NET 4.7.2. If you are building extensions for Smart Connector v2.5.4.x, target .NET 4.7.2 instead.
 
-#### Supported Operating Systems
+#### Supported Operating Systems and Database Servers
 
-| Operating System | Architecture | Status |
-|-----------------|--------------|--------|
-| Windows 10 | 64-bit | Supported |
-| Windows 11 | 64-bit | Supported |
-| Windows Server 2016 | 64-bit | Supported |
-| Windows Server 2019 | 64-bit | Supported |
-| Windows Server 2022 | 64-bit | Supported |
+The Windows and SQL Server versions tested for each release are listed in that release's release notes, available from <https://www.smartconnectorserver.com>. LocalDB is for development only.
 
 Smart Connector runs as a 64-bit process on 64-bit Windows installations.
-
-#### Supported Database Servers
-
-| Database Server | Status |
-|----------------|--------|
-| LocalDB | Supported (development only) |
-| Microsoft SQL Server 2016 | Supported |
-| Microsoft SQL Server 2016 Express | Supported |
-| Microsoft SQL Server 2019 | Supported |
-| Microsoft SQL Server 2019 Express | Supported |
-| Microsoft SQL Server 2022 | Supported |
-| Microsoft SQL Server 2022 Express | Supported |
-
 ### 11.12 Cron Scheduling
 
 Smart Connector supports cron expressions as an alternative to interval-based, weekly, or monthly scheduling patterns. Cron scheduling allows fine-grained control over when a Processor executes.
