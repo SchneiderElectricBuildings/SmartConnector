@@ -41,7 +41,7 @@ Smart Connector lets developers write **Processors** (scheduled tasks) and **RES
 
 4. **Write a Processor** — see the [Quick Start walkthrough](docs/developer-guide/smartconnector-developers-guide.md#3-quick-start) or the [sample project](examples/QuickStart.HelloEws/).
 
-5. **Deploy** the compiled DLL to the Smart Connector Extensions folder and configure via the Portal.
+5. **Deploy** the compiled DLL to the Smart Connector installation folder, next to `Mongoose.Service.exe`, and configure it in the Portal.
 
 ## Examples
 

@@ -320,8 +320,8 @@ namespace Quickstart.HelloEws
 ### 3.5 Build, Deploy, Configure (5 minutes)
 
 1. Set the build configuration to **Release**, then **Build → Build Solution**. Confirm the project compiles with zero errors.
-2. **If you are redeploying** (the DLL already exists in the Extensions folder), stop the Smart Connector service first (Services console or `sc stop "Smart Connector"`). The service locks loaded DLLs, so you cannot overwrite them while it is running. Skip this step on a first-time deploy.
-3. Copy `bin\Release\Quickstart.HelloEws.dll` into the Smart Connector `Extensions` folder (default: `C:\ProgramData\SmartConnector\Extensions`).
+2. **If you are redeploying** (the DLL is already in the installation folder), stop the Smart Connector service first (Services console, or `Stop-Service SmartConnectorService` in an elevated PowerShell). The service locks loaded DLLs, so you cannot overwrite them while it is running. Skip this step on a first-time deploy.
+3. Copy `bin\Release\Quickstart.HelloEws.dll` into the Smart Connector installation folder, next to `Mongoose.Service.exe` (by default `C:\Program Files (x86)\Schneider Electric\SmartConnector`). The Portal lists the extensions it finds in that folder.
 4. **Start (or restart) the Smart Connector service.**
 5. Open the Smart Connector Portal in a browser.
 6. Create a schedule (Portal → **Setup → Configuration Schedules → Add New**). Set it to run every minute.

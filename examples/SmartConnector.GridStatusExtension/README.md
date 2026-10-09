@@ -73,14 +73,14 @@ The free tier provides 1,000,000 rows per month — sufficient for most single-m
 1. **Stop** the Smart Connector service (if updating an existing deployment):
 
    ```powershell
-   sc stop "Smart Connector"
+   Stop-Service SmartConnectorService
    ```
 
-2. Copy `bin\Release\net48\SmartConnector.GridStatusExtension.dll` to `C:\ProgramData\SmartConnector\Extensions`.
+2. Copy `bin\Release\net48\SmartConnector.GridStatusExtension.dll` to the SmartConnector installation folder, next to `Mongoose.Service.exe` (by default `C:\Program Files (x86)\Schneider Electric\SmartConnector`). The Portal lists the extensions it finds in that folder.
 3. **Start** the Smart Connector service:
 
    ```powershell
-   sc start "Smart Connector"
+   Start-Service SmartConnectorService
    ```
 
 ## Portal Configuration
