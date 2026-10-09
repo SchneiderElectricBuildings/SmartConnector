@@ -2097,7 +2097,7 @@ By default, the RESTful EWS Gateway listens on HTTP. For production deployments:
 
 ### 15.2 Authentication Security
 
-- **Token expiry:** The default token expiry of 5 minutes limits the window of exposure if a token is intercepted. Adjust the `accessTokenExpireTimeSpan` setting based on your security requirements. Do not set token expiry above 60 minutes.
+- **Token expiry:** The default token expiry of 5 minutes limits the window of exposure if a token is intercepted. Adjust the `AccessTokenExpireTimeSpanMinutes` property of the Endpoint Configuration based on your security requirements. Do not set token expiry above 60 minutes.
 - **No refresh tokens:** The gateway does not implement a refresh token mechanism. When a token expires, you must re-authenticate with credentials. This limits the lifetime of any stolen token.
 - **Bearer token handling:** Treat bearer tokens as sensitive credentials. Do not log tokens, include them in URL query strings, or store them in browser local storage. Include tokens only in the `Authorization` header.
 - **Principle of least privilege:** Configure the minimum required permissions for the service account used by the data provider.

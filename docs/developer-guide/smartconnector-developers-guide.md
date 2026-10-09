@@ -1911,13 +1911,16 @@ When Extension code runs in a production environment, it runs in the process spa
 2. Select "General" from the navigation pane on the left.
 3. Select "Application Configuration File" from the options on the right.
 4. Click "Add".
-5. Navigate to the installation folder for SmartConnector.
+5. Navigate to the installation folder of your development installation of SmartConnector.
 6. Locate the `Mongoose.Service.exe.config`.
 7. Open it with any text editor.
 8. Locate the `<connectionStrings>` element and copy the entire contents between the opening XML tag and the closing `</connectionStrings>`.
 9. In Visual Studio, locate the `app.config` file we just added and double click it.
 10. Paste the `connectionStrings` element.
-11. Repeat steps 8-10 for the `encryptionKey` setting (include the `appSettings` element).
+11. Repeat steps 8-10 for the `EncryptionKey` setting (include the `appSettings` element).
+12. Add `app.config` to the test project's `.gitignore`, and commit an `app.config.template` that holds placeholders in place of the connection strings and the key.
+
+> **Important:** Copy these values only from a development installation of Smart Connector, never from a production one. The encryption key decrypts every secret stored in that installation's database.
 
 #### 8.2.4 Add NuGet Reference
 
