@@ -18,8 +18,6 @@ namespace SmartConnector.EntsoeExtension
                 throw new ArgumentException("Security token must not be empty.", nameof(securityToken));
 
             _securityToken = securityToken;
-
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
         }
 
         public string QueryDayAheadPrices(string eicCode, DateTime periodStart, DateTime periodEnd)

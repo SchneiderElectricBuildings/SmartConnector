@@ -21,7 +21,7 @@ This document describes the security posture of the Weather Extension for Smart 
 | OpenWeatherMap API | HTTPS | TLS 1.2 | API key via `appid` query parameter |
 | EWS Server | HTTP, or HTTPS with a certificate binding | TLS 1.2 or higher when HTTPS | HTTP Digest (realm + username + password) |
 
-- TLS 1.2 is enforced via `ServicePointManager.SecurityProtocol` before the first outbound request.
+- The client leaves `ServicePointManager.SecurityProtocol` at the .NET Framework 4.8 default, so it uses the TLS versions Windows allows. Switch TLS 1.0 and 1.1 off in the SChannel settings of the host.
 - All OpenWeatherMap endpoints are called over `https://`. Plain HTTP is not used.
 - The EWS Server is created at the configured `EwsAddress`. Its listener accepts connections on every network interface of the host, whatever host name `EwsAddress` uses, so allow the port in the Windows Firewall only for the EBO servers and other EWS clients that need it. It uses HTTP Digest authentication with a configurable realm.
 - `HttpClient.Timeout` is 30 seconds to prevent indefinite blocking on network failures.

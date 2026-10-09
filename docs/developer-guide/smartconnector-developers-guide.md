@@ -607,12 +607,9 @@ The following are managed by the Smart Connector runtime. Extension code cannot 
 
 #### 5.3.3 Data in Transit
 
-All communication with external services must be encrypted. Enforce **TLS 1.2 or higher** for every outbound call your extension makes, and never accept an invalid or expired certificate. Set the protocol once before your first request:
+All communication with external services must be encrypted. Use **TLS 1.2 or higher** for every outbound call your extension makes, and never accept an invalid or expired certificate.
 
-```csharp
-// Enforce TLS 1.2+ before the first outbound request
-ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-```
+Leave `ServicePointManager.SecurityProtocol` at its default. The Smart Connector service is a .NET Framework 4.8 process, so the default is `SystemDefault`, which uses the TLS versions Windows allows. The setting is shared by every extension in the service, and a line such as `ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12` replaces that default with TLS 1.2 only, for all of them. Administrators switch TLS 1.0 and 1.1 off in the Windows SChannel settings of the host.
 
 Use `https://` endpoints exclusively for third-party APIs; reject a downgrade to plain HTTP. The native EWS Server and REST Gateway transport security is configured at the service level — this rule covers the third-party endpoints your code calls.
 
