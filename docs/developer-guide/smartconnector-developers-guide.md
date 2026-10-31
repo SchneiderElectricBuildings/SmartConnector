@@ -2885,7 +2885,8 @@ Create an `NLog.config` file in the data directory:
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:sl="http://www.nlog-project.org/schemas/NLog.Targets.Syslog.xsd">
 
   <extensions>
     <add assembly="NLog.Targets.Syslog"/>
