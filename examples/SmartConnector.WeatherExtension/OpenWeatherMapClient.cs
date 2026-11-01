@@ -31,8 +31,6 @@ namespace SmartConnector.WeatherExtension
 
             _apiKey = apiKey;
 
-            ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-
             _http = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
             _http.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));

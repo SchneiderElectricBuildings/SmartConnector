@@ -254,13 +254,13 @@ Track `expires_in` and re-authenticate before the token expires. There is no ref
 
 **Problem:** You need Smart Connector logs in a centralised log management system (Splunk, Graylog, Sentinel).
 
-**Solution:** Configure syslog in the Smart Connector configuration file:
+**Solution:** Add an NLog configuration file to the Smart Connector data folder:
 
-1. Open the Smart Connector configuration file (typically in the installation directory).
-2. Add the syslog target configuration with the server address, port, and protocol (UDP or TCP).
+1. Create `C:\ProgramData\SmartConnector\NLog.config`. The service merges its targets and rules into its own logging when it starts.
+2. Add a syslog target with the server address, port, and protocol (UDP, TCP, or TLS over TCP). Developer Guide section 11.16 has a complete file.
 3. Restart the Smart Connector service.
 
-All log output — including entries from your extension's `Logger` calls — will be forwarded to the syslog target.
+Entries that pass the Smart Connector logging level and filters, including those from your extension's `Logger` calls, are forwarded to the syslog target as your NLog rules allow.
 
 **Reference:** [Developer Guide — Syslog Logging](developer-guide/smartconnector-developers-guide.md#1116-syslog-logging)
 

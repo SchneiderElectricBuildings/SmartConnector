@@ -320,8 +320,8 @@ namespace Quickstart.HelloEws
 ### 3.5 Build, Deploy, Configure (5 minutes)
 
 1. Set the build configuration to **Release**, then **Build → Build Solution**. Confirm the project compiles with zero errors.
-2. **If you are redeploying** (the DLL already exists in the Extensions folder), stop the Smart Connector service first (Services console or `sc stop "Smart Connector"`). The service locks loaded DLLs, so you cannot overwrite them while it is running. Skip this step on a first-time deploy.
-3. Copy `bin\Release\Quickstart.HelloEws.dll` into the Smart Connector `Extensions` folder (default: `C:\ProgramData\SmartConnector\Extensions`).
+2. **If you are redeploying** (the DLL is already in the installation folder), stop the Smart Connector service first (Services console, or `Stop-Service SmartConnectorService` in an elevated PowerShell). The service locks loaded DLLs, so you cannot overwrite them while it is running. Skip this step on a first-time deploy.
+3. Copy `bin\Release\Quickstart.HelloEws.dll` into the Smart Connector installation folder, next to `Mongoose.Service.exe` (by default `C:\Program Files (x86)\Schneider Electric\SmartConnector`). The Portal lists the extensions it finds in that folder.
 4. **Start (or restart) the Smart Connector service.**
 5. Open the Smart Connector Portal in a browser.
 6. Create a schedule (Portal → **Setup → Configuration Schedules → Add New**). Set it to run every minute.
@@ -522,7 +522,7 @@ Applying STRIDE to the elements and flows yields, for example:
 | --- | --- | --- |
 | **Spoofing** | A spoofed weather endpoint (flow 2) feeds false data; an unauthorised EWS client (flow 4) | TLS 1.2 with certificate validation; HTTP Digest auth on the EWS endpoint |
 | **Tampering** | Data altered in transit (flows 2, 4) | TLS in transit; validate and bound API values before persisting |
-| **Repudiation** | An action cannot be traced | Runtime audit log; the processor records last-update, health, and counters to `Meta/*` |
+| **Repudiation** | An action cannot be traced | The application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records last-update, health, and counters to `Meta/*` |
 | **Information Disclosure** | The API key or EWS password leaks (flows 1, 4) | `[EncryptedString]` at rest; no credential in any log call; credentials only over TLS |
 | **Denial of Service** | The API is unreachable or floods the worker; an oversized response (flow 2) | Fail gracefully (a `MayNotContinue` prompt, not an infinite retry); HTTP timeout; bounded response parsing; guard against overlapping runs |
 | **Elevation of Privilege** | A crafted response or dependency runs as the service account | Treat all external data as untrusted and validate it; trusted dependencies only; least-privilege service account |
@@ -553,7 +553,7 @@ Every property that holds a password, API key, OAuth token, client secret, or co
 public string Password { get; set; }
 ```
 
-The runtime encrypts the value at write-time and decrypts it only when the property is read by your code. The Portal masks the field in the UI. The value never appears in plain text in the database, in configuration exports, or in audit log entries.
+The runtime encrypts the value at write-time and decrypts it only when the property is read by your code, so the database holds it encrypted. Portal users can display the stored value, so grant Portal access only to people trusted with every secret it holds.
 
 `[EncryptedString]` is in `Mongoose.Common.Attributes`. See [Section 11.3 Smart Connector Attributes](#113-smart-connector-attributes) for the full attribute reference.
 
@@ -585,7 +585,7 @@ The PAT used to pull Smart Connector NuGet packages from GitHub Packages is itse
 
 ### 5.3 Data Protection and Privacy
 
-Extension authors are responsible for the data their code handles. The Smart Connector runtime manages its own internal data (Portal user accounts, audit logs, HTTP access logs); you cannot change how that data is stored or logged. This section covers the data *you* control.
+Extension authors are responsible for the data their code handles. The Smart Connector runtime manages its own internal data (Portal user accounts and its application log); you cannot change how that data is stored or logged. This section covers the data *you* control.
 
 #### 5.3.1 Data Your Extension Controls
 
@@ -602,18 +602,14 @@ Extension authors are responsible for the data their code handles. The Smart Con
 The following are managed by the Smart Connector runtime. Extension code cannot change their behaviour and should not attempt to duplicate them:
 
 - Portal user account storage and password hashing
-- Audit log entries (username + action + timestamp)
-- HTTP access logging (client IP, user agent, principal name)
+- Logging of failed Portal sign-ins and attempts on locked accounts, when the `Portal` log category is included
 - Account lockout and password complexity enforcement
 
 #### 5.3.3 Data in Transit
 
-All communication with external services must be encrypted. Enforce **TLS 1.2 or higher** for every outbound call your extension makes, and never accept an invalid or expired certificate. Set the protocol once before your first request:
+All communication with external services must be encrypted. Use **TLS 1.2 or higher** for every outbound call your extension makes, and never accept an invalid or expired certificate.
 
-```csharp
-// Enforce TLS 1.2+ before the first outbound request
-ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12;
-```
+Leave `ServicePointManager.SecurityProtocol` at its default. The Smart Connector service is a .NET Framework 4.8 process, so the default is `SystemDefault`, which uses the TLS versions Windows allows. The setting is shared by every extension in the service, and a line such as `ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12` replaces that default with TLS 1.2 only, for all of them. Administrators switch TLS 1.0 and 1.1 off in the Windows SChannel settings of the host.
 
 Use `https://` endpoints exclusively for third-party APIs; reject a downgrade to plain HTTP. The native EWS Server and REST Gateway transport security is configured at the service level — this rule covers the third-party endpoints your code calls.
 
@@ -689,7 +685,7 @@ Before submitting any extension for deployment, walk this checklist:
 - [ ] All public properties have `[Required]`, `[StringLength]`, or `[Range]` as appropriate.
 - [ ] `nuget.config` is gitignored and a `.template` is committed in its place.
 - [ ] PAT used for NuGet has `read:packages` scope only and an expiry.
-- [ ] Extension does not duplicate Smart Connector audit log entries to its own log files.
+- [ ] Extension logs its own events through `Logger` and does not duplicate what the runtime already logs.
 - [ ] `IsLicensed` is intentionally set (see [Section 10 Licensing Your Extension](#10-licensing-your-extension)).
 - [ ] HTTP endpoints exposed by your extension enforce authentication ([Section 11.18 REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling)).
 - [ ] Service settings reviewed for production: account lockout, password complexity, syslog ([Section 11.15 Security Configuration](#1115-security-configuration)).
@@ -1130,7 +1126,7 @@ Some are required, some optional, and two (`Password`, `ApiKey`) hold sensitive 
 
 ##### 7.5.3.3 EncryptedStringAttribute
 
-`EncryptedStringAttribute` (from `Mongoose.Common.Attributes`) marks a property whose value is encrypted when written to the Smart Connector database and decrypted when read by your code. The Portal masks the field. Apply it to **both** `Password` and `ApiKey`.
+`EncryptedStringAttribute` (from `Mongoose.Common.Attributes`) marks a property whose value is encrypted when written to the Smart Connector database and decrypted when read by your code. Portal users can display the stored value. Apply it to **both** `Password` and `ApiKey`.
 
 #### 7.5.4 Validation
 
@@ -1915,13 +1911,16 @@ When Extension code runs in a production environment, it runs in the process spa
 2. Select "General" from the navigation pane on the left.
 3. Select "Application Configuration File" from the options on the right.
 4. Click "Add".
-5. Navigate to the installation folder for SmartConnector.
+5. Navigate to the installation folder of your development installation of SmartConnector.
 6. Locate the `Mongoose.Service.exe.config`.
 7. Open it with any text editor.
 8. Locate the `<connectionStrings>` element and copy the entire contents between the opening XML tag and the closing `</connectionStrings>`.
 9. In Visual Studio, locate the `app.config` file we just added and double click it.
 10. Paste the `connectionStrings` element.
-11. Repeat steps 8-10 for the `encryptionKey` setting (include the `appSettings` element).
+11. Repeat steps 8-10 for the `EncryptionKey` setting (include the `appSettings` element).
+12. Add `app.config` to the test project's `.gitignore`, and commit an `app.config.template` that holds placeholders in place of the connection strings and the key.
+
+> **Important:** Copy these values only from a development installation of Smart Connector, never from a production one. The encryption key decrypts every secret stored in that installation's database.
 
 #### 8.2.4 Add NuGet Reference
 
@@ -2642,7 +2641,7 @@ See `Mongoose.Common.IActionBroker` interface for all available properties and m
 
 ### 11.9 Logging
 
-Smart Connector extensively logs all activity. The Portal and Smart Connector Service log every request and response in addition to all errors. Additionally, this NLog-based logging framework is available to all extension developers so they too can log to the same location.
+Smart Connector logs all errors. At the `Debug` level, the Portal and the service also log each request and response for the log categories that are included. Additionally, this NLog-based logging framework is available to all extension developers so they too can log to the same location.
 
 What gets logged is determined by a combination of the global Logging Level Service Setting and Logging Filters.
 
@@ -2703,30 +2702,11 @@ If you set a different target framework, your extension will fail to load at run
 
 > **Note:** Earlier versions of Smart Connector (prior to v2.5.5.93) targeted .NET 4.7.2. If you are building extensions for Smart Connector v2.5.4.x, target .NET 4.7.2 instead.
 
-#### Supported Operating Systems
+#### Supported Operating Systems and Database Servers
 
-| Operating System | Architecture | Status |
-|-----------------|--------------|--------|
-| Windows 10 | 64-bit | Supported |
-| Windows 11 | 64-bit | Supported |
-| Windows Server 2016 | 64-bit | Supported |
-| Windows Server 2019 | 64-bit | Supported |
-| Windows Server 2022 | 64-bit | Supported |
+The Windows and SQL Server versions tested for each release are listed in that release's release notes, available from <https://www.smartconnectorserver.com>. LocalDB is for development only.
 
 Smart Connector runs as a 64-bit process on 64-bit Windows installations.
-
-#### Supported Database Servers
-
-| Database Server | Status |
-|----------------|--------|
-| LocalDB | Supported (development only) |
-| Microsoft SQL Server 2016 | Supported |
-| Microsoft SQL Server 2016 Express | Supported |
-| Microsoft SQL Server 2019 | Supported |
-| Microsoft SQL Server 2019 Express | Supported |
-| Microsoft SQL Server 2022 | Supported |
-| Microsoft SQL Server 2022 Express | Supported |
-
 ### 11.12 Cron Scheduling
 
 Smart Connector supports cron expressions as an alternative to interval-based, weekly, or monthly scheduling patterns. Cron scheduling allows fine-grained control over when a Processor executes.
@@ -2856,9 +2836,9 @@ After a configurable number of failed login attempts, a user account is temporar
 | `AccountLockoutTimeInMinutes` | 10 | Duration (minutes) the account remains locked |
 
 **Behaviour:**
-- After the configured number of failed attempts, the account is locked for the specified duration.
+- After the configured number of failed attempts, the account is locked for the specified duration, or until another Portal user unlocks it on the Users page.
 - The lockout counter resets after a successful authentication.
-- Lockout applies to both Portal logins and REST API token requests.
+- Lockout applies to Portal sign-in. Protect REST endpoints with a throttling policy and an IP allow list, see [Section 11.18 REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling).
 
 #### Password Complexity
 
@@ -2872,7 +2852,7 @@ New and changed passwords must meet complexity requirements:
 | `PasswordRequireUppercase` | True | Must contain at least one uppercase letter |
 | `PasswordRequireNonLetterOrDigit` | True | Must contain at least one special character |
 
-These settings are enforced when creating a new Portal user, changing a password, or creating EWS Server credentials.
+These settings apply to Portal users, when a user is created or a password is changed. EWS Server user passwords follow a fixed rule instead, at least 8 characters with three of uppercase letters, lowercase letters, digits, and other characters.
 
 #### Authentication Timing
 
@@ -2881,7 +2861,7 @@ Smart Connector introduces a randomised delay on failed authentication responses
 #### Implications for Extension Developers
 
 1. **Test accounts may lock out** during development if automated tests use incorrect credentials. Wait for the lockout period or adjust settings in a development environment.
-2. **EWS Server passwords** created via `EwsServerDataAdapter.ConnectNew()` must meet the password complexity requirements.
+2. **EWS Server passwords** passed to `EwsServerDataAdapter.ConnectNew()` must have at least 8 characters with three of the four character classes. The Portal complexity settings do not apply to them.
 3. **Never log passwords or tokens** at any log level in your extension code.
 
 ### 11.16 Syslog Logging
@@ -2905,7 +2885,8 @@ Create an `NLog.config` file in the data directory:
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
 <nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd"
-      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:sl="http://www.nlog-project.org/schemas/NLog.Targets.Syslog.xsd">
 
   <extensions>
     <add assembly="NLog.Targets.Syslog"/>
@@ -3215,7 +3196,7 @@ Log files are named by date (e.g., `2026-05-12.log`). Each line contains a times
 
 **Cause:** The `MaxFailedAccessAttemptsBeforeLockout` setting (default: 3) was exceeded.
 
-**Fix:** Wait for the lockout period to expire (default: 10 minutes), or adjust the lockout settings in the Portal for your development environment. See [Section 11.15 Security Configuration](#1115-security-configuration).
+**Fix:** Wait for the lockout period to expire (10 minutes by default), have another Portal user unlock the account on the Users page, or adjust the lockout settings in the Portal for your development environment. See [Section 11.15 Security Configuration](#1115-security-configuration).
 
 ##### HTTP 429 or 403 from an External System
 

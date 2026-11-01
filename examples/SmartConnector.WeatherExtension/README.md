@@ -40,7 +40,7 @@ This is the worked example built in [Developer Guide — Develop an Extension](.
 2. Open the **API keys** tab (<https://home.openweathermap.org/api_keys>) and copy your key (a default key is created for you).
 3. **Allow time for activation.** A newly created key can take up to a couple of hours to activate; until then the API returns HTTP 401. The free tier covers the Geocoding, Current Weather, and 5-day/3-hour Forecast endpoints this extension uses.
 
-> **Security:** The API key is stored encrypted via the `[EncryptedString]` attribute. It never appears in plain text in logs, configuration exports, or the Portal UI.
+> **Security:** The API key is stored encrypted via the `[EncryptedString]` attribute. The extension never writes it to a log. Portal users can display it, so grant Portal access only to people trusted with it.
 
 ## Build
 
@@ -66,14 +66,14 @@ This is the worked example built in [Developer Guide — Develop an Extension](.
 1. **Stop** the Smart Connector service (if updating an existing deployment):
 
    ```powershell
-   sc stop "Smart Connector"
+   Stop-Service SmartConnectorService
    ```
 
-2. Copy `bin\Release\net48\SmartConnector.WeatherExtension.dll` to `C:\ProgramData\SmartConnector\Extensions`.
+2. Copy `bin\Release\net48\SmartConnector.WeatherExtension.dll` to the SmartConnector installation folder, next to `Mongoose.Service.exe` (by default `C:\Program Files (x86)\Schneider Electric\SmartConnector`). The Portal lists the extensions it finds in that folder.
 3. **Start** the Smart Connector service:
 
    ```powershell
-   sc start "Smart Connector"
+   Start-Service SmartConnectorService
    ```
 
 ## Portal Configuration

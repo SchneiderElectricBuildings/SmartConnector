@@ -12,18 +12,18 @@ This document describes the security posture of the ENTSO-E Extension for Smart 
 
 - No hardcoded credentials exist anywhere in the source code.
 - No default passwords are used. All credentials must be configured by the operator during Portal setup.
-- The `[EncryptedString]` attribute ensures the Smart Connector Portal UI masks the field and the database stores it encrypted.
+- The `[EncryptedString]` attribute stores the value encrypted in the database. Portal users can display it, so grant Portal access only to people trusted with the credentials it holds.
 
 ## Network Security
 
 | Connection | Protocol | Minimum TLS | Authentication |
 | --- | --- | --- | --- |
 | ENTSO-E Transparency Platform | HTTPS | TLS 1.2 | API security token (query parameter) |
-| EWS Server (local) | HTTP | N/A (localhost) | HTTP Digest (realm + username + password) |
+| EWS Server | HTTP, or HTTPS with a certificate binding | TLS 1.2 or higher when HTTPS | HTTP Digest (realm + username + password) |
 
-- TLS 1.2 is enforced via `ServicePointManager.SecurityProtocol` before any outbound request.
+- The client leaves `ServicePointManager.SecurityProtocol` at the .NET Framework 4.8 default, so it uses the TLS versions Windows allows. Switch TLS 1.0 and 1.1 off in the SChannel settings of the host.
 - The ENTSO-E API endpoint (`https://web-api.tp.entsoe.eu/api`) enforces TLS. Plain HTTP is not supported.
-- The EWS Server runs on localhost and is not exposed to external networks. It uses HTTP Digest authentication with a configurable realm.
+- The EWS Server is created at the configured `EwsAddress`. Its listener accepts connections on every network interface of the host, whatever host name `EwsAddress` uses, so allow the port in the Windows Firewall only for the EBO servers and other EWS clients that need it. It uses HTTP Digest authentication with a configurable realm.
 - `HttpWebRequest.Timeout` is set to 30 seconds to prevent indefinite blocking on network failures.
 
 ## Input Validation
@@ -126,7 +126,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | **Spoofing** | A spoofed ENTSO-E endpoint (DNS/MITM) feeds false data (2); an unauthorised EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
 | **Tampering** | API response or EWS values modified in transit (2, 4) | TLS protects integrity in transit; parsed values are validated and bounded before persisting (3) | Mitigated |
-| **Repudiation** | An action cannot be traced to a cause | Smart Connector audit log records authentication and actions; the processor records cycle count, last update, and last error to `Meta/*` | Mitigated |
+| **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records cycle count, last update, and last error to `Meta/*` | Partly mitigated |
 | **Information Disclosure** | The API security token or EWS password leaks via logs, configuration export, or the network (1, 4) | `[EncryptedString]` at rest; no credential in any `Logger` call; the token is sent only over TLS inside the client | Mitigated |
 | **Denial of Service** | Excessive API calls or a long backfill saturate the host or upstream; a malformed or oversized response exhausts memory (2) | `BackfillDays` cap (≤ 90), per-zone query isolation, re-entrancy guard against overlapping runs, 30 s HTTP timeout, namespace-aware XML parsing with error-document detection | Mitigated |
 | **Elevation of Privilege** | The extension runs with the Smart Connector service account; a malicious dependency or crafted response could act with those rights | No dynamic code loading; only trusted SDK NuGet packages; all external data treated as untrusted and validated; run the service under a least-privilege account | Mitigated (deployment) |

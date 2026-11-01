@@ -641,7 +641,7 @@ Link: </AlarmEvents?take=50&skip=100>; rel="next", </AlarmEvents?take=50&skip=0>
 
 ### 6.9 Rate Limiting
 
-Limiting the rate at which requests are processed is a REST best practice. Smart Connector strongly encourages this practice by making a minimum level of throttling mandatory and automatic for every REST endpoint configured. This protects upstream building automation systems from runaway or misconfigured clients that could otherwise degrade system performance.
+Limiting the rate at which requests are processed is a REST best practice. Smart Connector applies throttling to a REST endpoint only when its Endpoint Configuration has a throttling policy, so configure one for every endpoint. This protects upstream building automation systems from runaway or misconfigured clients that could otherwise degrade system performance.
 
 When a request exceeds the configured rate limits, the server responds with `429 Too Many Requests`.
 
@@ -2089,7 +2089,7 @@ The SoapEwsRestProvider proxies requests to a remote EWS server via SOAP. Many o
 By default, the RESTful EWS Gateway listens on HTTP. For production deployments:
 
 - **Use HTTPS (TLS 1.2 or later)** to encrypt all communication between clients and the gateway. This protects OAuth2 bearer tokens transmitted in the `Authorization` header, credentials sent in token requests, and all response data.
-- Configure a valid TLS certificate in the Smart Connector hosting environment. Do not trust self-signed or expired certificates in production.
+- Bind a certificate to the endpoint's port with `netsh http add sslcert` and give the endpoint an `https://` address. Smart Connector has no certificate management of its own. Do not trust self-signed or expired certificates in production.
 - Do not use TLS 1.0, TLS 1.1, SSLv2, or SSLv3 — these protocols have known vulnerabilities.
 - Avoid transmitting credentials over unencrypted HTTP in production environments.
 
@@ -2097,7 +2097,7 @@ By default, the RESTful EWS Gateway listens on HTTP. For production deployments:
 
 ### 15.2 Authentication Security
 
-- **Token expiry:** The default token expiry of 5 minutes limits the window of exposure if a token is intercepted. Adjust the `accessTokenExpireTimeSpan` setting based on your security requirements. Do not set token expiry above 60 minutes.
+- **Token expiry:** The default token expiry of 5 minutes limits the window of exposure if a token is intercepted. Adjust the `AccessTokenExpireTimeSpanMinutes` property of the Endpoint Configuration based on your security requirements. Do not set token expiry above 60 minutes.
 - **No refresh tokens:** The gateway does not implement a refresh token mechanism. When a token expires, you must re-authenticate with credentials. This limits the lifetime of any stolen token.
 - **Bearer token handling:** Treat bearer tokens as sensitive credentials. Do not log tokens, include them in URL query strings, or store them in browser local storage. Include tokens only in the `Authorization` header.
 - **Principle of least privilege:** Configure the minimum required permissions for the service account used by the data provider.
