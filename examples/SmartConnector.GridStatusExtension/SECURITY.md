@@ -23,6 +23,8 @@ This document describes the security posture of the GridStatus Extension for Sma
 
 - The default API base URL (`https://api.gridstatus.io/v1`) enforces TLS. Plain HTTP URLs are not supported by the GridStatus.io API.
 - The EWS Server is created at the configured `EwsAddress`. Its listener accepts connections on every network interface of the host, whatever host name `EwsAddress` uses, so allow the port in the Windows Firewall only for the EBO servers and other EWS clients that need it. It uses HTTP Digest authentication with a configurable realm.
+- Select the Digest hash algorithms the EWS Server offers on the **EWS Servers** tab of the Portal. For a production deployment, offer only SHA-256 or SHA-512. See [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host).
+- The processor turns cookies on for the EWS Server with `ModifyServerAllowCookies(true)`. A client that returns the cookie from a signed-in response is accepted on its next request without a Digest exchange. The cookie works once, expires after five minutes, and is tied to the address of the client.
 - `HttpClient.Timeout` is set to 30 seconds to prevent indefinite blocking on network failures.
 
 ## Input Validation
