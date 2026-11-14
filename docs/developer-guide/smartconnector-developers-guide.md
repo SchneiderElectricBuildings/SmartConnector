@@ -2775,7 +2775,7 @@ Smart Connector supports semantic metadata on EWS entities. Metadata provides co
 
 All retrieval endpoints that return model items accept an optional `includeMetadata` query parameter:
 
-```
+```text
 GET /api/values/{id}?includeMetadata=true
 GET /api/trends/{id}?includeMetadata=true
 GET /api/alarms/{id}?includeMetadata=true
@@ -2786,7 +2786,7 @@ When `includeMetadata=true`, the response includes the `Metadata` property. When
 
 **Dedicated metadata endpoints:**
 
-```
+```text
 GET /api/values/{id}/Metadata
 GET /api/trends/{id}/Metadata
 GET /api/alarms/{id}/Metadata
@@ -2804,7 +2804,7 @@ All list/query endpoints in the EWS REST API enforce a maximum page size of **5,
 
 If a client requests more than 5,000 items in a single request, the value is silently capped to 5,000. A log message is written at the Info level:
 
-```
+```text
 Take=10000 is too high. Limiting to 5000.
 ```
 
@@ -2812,7 +2812,7 @@ Take=10000 is too high. Limiting to 5000.
 
 Clients that previously requested large result sets in a single call must now paginate using `skip` and `take`:
 
-```
+```text
 GET /api/values?take=5000&skip=0      → items 1-5,000
 GET /api/values?take=5000&skip=5000   → items 5,001-10,000
 GET /api/values?take=5000&skip=10000  → items 10,001-15,000
@@ -2872,7 +2872,7 @@ Smart Connector supports forwarding log output to a syslog server via the NLog S
 
 At startup, the `Logger` checks for an external `NLog.config` file in the Smart Connector data directory:
 
-```
+```text
 %PROGRAMDATA%\SmartConnector\NLog.config
 ```
 
@@ -3061,7 +3061,7 @@ In the Smart Connector Portal, when editing an Endpoint Configuration:
 
 REST endpoints automatically generate Swagger documentation when `ServeSwaggerMetadata` is `true` (the default). The Swagger UI is available at:
 
-```
+```text
 http://<endpoint-address>/swagger
 ```
 
@@ -3119,7 +3119,7 @@ This section covers common problems encountered during extension development and
 
 All Smart Connector logs are written to:
 
-```
+```text
 %PROGRAMDATA%\SmartConnector\Logs
 ```
 
