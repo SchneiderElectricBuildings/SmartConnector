@@ -54,6 +54,21 @@ This is the same code built in the [Developer Guide, Quick Start](../../docs/dev
    Start-Service SmartConnectorService
    ```
 
+## Prepare HTTPS
+
+The processor requires an `https://` address for its EWS Server. Bind a certificate to the port before the first run.
+
+```text
+netsh http add sslcert ipport=0.0.0.0:5300 certhash=<certificate-thumbprint> appid={<application-guid>}
+```
+
+To try the extension without a certificate, set **EwsAddress** to an `http://` address and turn on **AllowUnencryptedEwsForDevelopment**. Use that for development only. The processor logs a reminder on every run while the property is on.
+
+### Upgrading an Existing Installation
+
+- Move the EWS Server to an `https://` address as [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host) describes, and set **EwsAddress** to the same value. The configuration does not validate with an `http://` address unless **AllowUnencryptedEwsForDevelopment** is on. Until the server is moved, the processor writes no new data, and the server keeps serving the values it already holds on its `http://` address.
+- Confirm that each EWS client supports SHA-256 Digest. On its next run, the processor sets the EWS Server to SHA-256 Digest without cookies and to read-only client operations, and changes the value items it provisions to read-only.
+
 ## Portal Configuration
 
 ### Step 1. Configure the Processor
@@ -70,7 +85,8 @@ This is the same code built in the [Developer Guide, Quick Start](../../docs/dev
    | --- | --- | --- |
    | **ServerName** | `Hello EWS Server` | Name of the EWS Server (created on first run) |
    | **Realm** | `SmartConnectorRealm` | HTTP Digest authentication realm |
-   | **EwsAddress** | `http://localhost:5300/HelloEws` | EWS endpoint address |
+   | **EwsAddress** | `https://localhost:5300/HelloEws` | EWS endpoint address. See [Prepare HTTPS](#prepare-https) |
+   | **AllowUnencryptedEwsForDevelopment** | `False` | Permits an `http://` address. For development only |
    | **UserName** | *(choose a username)* | EWS server authentication |
    | **Password** | *(choose a strong password)* | Stored encrypted |
 
@@ -119,7 +135,7 @@ Table – /Hello
 
 ## Consuming from EcoStruxure™ Building Operation
 
-1. In WorkStation, add a new EWS Data Source pointing at the `EwsAddress` value (e.g. `http://<host>:5300/HelloEws`) with the configured credentials.
+1. In WorkStation, add a new EWS Data Source pointing at the `EwsAddress` value (e.g. `https://<host>:5300/HelloEws`) with the configured credentials.
 2. Browse the value tree and map `/Hello/LastSeen` to confirm the integration is live and updating.
 
 ## Running Tests
@@ -158,10 +174,11 @@ flowchart LR
 
 ## Security
 
-Credentials are stored encrypted (`[EncryptedString]`), the sample makes no outbound network calls, and only a server-generated timestamp is persisted. See [SECURITY.md](SECURITY.md) for the full posture, including a STRIDE threat model and data-flow diagram.
+The EWS Server is read-only for EWS clients, offers SHA-256 Digest authentication without cookies, and requires an `https://` address (`EwsServerSecurity.cs`). Credentials are stored encrypted (`[EncryptedString]`), the sample makes no outbound network calls, and only a server-generated timestamp is persisted. See [SECURITY.md](SECURITY.md) for the full posture, including a STRIDE threat model and data-flow diagram.
 
 ## What This Demonstrates
 
+- A security policy for the EWS Server that the processor applies on every cycle (`EwsServerSecurity.cs`)
 - `Processor` base class and `Execute_Subclass` lifecycle
 - **Self-provisioning:** `ConnectExisting` first, falling back to `ConnectNew` only when the server does not yet exist (so a scheduled restart is harmless)
 - Idempotent provisioning with the `EnsureFolder` / `EnsureValue` pattern (no manual Portal setup)
@@ -177,6 +194,7 @@ Table – Extension source (`QuickStart.HelloEws/`)
 | File | Responsibility |
 | --- | --- |
 | `HelloEwsProcessor.cs` | The complete processor, with self-provisioning, idempotent `Ensure*` helpers, timestamp write, and `Dispose` |
+| `EwsServerSecurity.cs` | Security policy for the EWS Server, with read-only client operations, SHA-256 Digest, the address rule, and drift correction |
 | `nuget.config.template` | NuGet feed template (no credentials committed) |
 | `QuickStart.HelloEws.csproj` | SDK-style project targeting `net48` |
 | `README.md` / `SECURITY.md` | Usage documentation and security posture |
@@ -186,6 +204,7 @@ Table – Test project (`QuickStart.HelloEws.Tests/`)
 | File | Coverage |
 | --- | --- |
 | `ProcessorFixture.cs` | Validation tests (clean configuration plus missing-required cases) and the `[Explicit]` integration tests |
+| `EwsServerSecurityFixture.cs` | Client operations, Digest algorithms, the address rule, and drift detection |
 
 ## References
 

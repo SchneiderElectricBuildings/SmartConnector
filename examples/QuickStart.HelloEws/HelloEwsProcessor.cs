@@ -39,9 +39,14 @@ namespace Quickstart.HelloEws
         public string Realm { get; set; }
 
         [Required]
-        [DefaultValue("http://localhost:5300/HelloEws")]
-        [Tooltip("HTTP endpoint address for the EWS Server.")]
+        [DefaultValue("https://localhost:5300/HelloEws")]
+        [Tooltip("HTTPS endpoint address for the EWS Server. Bind a certificate "
+            + "to the port before the first run.")]
         public string EwsAddress { get; set; }
+
+        [DefaultValue(false)]
+        [Tooltip("Permits an http:// EWS address. For development only.")]
+        public bool AllowUnencryptedEwsForDevelopment { get; set; }
 
         [Required]
         [Tooltip("Username for the EWS Server.")]
@@ -54,11 +59,54 @@ namespace Quickstart.HelloEws
 
         private EwsServerDataAdapter _adapter;
 
+        // The EWS address must be encrypted, unless the development property is on.
+        public override IEnumerable<ValidationResult> Validate(
+            ValidationContext validationContext)
+        {
+            foreach (var result in base.Validate(validationContext))
+                yield return result;
+
+            var addressProblem = EwsServerSecurity.ValidateAddress(
+                EwsAddress, AllowUnencryptedEwsForDevelopment);
+            if (addressProblem != null)
+                yield return new ValidationResult(addressProblem);
+        }
+
         protected override IEnumerable<Prompt> Execute_Subclass()
         {
             var prompts = new List<Prompt>();
 
             var adapter = ConnectOrCreateServer();
+
+            // Apply the security policy on every run, so a server that has
+            // drifted from it is brought back before any data is written.
+            var applied = EwsServerSecurity.Apply(adapter);
+            if (applied.Count > 0)
+            {
+                Logger.LogInfo(LogCategory.Processor,
+                    "EWS Server security settings applied ("
+                    + string.Join(", ", applied) + ").");
+            }
+
+            if (AllowUnencryptedEwsForDevelopment)
+            {
+                Logger.LogInfo(LogCategory.Processor,
+                    "AllowUnencryptedEwsForDevelopment is on. Turn it off outside development.");
+            }
+
+            // A server keeps the address it was created with, so check the
+            // server itself, not only the configured EwsAddress.
+            var serverAddressProblem = EwsServerSecurity.ValidateServerAddress(
+                adapter.Server.Address, AllowUnencryptedEwsForDevelopment);
+            if (serverAddressProblem != null)
+            {
+                prompts.Add(new Prompt
+                {
+                    Message = serverAddressProblem,
+                    Severity = PromptSeverity.MayNotContinue
+                });
+                return prompts;
+            }
 
             // Provision the structure. Ensure* helpers are idempotent: they
             // create the folder/value on the first run and return the existing
@@ -98,7 +146,7 @@ namespace Quickstart.HelloEws
 
             // First run. Create the server, then reconnect with a clean context.
             using (EwsServerDataAdapter.ConnectNew(
-                name: ServerName, address: EwsAddress, realm: Realm,
+                name: ServerName, address: EwsAddress.Trim(), realm: Realm,
                 username: UserName, password: Password, autoStart: true))
             {
             }
@@ -122,9 +170,20 @@ namespace Quickstart.HelloEws
             EwsValueTypeEnum type, EwsContainerItem parent)
         {
             var existing = adapter.ValueItems.FirstOrDefault(v => v.AlternateId == altId);
-            return existing ?? adapter.AddValueItem(
+            if (existing != null)
+            {
+                // A value item created by an earlier version may still be writeable.
+                if (existing.Writeable != EwsValueWriteableEnum.ReadOnly)
+                {
+                    adapter.ModifyValueItemWriteable(
+                        existing, EwsValueWriteableEnum.ReadOnly);
+                }
+                return existing;
+            }
+
+            return adapter.AddValueItem(
                 altId, name, name, type,
-                EwsValueWriteableEnum.Writeable, EwsValueForceableEnum.NotForceable,
+                EwsValueWriteableEnum.ReadOnly, EwsValueForceableEnum.NotForceable,
                 EwsValueStateEnum.Uncertain, null, parent);
         }
 

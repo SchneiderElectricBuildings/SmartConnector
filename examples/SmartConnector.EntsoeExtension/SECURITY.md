@@ -19,13 +19,12 @@ This document describes the security posture of the ENTSO-E Extension for Smart 
 | Connection | Protocol | Minimum TLS | Authentication |
 | --- | --- | --- | --- |
 | ENTSO-E Transparency Platform | HTTPS | TLS 1.2 | API security token (query parameter) |
-| EWS Server | HTTP, or HTTPS with a certificate binding | TLS 1.2 or higher when HTTPS | HTTP Digest (realm + username + password) |
+| EWS Server | HTTPS with a certificate binding | TLS 1.2 or higher | HTTP Digest with SHA-256 (realm + username + password) |
 
 - The client leaves `ServicePointManager.SecurityProtocol` at the .NET Framework 4.8 default, so it uses the TLS versions Windows allows. Switch TLS 1.0 and 1.1 off in the SChannel settings of the host.
 - The ENTSO-E API endpoint (`https://web-api.tp.entsoe.eu/api`) enforces TLS. Plain HTTP is not supported.
 - The EWS Server is created at the configured `EwsAddress`. Its listener accepts connections on every network interface of the host, whatever host name `EwsAddress` uses, so allow the port in the Windows Firewall only for the EBO servers and other EWS clients that need it. It uses HTTP Digest authentication with a configurable realm.
-- Select the Digest hash algorithms the EWS Server offers on the **EWS Servers** tab of the Portal. For a production deployment, offer only SHA-256 or SHA-512. See [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host).
-- The processor turns cookies on for the EWS Server with `ModifyServerAllowCookies(true)`. A client that returns the cookie from a signed-in response is accepted on its next request without a Digest exchange. The cookie works once, expires after five minutes, and is tied to the address of the client.
+- The processor sets the EWS Server to SHA-256 Digest without cookies and to read-only client operations, and applies these settings on every cycle. The address must start with `https://`, unless **AllowUnencryptedEwsForDevelopment** is on for development. See [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host).
 - `HttpWebRequest.Timeout` is set to 30 seconds to prevent indefinite blocking on network failures.
 
 ## Input Validation
@@ -113,7 +112,7 @@ flowchart LR
     API -->|"2 HTTPS: XML market data"| P
     P -->|"3 values, history, metadata"| DB
     EWS -->|"5 read"| DB
-    EBO -->|"4 EWS over HTTP Digest"| EWS
+    EBO -->|"4 EWS over HTTPS, Digest"| EWS
 ```
 
 ### Trust Boundaries
@@ -126,8 +125,8 @@ flowchart LR
 
 | Category | Threat (element / flow) | Mitigation | Status |
 | --- | --- | --- | --- |
-| **Spoofing** | A spoofed ENTSO-E endpoint (DNS/MITM) feeds false data (2); an unauthorized EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
-| **Tampering** | API response or EWS values modified in transit (2, 4) | TLS protects integrity in transit; parsed values are validated and bounded before persisting (3) | Mitigated |
+| **Spoofing** | A spoofed ENTSO-E endpoint (DNS/MITM) feeds false data (2); an unauthorized EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires SHA-256 Digest authentication over HTTPS | Mitigated |
+| **Tampering** | API response or EWS values modified in transit (2, 4) | TLS protects integrity in transit; EWS clients have read operations only and the value items are read-only; parsed values are validated and bounded before persisting (3) | Mitigated |
 | **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records cycle count, last update, and last error to `Meta/*` | Partly mitigated |
 | **Information Disclosure** | The API security token or EWS password leaks via logs, configuration export, or the network (1, 4) | `[EncryptedString]` at rest; no credential in any `Logger` call; the token is sent only over TLS inside the client | Mitigated |
 | **Denial of Service** | Excessive API calls or a long backfill saturate the host or upstream; a malformed or oversized response exhausts memory (2) | `BackfillDays` cap (≤ 90), per-zone query isolation, re-entrancy guard against overlapping runs, 30 s HTTP timeout, namespace-aware XML parsing with error-document detection | Mitigated |

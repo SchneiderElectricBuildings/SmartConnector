@@ -76,6 +76,21 @@ This is the worked example built in [Developer Guide, Develop an Extension](../.
    Start-Service SmartConnectorService
    ```
 
+## Prepare HTTPS
+
+The processor requires an `https://` address for its EWS Server. Bind a certificate to the port before the first run.
+
+```text
+netsh http add sslcert ipport=0.0.0.0:5300 certhash=<certificate-thumbprint> appid={<application-guid>}
+```
+
+To try the extension without a certificate, set **EwsAddress** to an `http://` address and turn on **AllowUnencryptedEwsForDevelopment**. Use that for development only. The processor logs a reminder on every run while the property is on.
+
+### Upgrading an Existing Installation
+
+- Move the EWS Server to an `https://` address as [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host) describes, and set **EwsAddress** to the same value. The configuration does not validate with an `http://` address unless **AllowUnencryptedEwsForDevelopment** is on. Until the server is moved, the processor writes no new data, and the server keeps serving the values it already holds on its `http://` address.
+- Confirm that each EWS client supports SHA-256 Digest. On its next run, the processor sets the EWS Server to SHA-256 Digest without cookies and to read-only client operations, and changes the value items it provisions to read-only.
+
 ## Portal Configuration
 
 ### Step 1. Configure the Processor
@@ -92,7 +107,8 @@ This is the worked example built in [Developer Guide, Develop an Extension](../.
    | --- | --- | --- |
    | **ServerName** | `Weather Service` | Name of the EWS Server (created on first run) |
    | **Realm** | `SmartConnectorRealm` | HTTP authentication realm |
-   | **EwsAddress** | `http://localhost:5300/WeatherService` | EWS endpoint address |
+   | **EwsAddress** | `https://localhost:5300/WeatherService` | EWS endpoint address. See [Prepare HTTPS](#prepare-https) |
+   | **AllowUnencryptedEwsForDevelopment** | `False` | Permits an `http://` address. For development only |
    | **UserName** | *(choose a username)* | EWS server authentication |
    | **Password** | *(choose a strong password)* | Stored encrypted |
    | **ApiKey** | *(your OpenWeatherMap key)* | Stored encrypted |
@@ -253,7 +269,7 @@ There is no backfill phase, because OpenWeatherMap's free tier has no historical
 
 ## Consuming from EcoStruxure™ Building Operation
 
-1. In WorkStation, add a new EWS Data Source pointing at the `EwsAddress` value (e.g. `http://<host>:5300/WeatherService`) with the configured credentials.
+1. In WorkStation, add a new EWS Data Source pointing at the `EwsAddress` value (e.g. `https://<host>:5300/WeatherService`) with the configured credentials.
 2. Browse the value tree and map points to your control strategy:
    - `Current/Temperature` and `Current/Humidity` for economizer/free-cooling logic.
    - `Forecast/Day1/HighTemp` for next-day pre-conditioning.
@@ -320,6 +336,7 @@ This extension follows the practices in [Developer Guide, Security Advisory for 
 Summary:
 
 - API key and EWS password are `[EncryptedString]`, stored encrypted, never logged.
+- The EWS Server is read-only for EWS clients, offers SHA-256 Digest authentication without cookies, and requires an `https://` address. The processor applies these settings on every cycle (`EwsServerSecurity.cs`).
 - All public properties are validated (`[Required]`, `Validate` override; UserName ≠ Password; City required).
 - TLS 1.2 is enforced for OpenWeatherMap calls.
 - API calls are bounded (≤ 3 per cycle, geocode cached) and the processor is guarded against overlapping runs.
@@ -327,6 +344,7 @@ Summary:
 
 ## What This Demonstrates
 
+- A security policy for the EWS Server that the processor applies on every cycle (`EwsServerSecurity.cs`)
 - Single self-provisioning processor combining setup and scheduled updates
 - Idempotent provisioning with `EnsureFolder` / `EnsureValue` / `EnsureHistoryItem`
 - `ConnectNew → Dispose → ConnectExisting` lifecycle with `DbUpdateException` handling
@@ -344,6 +362,7 @@ Table – Extension source (`SmartConnector.WeatherExtension/`)
 | --- | --- |
 | `WeatherProcessor.cs` | Main processor, with the four-phase cycle, provisioning, history, observability, re-entrancy guard |
 | `WeatherProcessorBase.cs` | Configuration properties, validation, unit labels, adapter lifecycle |
+| `EwsServerSecurity.cs` | Security policy for the EWS Server, with read-only client operations, SHA-256 Digest, the address rule, and drift correction |
 | `OpenWeatherMapClient.cs` | HTTPS client (TLS 1.2, retry) for geocoding, current, and forecast |
 | `OpenWeatherMapResponseParser.cs` | Parses OpenWeatherMap JSON into typed results |
 | `ForecastAggregator.cs` | Rolls 3-hour steps into daily highs/lows in the location timezone |
@@ -361,6 +380,7 @@ Table – Test project (`SmartConnector.WeatherExtension.Tests/`)
 | `EwsStructureFixture.cs` | EWS path generation and trend definitions |
 | `NextUpdateFixture.cs` | `NextUpdate` interval clamping |
 | `ProcessorFixture.cs` | Validation and `[Explicit]` integration tests |
+| `EwsServerSecurityFixture.cs` | Client operations, Digest algorithms, the address rule, and drift detection |
 
 ## References
 

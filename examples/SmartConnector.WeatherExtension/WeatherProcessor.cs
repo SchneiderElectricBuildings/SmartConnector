@@ -26,9 +26,28 @@ namespace SmartConnector.WeatherExtension
         public string Realm { get; set; }
 
         [Required]
-        [DefaultValue("http://localhost:5300/WeatherService")]
-        [Tooltip("HTTP endpoint address for the EWS Server.")]
+        [DefaultValue("https://localhost:5300/WeatherService")]
+        [Tooltip("HTTPS endpoint address for the EWS Server. Bind a certificate "
+            + "to the port before the first run.")]
         public string EwsAddress { get; set; }
+
+        [DefaultValue(false)]
+        [Tooltip("Permits an http:// EWS address. For development only.")]
+        public bool AllowUnencryptedEwsForDevelopment { get; set; }
+
+        // ── Validation ─────────────────────────────────────────────────
+
+        public override IEnumerable<ValidationResult> Validate(
+            ValidationContext validationContext)
+        {
+            foreach (var result in base.Validate(validationContext))
+                yield return result;
+
+            var addressProblem = EwsServerSecurity.ValidateAddress(
+                EwsAddress, AllowUnencryptedEwsForDevelopment);
+            if (addressProblem != null)
+                yield return new ValidationResult(addressProblem);
+        }
 
         // ── Observability State ────────────────────────────────────────
 
@@ -99,6 +118,36 @@ namespace SmartConnector.WeatherExtension
                     return prompts;
                 }
 
+                // Apply the security policy on every cycle, so a server that
+                // has drifted from it is brought back before any data is written.
+                var applied = EwsServerSecurity.Apply(adapter);
+                if (applied.Count > 0)
+                {
+                    Logger.LogInfo(LogCategory.Processor,
+                        "EWS Server security settings applied ("
+                        + string.Join(", ", applied) + ").");
+                }
+
+                if (AllowUnencryptedEwsForDevelopment)
+                {
+                    Logger.LogInfo(LogCategory.Processor,
+                        "AllowUnencryptedEwsForDevelopment is on. Turn it off outside development.");
+                }
+
+                // A server keeps the address it was created with, so check the
+                // server itself, not only the configured EwsAddress.
+                var serverAddressProblem = EwsServerSecurity.ValidateServerAddress(
+                    adapter.Server.Address, AllowUnencryptedEwsForDevelopment);
+                if (serverAddressProblem != null)
+                {
+                    prompts.Add(new Prompt
+                    {
+                        Message = serverAddressProblem,
+                        Severity = PromptSeverity.MayNotContinue
+                    });
+                    return prompts;
+                }
+
                 var now = DateTime.UtcNow;
                 _apiCallsThisCycle = 0;
 
@@ -109,7 +158,7 @@ namespace SmartConnector.WeatherExtension
                 // ── Phase 2: Update point values ──
                 bool healthy;
                 string lastError;
-                UpdateValues(adapter, now, out healthy, out lastError, prompts);
+                adapter = UpdateValues(adapter, now, out healthy, out lastError, prompts);
 
                 // ── Phase 3: Add current value to all history items ──
                 if (!IsCancellationRequested)
@@ -165,7 +214,7 @@ namespace SmartConnector.WeatherExtension
             try
             {
                 using (EwsServerDataAdapter.ConnectNew(
-                    name: ServerName, address: EwsAddress, realm: Realm,
+                    name: ServerName, address: EwsAddress.Trim(), realm: Realm,
                     username: UserName, password: Password, autoStart: true))
                 {
                 }
@@ -185,39 +234,13 @@ namespace SmartConnector.WeatherExtension
             return _dataAdapter;
         }
 
+        // Operational settings only. The security settings (client
+        // operations, Digest algorithms, cookies) belong to EwsServerSecurity,
+        // which the processor applies on every cycle.
         private static void ConfigureServer(EwsServerDataAdapter adapter)
         {
             adapter.ModifyServerIsAutoStart(true);
-            adapter.ModifyServerAllowCookies(true);
             adapter.ModifyServerPageSize(1000);
-            adapter.ModifyServerSupportedMethods(new EwsServerMethods
-            {
-                GetContainerItems = true,
-                GetItems = true,
-                GetValues = true,
-                SetValues = true,
-                GetHistory = true,
-                GetHistoricalDataAggregation = true,
-                GetHierarchicalInformation = true,
-                GetNotification = true,
-                GetEnums = true,
-                GetWebServiceInformation = true,
-                // Advertise the alarm operations even though this extension
-                // publishes no alarms. EWS clients such as EcoStruxure Building
-                // Operation poll for alarms; with these enabled the server
-                // returns an empty alarm list, instead of the OPERATION_NOT_SUPPORTED
-                // fault EBO would otherwise log as "CWS Alarm Poll failed".
-                GetAlarmEvents = true,
-                GetAlarmEventTypes = true,
-                GetAlarmHistory = true,
-                GetUpdatedAlarmEvents = true,
-                AcknowledgeAlarmEvents = true,
-                Subscribe = true,
-                Unsubscribe = true,
-                Renew = true,
-                ForceValues = false,
-                UnforceValues = false
-            });
         }
 
         // ── Provisioning Helpers ───────────────────────────────────────
@@ -238,9 +261,20 @@ namespace SmartConnector.WeatherExtension
         {
             var existing = adapter.ValueItems
                 .FirstOrDefault(v => v.AlternateId == altId);
-            return existing ?? adapter.AddValueItem(
+            if (existing != null)
+            {
+                // A value item created by an earlier version may still be writeable.
+                if (existing.Writeable != EwsValueWriteableEnum.ReadOnly)
+                {
+                    adapter.ModifyValueItemWriteable(
+                        existing, EwsValueWriteableEnum.ReadOnly);
+                }
+                return existing;
+            }
+
+            return adapter.AddValueItem(
                 altId, name, name, type,
-                EwsValueWriteableEnum.Writeable, EwsValueForceableEnum.NotForceable,
+                EwsValueWriteableEnum.ReadOnly, EwsValueForceableEnum.NotForceable,
                 EwsValueStateEnum.Uncertain, unit, parent);
         }
 
@@ -342,7 +376,9 @@ namespace SmartConnector.WeatherExtension
 
         // ── Phase 2: Update point values ───────────────────────────────
 
-        private void UpdateValues(
+        // Returns the adapter the rest of the cycle must use. It is a new one
+        // when the update failed and its changes were discarded.
+        private EwsServerDataAdapter UpdateValues(
             EwsServerDataAdapter adapter, DateTime now,
             out bool healthy, out string lastError, List<Prompt> prompts)
         {
@@ -364,7 +400,7 @@ namespace SmartConnector.WeatherExtension
                             Severity = PromptSeverity.MayNotContinue
                         });
                         adapter.CommitChanges();
-                        return;
+                        return adapter;
                     }
 
                     FetchCurrent(adapter, client, location);
@@ -376,7 +412,7 @@ namespace SmartConnector.WeatherExtension
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException))
                 {
-                    adapter.DiscardChanges();
+                    adapter = ReconnectAfterFailedUpdate();
                     lastError = ex.Message;
                     Logger.LogError(LogCategory.Processor,
                         $"Update failed for {City}: {ex.Message}");
@@ -391,6 +427,19 @@ namespace SmartConnector.WeatherExtension
                     adapter.AutoCommit = true;
                 }
             }
+
+            return adapter;
+        }
+
+        // An adapter keeps cached entities after DiscardChanges(), and later
+        // writes through them fail. Drop the adapter with its pending changes
+        // and continue the cycle on a new one.
+        private EwsServerDataAdapter ReconnectAfterFailedUpdate()
+        {
+            _dataAdapter?.Dispose();
+            _dataAdapter = EwsServerDataAdapter.ConnectExisting(
+                ServerName, UserName, Password);
+            return _dataAdapter;
         }
 
         // Resolves the configured city to coordinates, reusing the cached

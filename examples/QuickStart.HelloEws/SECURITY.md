@@ -17,11 +17,11 @@ This document describes the security posture of the HelloEws quick-start sample.
 
 | Connection | Protocol | Authentication |
 | --- | --- | --- |
-| EWS Server | HTTP, or HTTPS with a certificate binding | HTTP Digest (realm + username + password) |
+| EWS Server | HTTPS with a certificate binding | HTTP Digest with SHA-256 (realm + username + password) |
 
 - The sample makes **no outbound calls** to any third-party service.
 - The EWS Server is created at the configured `EwsAddress`. Its listener accepts connections on every network interface of the host, whatever host name `EwsAddress` uses, so allow the port in the Windows Firewall only for the EBO servers and other EWS clients that need it. It uses HTTP Digest authentication with a configurable realm.
-- Select the Digest hash algorithms the EWS Server offers on the **EWS Servers** tab of the Portal. For a production deployment, offer only SHA-256 or SHA-512. See [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host).
+- The processor sets the EWS Server to SHA-256 Digest without cookies and to read-only client operations, and applies these settings on every cycle. The address must start with `https://`, unless **AllowUnencryptedEwsForDevelopment** is on for development. See [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host).
 
 ## Input Validation
 
@@ -63,7 +63,7 @@ flowchart LR
 
     P -->|"1 provision + write timestamp"| DB
     EWS -->|"3 read"| DB
-    EBO -->|"2 EWS over HTTP Digest"| EWS
+    EBO -->|"2 EWS over HTTPS, Digest"| EWS
 ```
 
 ### Trust Boundaries
@@ -76,8 +76,8 @@ flowchart LR
 
 | Category | Threat (element / flow) | Mitigation | Status |
 | --- | --- | --- | --- |
-| **Spoofing** | An unauthorized EWS client reads or writes data (2) | The EWS endpoint requires HTTP Digest authentication | Mitigated |
-| **Tampering** | EWS values modified by an unauthorized client (2) | EWS writes require authentication; the value is server-generated, not externally supplied | Mitigated |
+| **Spoofing** | An unauthorized EWS client reads or writes data (2) | The EWS endpoint requires SHA-256 Digest authentication over HTTPS | Mitigated |
+| **Tampering** | EWS values modified by an unauthorized client (2) | EWS clients have read operations only and the value item is read-only; the value is server-generated, not externally supplied | Mitigated |
 | **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor logs each write | Partly mitigated |
 | **Information Disclosure** | The EWS password leaks via logs or configuration export | `[EncryptedString]` at rest; no credential in any `Logger` call | Mitigated |
 | **Denial of Service** | A very frequent schedule writes the value repeatedly | One value write per cycle, no external calls, no unbounded history growth (the sample provisions no trend logs) | Mitigated |
