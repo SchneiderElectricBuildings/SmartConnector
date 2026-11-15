@@ -4,7 +4,6 @@
 <!-- Applies to: Smart Connector SDK v2.6 -->
 <!-- Revision: 7 -->
 <!-- Date: June 2026 -->
-<!-- Author: Karim Hussain -->
 <!-- Audience: Extension developers (system integrators, third-party developers, building automation engineers) -->
 
 ## Table of Contents

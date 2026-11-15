@@ -4,7 +4,6 @@
 <!-- Applies to: Smart Connector SDK v2.6 -->
 <!-- Revision: 1 -->
 <!-- Date: June 2026 -->
-<!-- Author: Karim Hussain -->
 <!-- Audience: Extension developers (system integrators, third-party developers, building automation engineers) -->
 
 Task-oriented recipes for common Smart Connector development scenarios. Each recipe is self-contained, so jump to the one you need.
