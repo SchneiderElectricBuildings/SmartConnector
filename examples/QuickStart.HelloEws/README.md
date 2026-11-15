@@ -1,4 +1,4 @@
-# Quick Start Sample: HelloEwsProcessor
+# Quick Start Sample, HelloEwsProcessor
 
 A minimal, runnable Smart Connector extension that **creates its own EWS Server** on the first run and writes the current UTC timestamp to a value on it every execution. No manual EWS Server setup is required.
 
@@ -8,7 +8,7 @@ This is the same code built in the [Developer Guide, Quick Start](../../docs/dev
 
 | Data Category | Values Published | Use Case |
 | --- | --- | --- |
-| **Heartbeat** | `LastSeen` (UTC timestamp, updated every execution) | Validate the SDK round-trip end to end: NuGet → Processor → EWS Server → Portal |
+| **Heartbeat** | `LastSeen` (UTC timestamp, updated every execution) | Validate the SDK round-trip end to end (NuGet → Processor → EWS Server → Portal) |
 
 ## Prerequisites
 
@@ -83,7 +83,7 @@ This is the same code built in the [Developer Guide, Quick Start](../../docs/dev
 3. Enter a **Description** (e.g., `Runs every minute`).
 4. Set the **Start Date** to the current date/time.
 5. In the **Type** section, select **Cron**.
-6. Enter the cron expression: `* * * * *`.
+6. Enter the cron expression `* * * * *`.
 7. Click **Save**.
 
 ### Step 3. Assign the Schedule and Start
@@ -163,7 +163,7 @@ Credentials are stored encrypted (`[EncryptedString]`), the sample makes no outb
 ## What This Demonstrates
 
 - `Processor` base class and `Execute_Subclass` lifecycle
-- Self-provisioning: `ConnectExisting` first, falling back to `ConnectNew` only when the server does not yet exist (so a scheduled restart is harmless)
+- **Self-provisioning:** `ConnectExisting` first, falling back to `ConnectNew` only when the server does not yet exist (so a scheduled restart is harmless)
 - Idempotent provisioning with the `EnsureFolder` / `EnsureValue` pattern (no manual Portal setup)
 - `[EncryptedString]` for secure credential storage
 - `[Required]`, `[DefaultValue]`, and `[Tooltip]` configuration attributes

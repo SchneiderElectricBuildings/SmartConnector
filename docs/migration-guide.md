@@ -13,7 +13,7 @@ If you are starting a new extension from scratch, skip this guide and go straigh
 
 ---
 
-## 1 Target Framework: .NET Framework 4.8
+## 1 Target Framework, .NET Framework 4.8
 
 Smart Connector v2.6 requires .NET Framework 4.8.
 
@@ -43,7 +43,7 @@ Or, in SDK-style projects:
 
 ---
 
-## 2 NuGet Feed: Migrate to GitHub Packages
+## 2 NuGet Feed, Migrate to GitHub Packages
 
 The Smart Connector SDK packages have moved from MyGet to GitHub Packages.
 
@@ -101,7 +101,7 @@ Confirm all `Mongoose.*` and `SxL.*` packages resolve from the new source.
 
 ---
 
-## 3 REST API: Take Limit
+## 3 REST API, Take Limit
 
 All list endpoints in the RESTful EWS Gateway now enforce a maximum `take` value of **5,000**.
 
@@ -111,9 +111,9 @@ See [EWS Gateway Guide, Filtering, Sorting, and Paging](developer-guide/smartcon
 
 ---
 
-## 4 REST API: Metadata Parameter
+## 4 REST API, Metadata Parameter
 
-All retrieval endpoints now accept an optional `includeMetadata` boolean query parameter (default: `false`).
+All retrieval endpoints now accept an optional `includeMetadata` boolean query parameter (default `false`).
 
 **Impact on REST clients:** No breaking change. Existing calls continue to work. Pass `?includeMetadata=true` to receive semantic metadata in responses.
 
@@ -133,7 +133,7 @@ See [Developer Guide, Metadata API](developer-guide/smartconnector-developers-gu
 
 ---
 
-## 5 Performance: AutoCommit Bulk Update Pattern
+## 5 Performance, AutoCommit Bulk Update Pattern
 
 v2.6 introduces a bulk update pattern for `EwsServerDataAdapter` that delivers up to 10× faster writes.
 
@@ -180,7 +180,7 @@ Use this checklist to confirm your extension is ready for v2.6:
 - [ ] NuGet source points to `https://nuget.pkg.github.com/SchneiderElectricBuildings/index.json`
 - [ ] `dotnet restore` resolves all Smart Connector packages from the new feed
 - [ ] Project compiles with zero errors against the v2.6 SDK
-- [ ] If you implement `IEwsRestProvider` directly: `includeMetadata` parameter added to all retrieval methods
+- [ ] If you implement `IEwsRestProvider` directly, `includeMetadata` parameter added to all retrieval methods
 - [ ] If your REST clients request `take` > 5,000: pagination implemented
 - [ ] (Optional) Bulk update code uses `AutoCommit = false` + `CommitChanges()` pattern
 - [ ] Extension tested against a v2.6 Smart Connector instance

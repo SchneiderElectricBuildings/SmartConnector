@@ -2,14 +2,14 @@
 
 A Smart Connector extension that integrates with the [OpenWeatherMap API](https://openweathermap.org/api) to publish current conditions and a 3-day forecast for a configured city to EWS clients, including EcoStruxure™ Building Operation (EBO).
 
-This is the worked example built in [Developer Guide, Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension): a single self-provisioning processor with idempotent provisioning, per-cycle trend sampling, a phased cycle, and a re-entrancy guard.
+This is the worked example built in [Developer Guide, Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension), a single self-provisioning processor with idempotent provisioning, per-cycle trend sampling, a phased cycle, and a re-entrancy guard.
 
 ## What This Extension Does
 
 | Data Category | Values Published | Use Case |
 | --- | --- | --- |
 | **Current Conditions** | Temperature, FeelsLike, Pressure, Humidity, WindSpeed, Description, ObservedAt | Live environmental monitoring |
-| **3-Day Forecast** | Per day: Date, HighTemp, LowTemp, Pressure, Humidity, Description | Predictive scheduling, pre-conditioning |
+| **3-Day Forecast** | **Per day:** Date, HighTemp, LowTemp, Pressure, Humidity, Description | Predictive scheduling, pre-conditioning |
 | **Location** | Resolved name, country, latitude, longitude | Confirming the geocoded target |
 | **Trend Logs** | Temperature, Pressure, Humidity history (per-cycle sampled) | Historical analysis, EBO trend viewer |
 
@@ -109,7 +109,7 @@ This is the worked example built in [Developer Guide, Develop an Extension](../.
 3. Enter a **Description** (e.g., `Runs every 15 minutes`).
 4. Set the **Start Date** to the current date/time.
 5. In the **Type** section, select **Cron**.
-6. Enter the cron expression: `*/15 * * * *`.
+6. Enter the cron expression `*/15 * * * *`.
 7. Click **Save**.
 
 > **Budget tip:** The free OpenWeatherMap tier allows 60 calls/minute and ~1,000,000 calls/month. This extension makes at most three calls per cycle (geocode + current + forecast), and the geocode result is cached so it is only re-fetched when the City changes. A 15-minute schedule uses roughly 200 calls/day.
@@ -227,7 +227,7 @@ Each cycle runs in four explicit phases:
 3. **Add history samples:** append the current value of each trended point to its trend.
 4. **Update metadata:** stamp `Meta/LastUpdate`, `DataHealthy`, counters.
 
-A re-entrancy guard prevents overlap: if the schedule re-triggers while a previous cycle is still running, the new trigger logs a message and returns immediately. A stale lock releases automatically after 30 minutes.
+A re-entrancy guard prevents overlap. If the schedule re-triggers while a previous cycle is still running, the new trigger logs a message and returns immediately. A stale lock releases automatically after 30 minutes.
 
 ```mermaid
 sequenceDiagram
@@ -249,7 +249,7 @@ sequenceDiagram
     end
 ```
 
-There is no backfill phase: OpenWeatherMap's free tier has no historical endpoint, so the trends accumulate from per-cycle samples (see [Trend Logs](#trend-logs)).
+There is no backfill phase, because OpenWeatherMap's free tier has no historical endpoint, so the trends accumulate from per-cycle samples (see [Trend Logs](#trend-logs)).
 
 ## Consuming from EcoStruxure™ Building Operation
 

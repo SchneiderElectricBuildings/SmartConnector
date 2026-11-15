@@ -71,7 +71,7 @@ Validation failures are reported as `PromptSeverity.MayNotContinue`, preventing 
 | Condition | Behavior |
 | --- | --- |
 | HTTP 401/403 | Reported as configuration error. No retry. API key or permissions misconfigured. |
-| HTTP 429 (rate limit) | Exponential backoff: 2s, 4s, 8s. Maximum 3 retries. |
+| HTTP 429 (rate limit) | Exponential backoff of 2s, 4s, 8s. Maximum 3 retries. |
 | Network timeout | `HttpClient.Timeout` = 30s. Exception caught and logged. |
 | Partial failure | Each data group (prices, load, fuel mix) fails independently. A failure in one does not block others. |
 | All groups failed | `DataHealthy` set to `false`. Last good values retained. Error message written to `Meta/LastError`. |
@@ -82,7 +82,7 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 ## Logging Practices
 
 - No `Logger.Log*` call includes `Password`, `ApiKey`, or any credential value.
-- Log messages include: market ID, row counts, price values, load values, and health status.
+- Log messages include the market ID, row counts, price values, load values, and health status.
 - Stack traces are logged at `LogError` level only for unexpected exceptions.
 - The `Meta/LastError` EWS point stores the most recent error message for operator visibility via the EWS client.
 
@@ -94,7 +94,7 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 
 ## Threat Model
 
-This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
+This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool. The data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
 
 ### Data Flow Diagram
 

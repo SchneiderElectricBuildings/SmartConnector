@@ -122,7 +122,7 @@ The free tier provides 1,000,000 rows per month, sufficient for most single-mark
 3. Enter a **Description** (e.g., `Runs every 5 minutes`).
 4. Set the **Start Date** to the current date/time or a future date.
 5. In the **Type** section, select **Cron**.
-6. Enter the cron expression: `*/5 * * * *`.
+6. Enter the cron expression `*/5 * * * *`.
 7. Click **Save**.
 
 ### Step 3. Assign the Schedule and Start
@@ -234,7 +234,7 @@ Table – Per-ISO points (/Grid/{ISO}); ★ marks trend logs
 | Meta/DataHealthy | Bool | Per-ISO health status |
 | Meta/TimeZone | String | Market timezone ID (e.g. America/Los_Angeles) |
 
-Items marked ★ are **Trend Logs**: the processor adds the current value of each linked point every cycle and seeds history on first run (see [Trend Logs](#trend-logs)). Trend logs can be queried via the REST API or consumed directly from EBO.
+Items marked ★ are **Trend Logs**. The processor adds the current value of each linked point every cycle and seeds history on first run (see [Trend Logs](#trend-logs)). Trend logs can be queried via the REST API or consumed directly from EBO.
 
 ## OpenADR 3.0 Signal Mapping
 
@@ -265,7 +265,7 @@ The Standard Energy Market Interface aligns EWS points with [OpenADR 3.0](https:
 
 - `qudt:USD-PER-MegaW-HR` is a composed unit. QUDT defines `qudt:MegaW-HR` and currency units separately. The composite follows QUDT's unit composition pattern.
 - `gCO₂/kWh` has no standard QUDT URI. Carbon intensity is reported as a raw numeric value.
-- Full QUDT unit catalog: <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
+- **Full QUDT unit catalog:** <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
 
 **Brick Schema note:** Brick Schema defines building-side equipment and point classes (`brick:Electrical_Meter`, `brick:Power_Sensor`) but does not model grid-market signals. The OpenADR mapping applies at the SmartConnector extension level; Brick applies at the EBO consumption side when mapping EWS points to equipment models.
 
@@ -307,7 +307,7 @@ Each cycle runs in five explicit phases so the long-running backfill always happ
 4. **Update metadata:** stamp `Meta/LastUpdate`, `DataHealthy`, `CycleCount`, and the other observability points.
 5. **Backfill:** seed/repair historical trend data (may take minutes).
 
-Because backfill can exceed a short schedule interval, a re-entrancy guard prevents overlap: if the schedule re-triggers while a previous cycle is still running (typically inside a backfill), the new trigger logs a message and returns immediately. A stale lock is released automatically after 30 minutes so a crashed run cannot block the processor permanently.
+Because backfill can exceed a short schedule interval, a re-entrancy guard prevents overlap. If the schedule re-triggers while a previous cycle is still running (typically inside a backfill), the new trigger logs a message and returns immediately. A stale lock is released automatically after 30 minutes so a crashed run cannot block the processor permanently.
 
 ```mermaid
 sequenceDiagram
@@ -429,16 +429,16 @@ The **Market** property is rendered as a dropdown in the Portal. Each market has
 
 The GridStatus.io free plan allows 1,000,000 rows per month. This extension minimizes consumption:
 
-1. **Priority ordering:** Prices fetched first (highest value, lowest cost: 1–25 rows), then load (1–100 rows), then fuel mix (1 row).
+1. **Priority ordering:** Prices fetched first (highest value, lowest cost, 1–25 rows), then load (1–100 rows), then fuel mix (1 row).
 2. **Targeted queries:** Always filters by location for price data. Requests only needed columns.
 3. **Row limit cap:** Configurable `RowLimit` (default 100) prevents runaway queries.
 4. **Latest-only for real-time:** Uses `time=latest` for current values (1 row each).
 5. **Exponential backoff:** Retries on HTTP 429 without wasting requests.
 
 At default settings with a 5-minute schedule:
-- Per cycle: ~27 rows (1 RT price + 24 DA prices + 1 load + 1 fuel mix)
-- Per day: ~7,776 rows
-- Per month: ~233,280 rows (23% of free budget)
+- **Per cycle:** ~27 rows (1 RT price + 24 DA prices + 1 load + 1 fuel mix)
+- **Per day:** ~7,776 rows
+- **Per month:** ~233,280 rows (23% of free budget)
 
 ## Per-Market Dataset Mapping
 
@@ -550,7 +550,7 @@ For a detailed security analysis including threat model, credential management, 
 ## What This Demonstrates
 
 - Standard Energy Market Interface aligned with Entsoe extension (same paths, types, semantics)
-- OpenADR 3.0 signal semantics: Price → `EventType.Price`, Level → `EventType.Simple`, Carbon → `EventType.GHG`
+- **OpenADR 3.0 signal semantics:** Price → `EventType.Price`, Level → `EventType.Simple`, Carbon → `EventType.GHG`
 - Single `Processor` combining setup and scheduled updates (eliminates configuration mismatch)
 - `SupportedMarket` enum for Portal dropdown selection with default price locations
 - Automatic server name uniqueness (market code appended to `ServerName`)

@@ -79,7 +79,7 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 ## Logging Practices
 
 - No `Logger.Log*` call includes `Password`, `ApiToken`, or any credential value.
-- Log messages include: country code, bidding zone, price values, load values, and health status.
+- Log messages include the country code, bidding zone, price values, load values, and health status.
 - Stack traces are logged at `LogError` level only for unexpected exceptions.
 - The `Meta/DataHealthy` EWS point stores the current health status for operator visibility via the EWS client.
 
@@ -91,7 +91,7 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 
 ## Threat Model
 
-This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
+This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool. The data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
 
 ### Data Flow Diagram
 

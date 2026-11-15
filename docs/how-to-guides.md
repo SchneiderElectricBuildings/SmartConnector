@@ -338,7 +338,7 @@ using (var adapter = EwsServerDataAdapter.ConnectNew(
 
 > **Tip:** Provision **idempotently** so one self-provisioning processor can both create the structure on the first run and re-run the provisioning step safely on every cycle. Wrap each `Add*` call in an "ensure" helper that returns the existing item if it is already present. See [How-To 12](#12-run-a-self-provisioning-processor-safely-on-a-schedule) for the full pattern and [How-To 11](#11-populate-trend-logs-with-per-cycle-samples-and-backfill) for adding trend logs.
 
-**Reference:** [Developer Guide, The Processor: A Phased Execution Cycle](developer-guide/smartconnector-developers-guide.md#76-the-processor-a-phased-execution-cycle)
+**Reference:** [Developer Guide, The Processor, A Phased Execution Cycle](developer-guide/smartconnector-developers-guide.md#76-the-processor-a-phased-execution-cycle)
 
 ---
 
@@ -523,7 +523,7 @@ Acquire the lock at the top of `Execute_Subclass`, return immediately if it is h
 
 > **Tip:** When deriving an estimated "next update" timestamp from the interval between runs, clamp the interval to a sane range (for example 1 minute to 24 hours). Otherwise a long idle gap during development projects the next-run time far into the future.
 
-**Reference:** [Developer Guide, Recommended Patterns for Production Extensions](developer-guide/smartconnector-developers-guide.md#78-recommended-patterns-for-production-extensions). Worked examples: the `SmartConnector.EntsoeExtension` and `SmartConnector.GridStatusExtension` projects under [`examples/`](../examples/).
+**Reference:** [Developer Guide, Recommended Patterns for Production Extensions](developer-guide/smartconnector-developers-guide.md#78-recommended-patterns-for-production-extensions). Worked examples are the `SmartConnector.EntsoeExtension` and `SmartConnector.GridStatusExtension` projects under [`examples/`](../examples/).
 
 ---
 

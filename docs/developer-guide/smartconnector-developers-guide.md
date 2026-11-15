@@ -39,8 +39,8 @@
    - 7.2 [The Design](#72-the-design)
    - 7.3 [Configure NuGet Feed](#73-configure-nuget-feed)
    - 7.4 [Creating the Extension Project](#74-creating-the-extension-project)
-   - 7.5 [The Base Class: Configuration and Validation](#75-the-base-class-configuration-and-validation)
-   - 7.6 [The Processor: A Phased Execution Cycle](#76-the-processor-a-phased-execution-cycle)
+   - 7.5 [The Base Class, Configuration and Validation](#75-the-base-class-configuration-and-validation)
+   - 7.6 [The Processor, A Phased Execution Cycle](#76-the-processor-a-phased-execution-cycle)
    - 7.7 [The Supporting Classes](#77-the-supporting-classes)
    - 7.8 [Recommended Patterns for Production Extensions](#78-recommended-patterns-for-production-extensions)
 8. [Testing an Extension](#8-testing-an-extension)
@@ -125,7 +125,7 @@ Smart Connector libraries ship from GitHub Packages on the `SchneiderElectricBui
 
 **Never write a PAT in plain text into `nuget.config`**. Instead, use one of the two patterns below.
 
-#### Option 1: `dotnet nuget add source` (recommended for local Windows dev)
+#### Option 1, `dotnet nuget add source` (recommended for local Windows dev)
 
 This registers the source and stores the PAT **DPAPI-encrypted** in the per-user `nuget.config` (`%APPDATA%\NuGet\NuGet.Config`). The encrypted entry can only be decrypted by the same Windows user on the same machine.
 
@@ -139,7 +139,7 @@ dotnet nuget add source `
 
 No PAT ends up on disk in plain text.
 
-#### Option 2: Environment-variable substitution (recommended for CI and teams)
+#### Option 2, Environment-variable substitution (recommended for CI and teams)
 
 Check in a project-level `nuget.config` that references an environment variable. The PAT lives only in the env var (sourced from a secrets vault, GitHub Actions secret, etc.) and is never written to disk in plain text.
 
@@ -168,7 +168,7 @@ $env:GITHUB_PACKAGES_PAT = "ghp_..."   # from a secrets vault, never committed
 dotnet restore
 ```
 
-> **Why not `ClearTextPassword` with a literal value?** Microsoft's NuGet documentation explicitly warns against this pattern: "Storing passwords in clear text is strongly discouraged." The env-var form uses the same XML key but resolves the value at run time from the environment, so no secret is written to disk.
+> **Why not `ClearTextPassword` with a literal value?** Microsoft's NuGet documentation explicitly warns against this pattern, saying "Storing passwords in clear text is strongly discouraged." The env-var form uses the same XML key but resolves the value at run time from the environment, so no secret is written to disk.
 
 > **Security:** Whichever option you choose, never commit a `nuget.config` containing a real PAT, and never paste a PAT into chat, screenshots, or commit messages. Add `nuget.config` to `.gitignore` if it could ever be modified to contain credentials, and check in a `nuget.config.template` instead. See [Section 5 Security Advisory](#5-security-advisory-for-production-deployments) for the full credential-handling rules. For more configuration options, see [Section 7.3 Configure NuGet Feed](#73-configure-nuget-feed).
 
@@ -331,15 +331,15 @@ namespace Quickstart.HelloEws
 
 ### 3.6 You Did It! Now What?
 
-You have just exercised the full Smart Connector round-trip: NuGet → Processor → EWS Server → Portal. From here:
+You have just exercised the full Smart Connector round-trip (NuGet → Processor → EWS Server → Portal). From here:
 
 - **Understand what you built:** [Section 4 Overview](#4-overview) explains every concept (Processor, EWS Server, Worker, etc.).
-- **Read this before going further:** [Section 5 Security Advisory for Production Deployments](#5-security-advisory-for-production-deployments): the security rules every extension author must follow before deploying anywhere except a local dev machine.
+- **Read this before going further:** [Section 5 Security Advisory for Production Deployments](#5-security-advisory-for-production-deployments), the security rules every extension author must follow before deploying anywhere except a local dev machine.
 - **Build a real extension:** [Section 7 Develop an Extension](#7-develop-an-extension) walks through a non-trivial weather-data example, a single self-provisioning processor that fetches from a third-party API and serves the data over EWS with trend history.
 - **Test it:** [Section 8 Testing an Extension](#8-testing-an-extension) shows how to unit-test Processors with `IProcessorTestFixture<T>` so they never touch a real database.
 - **Reference:** [Section 11 Appendix](#11-appendix) is the alphabetized reference for every interface, attribute, and helper.
 
-> **Where is the RESTful EWS Gateway?** The REST gateway (used to expose Smart Connector EWS data over HTTP/JSON) is documented in a separate companion document: *Smart Connector RESTful EWS API Gateway Guide*. This developer guide focuses exclusively on the SDK.
+> **Where is the RESTful EWS Gateway?** The REST gateway (used to expose Smart Connector EWS data over HTTP/JSON) is documented in a separate companion document, the *Smart Connector RESTful EWS API Gateway Guide*. This developer guide focuses exclusively on the SDK.
 
 ## 4 Overview
 
@@ -351,7 +351,7 @@ This document will not cover the details pertaining to installation, configurati
 
 ### 4.2 What is Smart Connector?
 
-When developing solutions, there is frequently a need for software that can bridge the gap between Schneider Electric systems and third-party systems and data sources. This software goes by varying names: protocol shims, glue logic, or more generally, middleware. As different projects are analyzed, patterns begin to emerge where this middleware performs similar actions with only minor variations from solution to solution. Smart Connector was conceived to be this middleware framework.
+When developing solutions, there is frequently a need for software that can bridge the gap between Schneider Electric systems and third-party systems and data sources. This software goes by varying names, such as protocol shims, glue logic, or more generally, middleware. As different projects are analyzed, patterns begin to emerge where this middleware performs similar actions with only minor variations from solution to solution. Smart Connector was conceived to be this middleware framework.
 
 Smart Connector is an extensible and configurable application framework. At its simplest, Smart Connector is a multi-threaded Windows service. Threads are configured to execute custom code written by solution providers and integrators.
 
@@ -475,7 +475,7 @@ Microsoft publishes the **Threat Modeling Tool**, a free desktop application tha
 
 The recommended workflow:
 
-1. **Draw a data-flow diagram** of your extension: which systems it talks to, which credentials it holds, where data is stored, and which network boundaries are crossed.
+1. **Draw a data-flow diagram** of your extension, showing which systems it talks to, which credentials it holds, where data is stored, and which network boundaries are crossed.
 2. **Run the Threat Modeling Tool** against the diagram. It generates a list of potential threats categorized by STRIDE.
 3. **Triage each threat:** decide whether to mitigate, accept, or transfer the risk.
 4. **Document mitigations** alongside the extension's design documentation.
@@ -492,7 +492,7 @@ The recommended workflow:
 | Third-party APIs | What happens if the third-party API returns malicious or unexpected data? |
 | Supply chain | Are all NuGet dependencies from trusted sources? Are their licences compatible? |
 
-#### 5.1.4 Example: Weather Extension Threat Model
+#### 5.1.4 Example, Weather Extension Threat Model
 
 The Weather Extension from [Section 7 Develop an Extension](#7-develop-an-extension) connects to an external weather API and writes values to an EWS server. The data-flow diagram below identifies the elements and the **trust boundaries** they cross, the same lens the Microsoft Threat Modeling Tool uses. Each boundary crossing is then examined for STRIDE threats.
 
@@ -582,7 +582,7 @@ The PAT used to pull Smart Connector NuGet packages from GitHub Packages is itse
 - **Do not use the literal `<add key="ClearTextPassword" value="ghp_..." />` form.** Microsoft's NuGet documentation explicitly discourages it. See [Section 3.2 Configure the NuGet Feed](#32-configure-the-nuget-feed-90-seconds) for both supported patterns.
 - **Do not commit `nuget.config` if it could ever contain a literal PAT.** Add it to `.gitignore` and check in a `nuget.config.template` with placeholder env-var references.
 - **CI/CD:** store the PAT in a secrets vault (GitHub Actions secrets, Azure Key Vault, etc.) and inject at build time as an environment variable.
-- **If a PAT is ever exposed** (committed by mistake, pasted into chat, screenshotted): revoke it immediately at GitHub → Settings → Developer settings → Personal access tokens, then issue a new one.
+- **If a PAT is ever exposed** (committed by mistake, pasted into chat, screenshotted), revoke it immediately at GitHub → Settings → Developer settings → Personal access tokens, then issue a new one.
 
 ### 5.3 Data Protection and Privacy
 
@@ -618,7 +618,7 @@ Use `https://` endpoints exclusively for third-party APIs; reject a downgrade to
 
 `Logger` is in `SxL.Common`. `LogCategory` is in `Mongoose.Common`. Both are available to your extension code.
 
-The single overriding rule: **never log credentials or secrets at any log level.** Beyond that, use the guidance below for each level.
+The single overriding rule is to **never log credentials or secrets at any log level.** Beyond that, use the guidance below for each level.
 
 #### 5.4.1 What to Log at Each Level
 
@@ -670,7 +670,7 @@ Use `using` blocks for short-lived resources (as shown in [Section 3.4](#34-writ
 Beyond disposal, **bound the work each execution can do** so a misconfiguration or a hostile upstream cannot exhaust the host or the third-party API:
 
 - Cap query and result sizes (page sizes, row limits, and any history backfill window).
-- If an execution can run longer than its schedule interval, guard against overlapping runs so the Worker pool cannot be saturated by a pile-up of long executions (see [How-To: Run a Self-Provisioning Processor Safely on a Schedule](../how-to-guides.md#12-run-a-self-provisioning-processor-safely-on-a-schedule)).
+- If an execution can run longer than its schedule interval, guard against overlapping runs so the Worker pool cannot be saturated by a pile-up of long executions (see [How-To, Run a Self-Provisioning Processor Safely on a Schedule](../how-to-guides.md#12-run-a-self-provisioning-processor-safely-on-a-schedule)).
 - Fail fast on an unreachable dependency rather than retrying indefinitely and starving other Workers.
 
 ### 5.7 Cybersecure Defaults Checklist
@@ -689,7 +689,7 @@ Before submitting any extension for deployment, walk this checklist:
 - [ ] Extension logs its own events through `Logger` and does not duplicate what the runtime already logs.
 - [ ] `IsLicensed` is intentionally set (see [Section 10 Licensing Your Extension](#10-licensing-your-extension)).
 - [ ] HTTP endpoints exposed by your extension enforce authentication ([Section 11.18 REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling)).
-- [ ] Service settings reviewed for production: account lockout, password complexity, syslog ([Section 11.15 Security Configuration](#1115-security-configuration)).
+- [ ] Service settings reviewed for production, covering account lockout, password complexity, and syslog ([Section 11.15 Security Configuration](#1115-security-configuration)).
 - [ ] Host settings reviewed for production, covering database connection encryption, the configuration files, HTTPS, and the EWS Digest algorithms ([Section 11.21 Hardening the Smart Connector Host](#1121-hardening-the-smart-connector-host)).
 
 ### 5.8 Support Policy and Extension Author Responsibilities
@@ -741,7 +741,7 @@ This class provides the functionality to receive subscription notifications from
 
 Any system that can consume an EWS 1.1 or EWS 1.2 feed can be integrated with your Smart Connector solution. Smart Connector provides fast, EWS 1.2 compliant, database-backed EWS servers for this purpose.
 
-Where the server data originates depends on which technique works best for your solution. Generally, there are three data management techniques used to manage EWS data: asynchronous data management, synchronous data management, or a hybrid approach which uses both asynchronous and synchronous methods. While each technique comes with its own complexities and pros and cons, asynchronous data management is the easiest method to implement and the more common technique used.
+Where the server data originates depends on which technique works best for your solution. Generally, there are three data management techniques used to manage EWS data, namely asynchronous data management, synchronous data management, or a hybrid approach which uses both asynchronous and synchronous methods. While each technique comes with its own complexities and pros and cons, asynchronous data management is the easiest method to implement and the more common technique used.
 
 ```mermaid
 flowchart LR
@@ -856,7 +856,7 @@ A passive third party is one that has its own API integrators are required to us
 
 Regardless of whether you are writing a custom Processor, EWS Server, or REST Provider, you will need to create at least one Smart Connector Extension to contain it all. A Smart Connector Extension is a specially annotated .NET assembly which contains all of the pieces for your Smart Connector solution. If you prefer, you could create multiple Extensions to organize different solution components separately. Review the [Licensing Your Extension](#10-licensing-your-extension) section before deciding if one or multiple Extension assemblies are best for your situation.
 
-The best way to describe how to develop an Extension is to actually develop one. The remainder of this chapter builds a complete, working extension step by step: the **Weather Extension**. We design it, write the code, unit-test it, deploy it to a Smart Connector runtime, configure it, and finally add licensing.
+The best way to describe how to develop an Extension is to actually develop one. The remainder of this chapter builds a complete, working extension step by step, the **Weather Extension**. We design it, write the code, unit-test it, deploy it to a Smart Connector runtime, configure it, and finally add licensing.
 
 Some of the code steps below may seem obvious for seasoned developers. Have patience as the pace will quicken as you read on. All code syntax and steps are for C# using Visual Studio 2019 or later. Other languages and development environments may have slightly different steps.
 
@@ -949,7 +949,7 @@ There are three ways to register the feed. All are equivalent, so choose the one
 | Environment-variable `nuget.config` | CI pipelines and teams | PAT resolved at runtime from env var |
 | Visual Studio UI | Developers who prefer GUI workflows | Prompted for credentials on first restore |
 
-##### Option 1: `dotnet nuget add source` (recommended for local Windows dev)
+##### Option 1, `dotnet nuget add source` (recommended for local Windows dev)
 
 ```powershell
 dotnet nuget add source `
@@ -961,7 +961,7 @@ dotnet nuget add source `
 
 The PAT is stored **DPAPI-encrypted** in the per-user `nuget.config` (`%APPDATA%\NuGet\NuGet.Config`). It can only be decrypted by the same Windows user on the same machine.
 
-##### Option 2: Environment-variable substitution (recommended for CI and teams)
+##### Option 2, Environment-variable substitution (recommended for CI and teams)
 
 Check in a project-level `nuget.config` that references environment variables:
 
@@ -990,7 +990,7 @@ $env:GITHUB_PACKAGES_PAT = "ghp_..."   # from a secrets vault, never committed
 dotnet restore
 ```
 
-##### Option 3: Visual Studio UI
+##### Option 3, Visual Studio UI
 
 1. From Visual Studio, select **Tools → Options → NuGet Package Manager → Package Sources**.
 2. Click **+** to add a new source.
@@ -1043,7 +1043,7 @@ The Weather Extension uses an SDK-style project file, which keeps the package re
 </Project>
 ```
 
-The three `PackageReference` entries are the Smart Connector SDK packages this extension needs: `Mongoose.Process` (the `Processor` base class), `Mongoose.Ews.Server.Data` (the `EwsServerDataAdapter`), and `SxL.Common` (the `Logger` and attribute base classes). The two framework `Reference` entries supply `System.Net.Http` (the API client) and `System.Web.Extensions` (the `JavaScriptSerializer` used to parse JSON without an external dependency).
+The three `PackageReference` entries are the Smart Connector SDK packages this extension needs, which are `Mongoose.Process` (the `Processor` base class), `Mongoose.Ews.Server.Data` (the `EwsServerDataAdapter`), and `SxL.Common` (the `Logger` and attribute base classes). The two framework `Reference` entries supply `System.Net.Http` (the API client) and `System.Web.Extensions` (the `JavaScriptSerializer` used to parse JSON without an external dependency).
 
 Run `dotnet restore` (or let Visual Studio restore on first build) and confirm all `Mongoose.*` and `SxL.*` packages resolve from the SmartConnector feed configured in [Section 7.3](#73-configure-nuget-feed).
 
@@ -1053,13 +1053,13 @@ The Portal displays assembly information to the user when adding Processor and E
 
 > **Note:** Set `IncludeSourceRevisionInInformationalVersion` to `false` so the build does not append a source-control hash to the version string the Portal displays.
 
-### 7.5 The Base Class: Configuration and Validation
+### 7.5 The Base Class, Configuration and Validation
 
 The extension has one concrete processor, `WeatherProcessor`, and an abstract base class, `WeatherProcessorBase`, that holds the configuration. We start with the base class.
 
 #### 7.5.1 Add the Base Class
 
-We split the *configuration* of the extension into an abstract base class, `WeatherProcessorBase`, so the concrete processor in [The Processor: A Phased Execution Cycle](#76-the-processor-a-phased-execution-cycle) is free to focus on execution logic. This also mirrors the larger examples, where a single base class is shared by more than one processor.
+We split the *configuration* of the extension into an abstract base class, `WeatherProcessorBase`, so the concrete processor in [The Processor, A Phased Execution Cycle](#76-the-processor-a-phased-execution-cycle) is free to focus on execution logic. This also mirrors the larger examples, where a single base class is shared by more than one processor.
 
 1. Add a class named `WeatherProcessorBase` to the project. By convention, processor class names end with "Processor".
 2. Make it `public abstract` and subclass `Processor` (from `Mongoose.Process`, supplied by the package you referenced in [Creating the Extension Project](#74-creating-the-extension-project)).
@@ -1142,7 +1142,7 @@ You can author your own validation attribute by subclassing `ValidationAttribute
 
 ##### 7.5.4.2 Semantic Validation
 
-Semantic validation is contextual. It needs meaning beyond a single attribute. It is based on the .NET `IValidatableObject` interface. Because `Processor` implements that interface, you can override `Validate` to add contextual checks. The Weather Extension enforces two rules: the EWS user name and password must differ (a common security best practice), and the city must not be blank.
+Semantic validation is contextual. It needs meaning beyond a single attribute. It is based on the .NET `IValidatableObject` interface. Because `Processor` implements that interface, you can override `Validate` to add contextual checks. The Weather Extension enforces two rules. The EWS user name and password must differ (a common security best practice), and the city must not be blank.
 
 ```csharp
 public override IEnumerable<ValidationResult> Validate(
@@ -1293,7 +1293,7 @@ protected override void Dispose(bool disposing)
 
 > **Why `ConnectExisting` is wrapped in try/catch:** `ConnectExisting` *throws* when the named server does not exist. It does not return `null`. The lazy property swallows that first-run failure and logs it at debug level; the concrete processor then creates the server. See [Section 11.4 EwsServerDataAdapter](#114-ewsserverdataadapter).
 
-### 7.6 The Processor: A Phased Execution Cycle
+### 7.6 The Processor, A Phased Execution Cycle
 
 The concrete `WeatherProcessor` subclasses `WeatherProcessorBase`, adds the `EwsAddress` and `Realm` properties (which describe how to create the EWS Server), and implements `Execute_Subclass`. Annotate it with `ConfigurationDefaultsAttribute` so new Processor Configurations get a sensible name and description:
 
@@ -1326,8 +1326,8 @@ The return type is a list of `Prompt` instances. Each `Prompt` conveys a message
 
 | Severity | Meaning | Runtime behavior |
 | --- | --- | --- |
-| `MayNotContinue` | Fatal: the Processor cannot complete its task | Execution is marked as **failed**. If multiple Processors depend on this one, they should check the result. |
-| `MayContinue` | Warning: something went wrong but the Processor can continue | Execution is marked as **successful** (as long as no `MayNotContinue` is present). |
+| `MayNotContinue` | **Fatal:** the Processor cannot complete its task | Execution is marked as **failed**. If multiple Processors depend on this one, they should check the result. |
+| `MayContinue` | **Warning:** something went wrong but the Processor can continue | Execution is marked as **successful** (as long as no `MayNotContinue` is present). |
 
 **Usage patterns:**
 
@@ -1683,7 +1683,7 @@ The complete `EnsureProvisioned` (including the `Meta` and `Location` containers
 
 #### 7.6.8 Phase 2. Fetching and Writing Values
 
-Phase 2 batches all writes into one database transaction with the `AutoCommit` pattern ([Section 11.4](#114-ewsserverdataadapter)), and fails softly: if a fetch throws, it discards the pending writes, records the error, and keeps the last good values rather than aborting the cycle:
+Phase 2 batches all writes into one database transaction with the `AutoCommit` pattern ([Section 11.4](#114-ewsserverdataadapter)), and fails softly. If a fetch throws, it discards the pending writes, records the error, and keeps the last good values rather than aborting the cycle:
 
 ```csharp
 private void UpdateValues(
@@ -1777,7 +1777,7 @@ private void AddCurrentHistorySamples(EwsServerDataAdapter adapter, DateTime now
 }
 ```
 
-> **No backfill here.** OpenWeatherMap's free tier has no historical endpoint, so the trends accumulate from the first run forward. Extensions whose data source provides history (such as the ENTSO-E and GridStatus examples) add a backfill phase last; see [How-To: Populate Trend Logs with Per-Cycle Samples and Backfill](../how-to-guides.md#11-populate-trend-logs-with-per-cycle-samples-and-backfill).
+> **No backfill here.** OpenWeatherMap's free tier has no historical endpoint, so the trends accumulate from the first run forward. Extensions whose data source provides history (such as the ENTSO-E and GridStatus examples) add a backfill phase last; see [How-To, Populate Trend Logs with Per-Cycle Samples and Backfill](../how-to-guides.md#11-populate-trend-logs-with-per-cycle-samples-and-backfill).
 
 #### 7.6.10 Phase 4. Health Metadata
 
@@ -1823,13 +1823,13 @@ With the extension built, we move on to testing.
 
 The Weather Extension you just built already applies the core production patterns. This section gathers them as a checklist and notes the ones a free, history-less weather API does not exercise. The larger `SmartConnector.EntsoeExtension` and `SmartConnector.GridStatusExtension` examples apply all of them at scale.
 
-**Use one self-provisioning processor.** A single processor that both provisions and updates avoids the configuration mismatch that two separate processors can drift into (the update side expecting points the setup side did not create). Make provisioning idempotent (wrap each create call in an "ensure" helper that returns the existing item if present), so the processor can run the provisioning step on every cycle harmlessly (see [Section 7.6.7](#767-phase-1-idempotent-provisioning)). See also [How-To: Run a Self-Provisioning Processor Safely on a Schedule](../how-to-guides.md#12-run-a-self-provisioning-processor-safely-on-a-schedule).
+**Use one self-provisioning processor.** A single processor that both provisions and updates avoids the configuration mismatch that two separate processors can drift into (the update side expecting points the setup side did not create). Make provisioning idempotent (wrap each create call in an "ensure" helper that returns the existing item if present), so the processor can run the provisioning step on every cycle harmlessly (see [Section 7.6.7](#767-phase-1-idempotent-provisioning)). See also [How-To, Run a Self-Provisioning Processor Safely on a Schedule](../how-to-guides.md#12-run-a-self-provisioning-processor-safely-on-a-schedule).
 
-**Manage the EWS Server lifecycle defensively.** Try `EwsServerDataAdapter.ConnectExisting` first and only call `ConnectNew` when it fails, that is, when the server does not yet exist. `ConnectNew` validates the server name up front and throws if it is already in use (`AssertEwsServerNameNotUsed`), *before* any row insert, so a name collision is **not** a `DbUpdateException` and cannot be caught as one. The reliable first-run sequence is: `ConnectNew` (starts the listener) → dispose it → `ConnectExisting` (returns a clean adapter). Gating `ConnectNew` behind a successful-or-failed `ConnectExisting` keeps a restart against an existing server harmless.
+**Manage the EWS Server lifecycle defensively.** Try `EwsServerDataAdapter.ConnectExisting` first and only call `ConnectNew` when it fails, that is, when the server does not yet exist. `ConnectNew` validates the server name up front and throws if it is already in use (`AssertEwsServerNameNotUsed`), *before* any row insert, so a name collision is **not** a `DbUpdateException` and cannot be caught as one. The reliable first-run sequence is `ConnectNew` (starts the listener) → dispose it → `ConnectExisting` (returns a clean adapter). Gating `ConnectNew` behind a successful-or-failed `ConnectExisting` keeps a restart against an existing server harmless.
 
 **Order each cycle in phases, with slow work last.** Provision → update values → sample history → update metadata → backfill. Running a multi-minute history backfill at the end means the live values and health metadata are already committed before it starts. Capture any backfill decision *before* you stamp the new `LastUpdate`, or the fresh timestamp will suppress the backfill you intended.
 
-**Populate trend logs deterministically.** Enable `GetHistory` and `GetHistoricalDataAggregation` on the server, append the current value to each trend every cycle, and seed history on first run with an idempotent backfill keyed off a persisted timestamp. See [How-To: Populate Trend Logs with Per-Cycle Samples and Backfill](../how-to-guides.md#11-populate-trend-logs-with-per-cycle-samples-and-backfill).
+**Populate trend logs deterministically.** Enable `GetHistory` and `GetHistoricalDataAggregation` on the server, append the current value to each trend every cycle, and seed history on first run with an idempotent backfill keyed off a persisted timestamp. See [How-To, Populate Trend Logs with Per-Cycle Samples and Backfill](../how-to-guides.md#11-populate-trend-logs-with-per-cycle-samples-and-backfill).
 
 **Advertise the alarm operations even with no alarms.** EWS clients such as EcoStruxure Building Operation poll every connected server for alarms. If `ModifyServerSupportedMethods` does not enable `GetAlarmEvents` and the related alarm operations, that poll fails with an `OPERATION_NOT_SUPPORTED` fault, which EBO logs as a recurring "CWS Alarm Poll failed" system alarm. Enable them so the server returns an empty alarm list and the poll succeeds quietly. The supported-method set is fixed when the server is created, so set it correctly up front (see [Section 7.6.6](#766-connecting-to-or-creating-the-ews-server)).
 
@@ -1975,7 +1975,7 @@ protected override void FixtureOneTimeSetup_Base()
 
 #### 8.4.2 CreateTestableProcessor
 
-`IProcessorTestFixture<TProcessor>` declares four members. The first, `CreateTestableProcessor()`, is your factory: it returns a fully populated `TProcessor` ready for validation, execution, or cancellation. The other three (`ValidateTest`, `ExecuteTest`, `CancelTest`) are NUnit `[Test]` methods that exercise the processor:
+`IProcessorTestFixture<TProcessor>` declares four members. The first, `CreateTestableProcessor()`, is your factory. It returns a fully populated `TProcessor` ready for validation, execution, or cancellation. The other three (`ValidateTest`, `ExecuteTest`, `CancelTest`) are NUnit `[Test]` methods that exercise the processor:
 
 ```csharp
 public WeatherProcessor CreateTestableProcessor()
@@ -2060,9 +2060,9 @@ The `examples/` folder ships four buildable test projects that apply the pattern
 
 | Test project | Demonstrates |
 | --- | --- |
-| `QuickStart.HelloEws.Tests` | The minimal shape: a single `ProcessorFixture` with validation tests (clean configuration plus missing-required cases) and the two `[Explicit]` integration tests. Start here. |
+| `QuickStart.HelloEws.Tests` | The minimal shape, a single `ProcessorFixture` with validation tests (clean configuration plus missing-required cases) and the two `[Explicit]` integration tests. Start here. |
 | `SmartConnector.WeatherExtension.Tests` | Adds pure-logic fixtures for the response parser, forecast aggregator, EWS paths, and the `NextUpdate` clamp. |
-| `SmartConnector.EntsoeExtension.Tests` | A larger suite: area mapping, price/load analysers, the backfill planner, and parser fixtures. |
+| `SmartConnector.EntsoeExtension.Tests` | A larger suite, covering area mapping, price/load analysers, the backfill planner, and parser fixtures. |
 | `SmartConnector.GridStatusExtension.Tests` | Signal derivation, response parsing, the backfill planner, and EWS structure. |
 
 The validation fixture is the same in every project. Instantiate the processor, call `ValidateProcessor`, and assert on the result. `QuickStart.HelloEws.Tests/ProcessorFixture.cs` is the smallest complete example:
@@ -2199,7 +2199,7 @@ Licenses can be created with the following restrictions. Multiple restrictions w
 
 ### 10.1 Create SmartConnectorServer Entries
 
-Licensing is a two-step process. The first step involves generating the necessary records on www.SmartConnectorServer.com: Extension, License Template, and a License. Once created, your Extension Assembly requires minor modifications to associate it with the Smart Connector runtime licensing enforcement.
+Licensing is a two-step process. The first step involves generating the necessary records on www.SmartConnectorServer.com (an Extension, a License Template, and a License). Once created, your Extension Assembly requires minor modifications to associate it with the Smart Connector runtime licensing enforcement.
 
 #### 10.1.1 Create Extension
 
@@ -2223,7 +2223,7 @@ For each logical "Extension", you can create any number of different "License Te
 1. From the Extension Detail page, click **New License Template**.
 2. Enter a **Name** (e.g. "Smart Connector Weather Extension DEMO").
 3. Enter an optional **Description**.
-4. **Assembly Version** is optional. If used, the License Template would be associated with a specific version. Wild carding is supported (e.g. `1.0.*`: major version 1, minor version 0, revision any).
+4. **Assembly Version** is optional. If used, the License Template would be associated with a specific version. Wild carding is supported (e.g. `1.0.*`, meaning major version 1, minor version 0, revision any).
 5. Click **Save**.
 
 #### 10.1.3 Create License
@@ -2288,19 +2288,19 @@ Smart Connector provides the following NuGet packages to facilitate Extension de
 
 | Package | Description |
 | --- | --- |
-| `SxL.Common` | Low-level support classes: logging framework, attribute base classes, common utilities |
+| `SxL.Common` | Low-level support classes, covering the logging framework, attribute base classes, common utilities |
 | `SxL.Licensing` | Licensing infrastructure for extension license validation |
 | `Ews.Common` | EWS data constructs used when serving or consuming EWS endpoints |
-| `Ews.Client` | Full EWS v1.1/1.2 client: all classes and proxy data constructs needed to consume any compliant endpoint |
+| `Ews.Client` | Full EWS v1.1/1.2 client, with all classes and proxy data constructs needed to consume any compliant endpoint |
 | `Ews.Server.Contract` | Fully customisable MVC-style EWS Server implementation for custom SOAP servers |
 | `Ews.RestExtensions` | RESTful implementation based on an EWS-like data model. Includes controllers, models, and provider interfaces |
-| `Mongoose.Common` | Low-level support classes for the Smart Connector runtime: attributes, scheduling, API middleware, helpers |
+| `Mongoose.Common` | Low-level support classes for the Smart Connector runtime, covering attributes, scheduling, API middleware, helpers |
 | `Mongoose.Configuration` | Data classes for creating and managing Smart Connector Processor and Endpoint Configurations |
-| `Mongoose.Csp` | Native CSP protocol client for EcoStruxure™ Building Operation servers (AS/ES). **License required. Deprecated: incompatible with EBO 3.0+.** |
+| `Mongoose.Csp` | Native CSP protocol client for EcoStruxure™ Building Operation servers (AS/ES). **License required. Deprecated, incompatible with EBO 3.0+.** |
 | `Mongoose.Ews.Server` | Standard Smart Connector EWS Server implementation. Customisable via subclassing |
 | `Mongoose.Ews.Server.Data` | Classes for managing native Smart Connector EWS Server data (`EwsServerDataAdapter`) |
 | `Mongoose.Process` | Core Smart Connector framework library. Required for all custom Processor development |
-| `Mongoose.Test` | Test support: base fixtures, extension methods, and helpers for writing NUnit-based unit tests |
+| `Mongoose.Test` | Test support, with base fixtures, extension methods, and helpers for writing NUnit-based unit tests |
 | `Mongoose.Process.Sample` | Sample classes illustrating how to extend and consume Smart Connector Processors |
 | `Mongoose.Ews.Server.Sample` | Sample classes illustrating how to extend and consume Smart Connector EWS Servers |
 
@@ -2529,7 +2529,7 @@ The custom license feature in this example is called "MaxSleep" and represents t
 
 ### 11.6 Sharing Data within Smart Connector
 
-When solutions require data to be shared across Processors, EWS SOAP Processors, or EWS REST Controllers, there are two options available: in-memory cache or ProcessorValue.
+When solutions require data to be shared across Processors, EWS SOAP Processors, or EWS REST Controllers, there are two options available, an in-memory cache or a ProcessorValue.
 
 #### 11.6.1 In-Memory Cache
 
@@ -2623,7 +2623,7 @@ public class MyProcessor : Processor
 }
 ```
 
-`IManagedEwsClient` exposes the full set of EWS operations as direct methods (each taking an `IEndpoint` as the first parameter), including: `ServerVersion`, `ServerId`, `Namespace`, `GetWebServiceInformation`, `GetItems`, `GetContainerItems`, `GetEnums`, `GetValues`, `ForceValues`, `GetHistory`, `GetAlarmEvents`, `AcknowledgeAlarmEvents`, `GetAlarmEventTypes`, `GetSystemEvents`, `Subscribe`, `Unsubscribe`, `GetNotification`, and others. Refer to the `Ews.Client.IManagedEwsClient` interface for the complete list.
+`IManagedEwsClient` exposes the full set of EWS operations as direct methods (each taking an `IEndpoint` as the first parameter), including `ServerVersion`, `ServerId`, `Namespace`, `GetWebServiceInformation`, `GetItems`, `GetContainerItems`, `GetEnums`, `GetValues`, `ForceValues`, `GetHistory`, `GetAlarmEvents`, `AcknowledgeAlarmEvents`, `GetAlarmEventTypes`, `GetSystemEvents`, `Subscribe`, `Unsubscribe`, `GetNotification`, and others. Refer to the `Ews.Client.IManagedEwsClient` interface for the complete list.
 
 > **Deprecated:** The `CspClient` and `IManagedCspClient` interface used the native CSP protocol to communicate with SmartStruxure Building Operation servers. This protocol is **no longer supported** by EcoStruxure™ Building Operation (EBO) version 3.0 and later. Do not use `Mongoose.Csp` for new development targeting EBO 3.0+. Migrate any existing CSP-based integrations to the EWS SOAP or REST protocols.
 
@@ -2688,16 +2688,16 @@ Postman is available at https://www.postman.com/. It supports both SOAP and REST
 #### Development Environment
 
 - **Visual Studio 2019** or later (2022 recommended)
-- **.NET Framework 4.8 Developer Pack**: required for building extensions
-- **NuGet Package Manager**: included with Visual Studio
-- **NUnit 3 Test Adapter**: for running unit tests (or ReSharper)
+- **.NET Framework 4.8 Developer Pack:** required for building extensions
+- **NuGet Package Manager:** included with Visual Studio
+- **NUnit 3 Test Adapter:** for running unit tests (or ReSharper)
 
 #### Target Framework
 
 All Smart Connector extension assemblies **must** target **.NET Framework 4.8**.
 
 When creating a new Class Library project:
-1. Select **Class Library (.NET Framework)**: not .NET Standard or .NET Core.
+1. Select **Class Library (.NET Framework)**, not .NET Standard or .NET Core.
 2. Set the target framework to **.NET Framework 4.8**.
 
 If you set a different target framework, your extension will fail to load at runtime with a `FileLoadException` or version mismatch error.
@@ -2975,9 +2975,9 @@ The following interfaces are registered in the IoC container and available for i
 | Interface | Singleton | Description |
 | --- | --- | --- |
 | `ICache` | Yes | Thread-safe in-memory cache with tenant isolation and expiration |
-| `IManagedEwsClient` | Yes | Managed pool of `EwsClient` connections: **do not dispose** |
+| `IManagedEwsClient` | Yes | Managed pool of `EwsClient` connections, **do not dispose** |
 | `IActionBroker` | No | Start/stop Processor Configurations and EWS Servers |
-| `IProcessorValueDataSource` | No | CRUD access to persistent `ProcessorValue` storage: **is `IDisposable`** |
+| `IProcessorValueDataSource` | No | CRUD access to persistent `ProcessorValue` storage, **is `IDisposable`** |
 | `IExtensionLicenseDataSource` | No | Read-only access to installed extension licenses |
 | `IProcessConfigurationDataSource` | No | Read-only access to Processor Configuration records |
 | `IEwsServerDataSource` | No | Read-only access to EWS Server records |
@@ -2988,9 +2988,9 @@ The following interfaces are registered in the IoC container and available for i
 
 #### Rules
 
-1. **Never instantiate framework services with `new`**: always consume them via property injection or the base class properties.
-2. **Mark injected properties with `[ConfigurationIgnore]`**: otherwise they will appear as configurable properties in the Portal.
-3. **Singleton services (`ICache`, `IManagedEwsClient`) must not be disposed**: they are shared across all threads and Processors.
+1. **Never instantiate framework services with `new`:** always consume them via property injection or the base class properties.
+2. **Mark injected properties with `[ConfigurationIgnore]`:** otherwise they will appear as configurable properties in the Portal.
+3. **Singleton services (`ICache`, `IManagedEwsClient`) must not be disposed:** they are shared across all threads and Processors.
 4. **Non-singleton services** (`IProcessorValueDataSource`) create a new database context per resolution. The `Processor` base class disposes its `ProcessorValueSource` automatically in its `Dispose` method.
 
 ### 11.18 REST API Authentication and Throttling
@@ -3044,7 +3044,7 @@ Smart Connector uses the [WebApiThrottle](https://github.com/stefanprodan/WebApi
 
 **Default rates:**
 
-Rate limits can be set at five granularities: per-second, per-minute, per-hour, per-day, and per-week.
+Rate limits can be set at five granularities, namely per-second, per-minute, per-hour, per-day, and per-week.
 
 **Configuration options:**
 
@@ -3064,7 +3064,7 @@ In the Smart Connector Portal, when editing an Endpoint Configuration:
 
 > **Note:** If no throttling policy is configured, throttling is disabled and no rate limits are enforced.
 
-> **Important:** The throttling policy described above applies only to REST endpoints hosted by Smart Connector itself. If your extension communicates with an external system that sits behind a Web Application Firewall (WAF), API gateway, or reverse proxy, that infrastructure may enforce its own rate limits independently. These external rate limits are outside the control of the Smart Connector framework. When your Processor receives HTTP 429 (Too Many Requests) or HTTP 403 (Forbidden) responses from an upstream system, the cause is likely the external throttling policy, not Smart Connector. Design your Processor to handle these responses gracefully: implement retry logic with exponential back-off, and consult the external system's documentation for its rate-limit headers and quotas.
+> **Important:** The throttling policy described above applies only to REST endpoints hosted by Smart Connector itself. If your extension communicates with an external system that sits behind a Web Application Firewall (WAF), API gateway, or reverse proxy, that infrastructure may enforce its own rate limits independently. These external rate limits are outside the control of the Smart Connector framework. When your Processor receives HTTP 429 (Too Many Requests) or HTTP 403 (Forbidden) responses from an upstream system, the cause is likely the external throttling policy, not Smart Connector. Design your Processor to handle these responses gracefully. Implement retry logic with exponential back-off, and consult the external system's documentation for its rate-limit headers and quotas.
 
 #### Swagger / OpenAPI Documentation
 
@@ -3084,17 +3084,17 @@ Correct disposal of resources prevents connection pool exhaustion, memory leaks,
 
 | Resource | Dispose? | Why |
 | --- | --- | --- |
-| `EwsServerDataAdapter` | **Yes**: in your `Dispose` override | Holds a database context |
-| `EwsClient` (created directly by you) | **Yes**: standard `using` or `Dispose` | Holds an HTTP connection |
-| `IProcessorValueDataSource` | **Automatic**: `Processor` base class handles it | Database context |
-| Any custom `IDisposable` resources | **Yes**: in your `Dispose` override | Your responsibility |
+| `EwsServerDataAdapter` | **Yes:** in your `Dispose` override | Holds a database context |
+| `EwsClient` (created directly by you) | **Yes:** standard `using` or `Dispose` | Holds an HTTP connection |
+| `IProcessorValueDataSource` | **Automatic:** `Processor` base class handles it | Database context |
+| Any custom `IDisposable` resources | **Yes:** in your `Dispose` override | Your responsibility |
 
 #### What NOT to Dispose
 
 | Resource | Why |
 | --- | --- |
-| `IManagedEwsClient` connections | **Pooled**: returned to the managed pool; disposing kills the shared connection |
-| `ICache` | **Singleton**: shared across all threads |
+| `IManagedEwsClient` connections | **Pooled:** returned to the managed pool; disposing kills the shared connection |
+| `ICache` | **Singleton:** shared across all threads |
 | `IActionBroker` | **Not disposable** |
 
 #### The Correct Pattern
@@ -3118,7 +3118,7 @@ public class MyProcessor : Processor
 }
 ```
 
-> **Warning:** Never dispose an `IManagedEwsClient` instance. The IoC container owns its lifecycle and shares it across Processors. Likewise, do NOT dispose values returned by its operations: they are pool-owned. Disposing a managed connection will cause `ObjectDisposedException` errors for other Processors sharing the same pool.
+> **Warning:** Never dispose an `IManagedEwsClient` instance. The IoC container owns its lifecycle and shares it across Processors. Likewise, do NOT dispose values returned by its operations, because they are pool-owned. Disposing a managed connection will cause `ObjectDisposedException` errors for other Processors sharing the same pool.
 
 ### 11.20 Troubleshooting
 
@@ -3203,7 +3203,7 @@ Log files are named by date (e.g., `2026-05-12.log`). Each line contains a times
 
 **Symptom:** Automated tests or repeated manual attempts lock out the test account.
 
-**Cause:** The `MaxFailedAccessAttemptsBeforeLockout` setting (default: 3) was exceeded.
+**Cause:** The `MaxFailedAccessAttemptsBeforeLockout` setting (default 3) was exceeded.
 
 **Fix:** Wait for the lockout period to expire (10 minutes by default), have another Portal user unlock the account on the Users page, or adjust the lockout settings in the Portal for your development environment. See [Section 11.15 Security Configuration](#1115-security-configuration).
 
@@ -3225,7 +3225,7 @@ Log files are named by date (e.g., `2026-05-12.log`). Each line contains a times
 
 **Cause:** The password does not meet the configured complexity requirements.
 
-**Fix:** Ensure the password meets all requirements: minimum length, uppercase, lowercase, digit, and special character. See [Section 11.15 Security Configuration](#1115-security-configuration).
+**Fix:** Ensure the password meets all requirements for minimum length, uppercase, lowercase, digit, and special character. See [Section 11.15 Security Configuration](#1115-security-configuration).
 
 ##### Service Is Stopped After a Reboot
 

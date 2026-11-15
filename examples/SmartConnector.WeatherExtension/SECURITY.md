@@ -72,7 +72,7 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 ## Logging Practices
 
 - No `Logger.Log*` call includes `Password`, `ApiKey`, or any credential value.
-- Log messages include: city, resolved coordinates are not logged, temperature/humidity values, and health status.
+- Log messages include the city, temperature/humidity values, and health status. Resolved coordinates are not logged.
 - The API key is appended to request URLs only inside the client and is never written to a log.
 - The `Meta/DataHealthy` and `Meta/LastError` points expose health status for operator visibility via the EWS client.
 
@@ -81,11 +81,11 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 - `EwsServerDataAdapter` implements `IDisposable` and is cleaned up in the processor's `Dispose(bool)` override.
 - `OpenWeatherMapClient` wraps `HttpClient` in `IDisposable` and is created/disposed within each cycle via `using`.
 - The `ConnectNew → Dispose → ConnectExisting` pattern ensures a clean database context on every run.
-- API usage is bounded: at most three calls per cycle (geocode + current + forecast), with the geocode result cached and re-fetched only when the City changes.
+- API usage is bounded, at most three calls per cycle (geocode + current + forecast), with the geocode result cached and re-fetched only when the City changes.
 
 ## Threat Model
 
-This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
+This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool. The data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
 
 ### Data Flow Diagram
 

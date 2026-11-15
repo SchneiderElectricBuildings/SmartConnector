@@ -169,7 +169,7 @@ This guide does **not** cover:
 
 ### 3.2 What Is the EcoStruxure™ Smart Connector RESTful EWS Gateway?
 
-Simple Object Access Protocol (SOAP) and Representational State Transfer (REST) are often compared directly, but they are fundamentally different. SOAP is a messaging protocol, designed by Winer, Box, Atkinson, and Al-Ghosein for Microsoft in 1998, submitted to IETF in 1999, and elevated to a W3C recommendation (as v1.2) in 2003. Its major characteristics are extensibility, transport layer neutrality, and programming model independence. REST is an architecture, first described by Roy Fielding in his 2000 PhD dissertation on network-based software architectures. Its major characteristics are: client-server based, stateless, cacheable for performance optimization, with layered abstractions.
+Simple Object Access Protocol (SOAP) and Representational State Transfer (REST) are often compared directly, but they are fundamentally different. SOAP is a messaging protocol, designed by Winer, Box, Atkinson, and Al-Ghosein for Microsoft in 1998, submitted to IETF in 1999, and elevated to a W3C recommendation (as v1.2) in 2003. Its major characteristics are extensibility, transport layer neutrality, and programming model independence. REST is an architecture, first described by Roy Fielding in his 2000 PhD dissertation on network-based software architectures. Its major characteristics are client-server based, stateless, cacheable for performance optimization, with layered abstractions.
 
 EcoStruxure™ Web Services (EWS) is Schneider Electric's SOAP interface for system-to-system data exchange. From the EWS Specification itself:
 
@@ -322,7 +322,7 @@ The following parameters apply to all data providers:
 
 | Parameter | Description |
 | --- | --- |
-| **Scheme** | The scheme for the endpoint: `HTTP` or `HTTPS`. Use HTTPS for production environments. See [15 Security Considerations](#15-security-considerations). |
+| **Scheme** | The scheme for the endpoint, `HTTP` or `HTTPS`. Use HTTPS for production environments. See [15 Security Considerations](#15-security-considerations). |
 | **Host** | The endpoint address. This can be an IP address or DNS name. |
 | **Port** | The HTTP port used by the endpoint. |
 | **Base Route** | An optional prefix route added before the standard API routes. |
@@ -331,8 +331,8 @@ Expanding the **Http Configuration** node displays additional options:
 
 | Parameter | Description |
 | --- | --- |
-| **Access Token Expire Time Span Minutes** | The duration (in minutes) that an OAuth2 bearer token remains valid. Default: 5 minutes. |
-| **Token Endpoint Path** | The route used to acquire a bearer token. Default: `GetToken`. |
+| **Access Token Expire Time Span Minutes** | The duration (in minutes) that an OAuth2 bearer token remains valid. Default is 5 minutes. |
+| **Token Endpoint Path** | The route used to acquire a bearer token. Default is `GetToken`. |
 | **Serve Swagger Metadata** | Whether Swagger UI and metadata are served from the endpoint. Set to `True` for development and testing. |
 | **Name** | The name displayed to Swagger UI users. |
 | **Cache Tenant Id** | The ID of a Smart Connector InMemoryCache tenant space allocated to the data provider. |
@@ -438,7 +438,7 @@ curl -X POST http://YOUR_HOST:YOUR_PORT/GetToken \
 | --- | --- |
 | `access_token` | The bearer token to include in subsequent requests. |
 | `token_type` | Always `bearer`. |
-| `expires_in` | Token validity in seconds. Default: 299 seconds (approximately 5 minutes). |
+| `expires_in` | Token validity in seconds. Default is 299 seconds (approximately 5 minutes). |
 
 > **Note:** The token endpoint path (`GetToken` by default) is configurable in the Portal under **Http Configuration > Token Endpoint Path**. If it has been changed, use the configured path instead.
 
@@ -661,7 +661,7 @@ The EWS data model is organized as a hierarchy of containers. A **Container** is
 
 The Root resource returns the top-level container from which all other data is rooted. Use this as the starting point for navigating the hierarchy.
 
-> **Note:** This endpoint maps to the EWS `GetContainerItems` method with an empty Id, which requests the root ContainerItem. Not all data providers support this operation. SoapEwsRestProvider and SboEwsRestProvider return `404 Not Found` for `GET /Root`. With these providers, use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not resolve, contact your site or system administrator for the root server name.
+> **Note:** This endpoint maps to the EWS `GetContainerItems` method with an empty Id, which requests the root ContainerItem. Not all data providers support this operation. SoapEwsRestProvider and SboEwsRestProvider return `404 Not Found` for `GET /Root`. With these providers, use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID `00/Server 1`). If this does not resolve, contact your site or system administrator for the root server name.
 
 #### GET /Root
 
@@ -777,9 +777,9 @@ Returns all Containers matching the filter criteria. All filter parameters are o
 | --- | --- | --- | --- |
 | `name` | Query | String | Return only Containers whose name contains this value. |
 | `type` | Query | Enumeration | Return only Containers with this Type value. |
-| `orderBy` | Query | Enumeration | Sort order. Default: `NameAscending` (0). Options: `NameDescending` (1). |
-| `take` | Query | Integer | Number of results to return. Default: 200. |
-| `skip` | Query | Integer | Number of results to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `NameAscending` (0). Also accepts `NameDescending` (1). |
+| `take` | Query | Integer | Number of results to return. Default is 200. |
+| `skip` | Query | Integer | Number of results to skip. Default is 0. |
 
 > **Important:** No data provider currently supports bulk retrieval of Containers. `GET /Containers` returns `405 Method Not Allowed`. Use `GET /Root` (MongooseEwsRestProvider) or `GET /Containers/{id}` with a known container ID (SboEwsRestProvider) as an entry point, then use `GET /Containers/{id}/Children` to navigate the hierarchy.
 
@@ -966,9 +966,9 @@ Returns all Values matching the filter criteria.
 | --- | --- | --- | --- |
 | `name` | Query | String | Return only Values whose name contains this value. |
 | `type` | Query | Enumeration | Return only Values with this Type value. |
-| `orderBy` | Query | Enumeration | Sort order. Default: `NameAscending` (0). Options: `NameDescending` (1). |
-| `take` | Query | Integer | Number of results to return. Default: 200. |
-| `skip` | Query | Integer | Number of results to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `NameAscending` (0). Also accepts `NameDescending` (1). |
+| `take` | Query | Integer | Number of results to return. Default is 200. |
+| `skip` | Query | Integer | Number of results to skip. Default is 0. |
 
 > **Important:** No data provider currently supports bulk retrieval of Values. `GET /Values` returns `405 Method Not Allowed`. You must know the resource ID (including the `01` DataType prefix) to retrieve a Value directly. Use `GET /Containers/{id}/Children?type=Value` to discover values within a container (MongooseEwsRestProvider only), or refer to your building automation system's configuration.
 
@@ -1166,9 +1166,9 @@ Returns all Alarms matching the filter criteria.
 | --- | --- | --- | --- |
 | `name` | Query | String | Filter by name (contains match). |
 | `state` | Query | Enumeration | Filter by Alarm State. |
-| `orderBy` | Query | Enumeration | Sort order. Default: `NameAscending` (0). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `NameAscending` (0). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 > **Important:** No data provider currently supports bulk retrieval of Alarms. `GET /Alarms` returns `405 Method Not Allowed`. You must know the Alarm ID (including the `02` DataType prefix) to retrieve it directly. Use `GET /Containers/{id}/Children?type=Alarm` to discover alarms within a container (MongooseEwsRestProvider only).
 
@@ -1188,9 +1188,9 @@ Returns all AlarmEvents matching the filter criteria. This endpoint is supported
 | `originallyAlarmedBefore` | Query | DateTime | OccuredOn < this value. |
 | `transitionedOnOrAfter` | Query | DateTime | LastTransitionedOn >= this value. |
 | `transitionedBefore` | Query | DateTime | LastTransitionedOn < this value. |
-| `orderBy` | Query | Enumeration | Sort order. Default: `TransitionedAtAscending` (0). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `TransitionedAtAscending` (0). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 **AlarmEvent orderBy values:**
 
@@ -1220,9 +1220,9 @@ Returns all AlarmEventTypes matching the filter criteria.
 | Parameter | Location | Type | Description |
 | --- | --- | --- | --- |
 | `name` | Query | String | Filter by name (contains match). |
-| `orderBy` | Query | Enumeration | Sort order. Default: `NameAscending` (0). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `NameAscending` (0). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 ### 9.5 Alarm State Transitions
 
@@ -1384,9 +1384,9 @@ Returns all Trends matching the filter criteria.
 | Parameter | Location | Type | Description |
 | --- | --- | --- | --- |
 | `name` | Query | String | Filter by name (contains match). |
-| `orderBy` | Query | Enumeration | Sort order. Default: `NameAscending` (0). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `NameAscending` (0). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 > **Important:** No data provider currently supports bulk retrieval of Trends. `GET /Trends` returns `405 Method Not Allowed`. You must know the Trend ID (including the `03` DataType prefix) to retrieve it directly. Use `GET /Containers/{id}/Children?type=Trend` to discover trends within a container (MongooseEwsRestProvider only).
 
@@ -1402,9 +1402,9 @@ Returns all TrendSamples matching the filter criteria. The `trendId` parameter i
 | `state` | Query | Enumeration | No | Filter by sample state. |
 | `sampleOnOrAfter` | Query | DateTime | No | SampleDate >= this value. |
 | `sampledBefore` | Query | DateTime | No | SampleDate < this value. |
-| `orderBy` | Query | Enumeration | No | Sort order. Default: `SampleDateAscending` (0). Options: `SampleDateDescending` (1). |
-| `take` | Query | Integer | No | Number of results. Default: 200. |
-| `skip` | Query | Integer | No | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | No | Sort order. Default is `SampleDateAscending` (0). Also accepts `SampleDateDescending` (1). |
+| `take` | Query | Integer | No | Number of results. Default is 200. |
+| `skip` | Query | Integer | No | Number to skip. Default is 0. |
 
 **Example:** Retrieve the last 50 trend samples for a specific trend.
 
@@ -1669,9 +1669,9 @@ Returns all Subscriptions matching the filter criteria.
 | Parameter | Location | Type | Description |
 | --- | --- | --- | --- |
 | `type` | Query | Enumeration | Filter by Subscription Type. |
-| `orderBy` | Query | Enumeration | Sort order. Default: `ExpiresAscending` (0). Options: `ExpiresDescending` (1). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `ExpiresAscending` (0). Also accepts `ExpiresDescending` (1). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 #### GET /Subscriptions/{id}
 
@@ -1719,9 +1719,9 @@ Returns all Notifications matching the filter criteria.
 | Parameter | Location | Type | Description |
 | --- | --- | --- | --- |
 | `subscriptionId` | Query | String | Filter by Subscription ID. |
-| `orderBy` | Query | Enumeration | Sort order. Default: `CreatedOnAscending` (0). Options: `CreatedOnDescending` (1). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `CreatedOnAscending` (0). Also accepts `CreatedOnDescending` (1). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 #### GET /Notifications/{id}
 
@@ -1734,8 +1734,8 @@ Returns the NotificationItems for a Notification.
 | Parameter | Location | Type | Description |
 | --- | --- | --- | --- |
 | `id` | Path | String | ID of the Notification. Must be double URL encoded. |
-| `take` | Query | Integer | Number of items. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `take` | Query | Integer | Number of items. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 #### DELETE /Notifications/{id}/Delete
 
@@ -1790,9 +1790,9 @@ Returns all SystemEvents matching the filter criteria.
 | `type` | Query | String | Filter by Type value. |
 | `occurredOnOrAfter` | Query | DateTime | OccurredOn >= this value. |
 | `occurredBefore` | Query | DateTime | OccurredOn < this value. |
-| `orderBy` | Query | Enumeration | Sort order. Default: `OccurredOnAscending` (0). Options: `OccurredOnDescending` (1). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `OccurredOnAscending` (0). Also accepts `OccurredOnDescending` (1). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 #### GET /SystemEvents/{id}
 
@@ -1818,9 +1818,9 @@ Returns all SystemEventTypes matching the filter criteria.
 | Parameter | Location | Type | Description |
 | --- | --- | --- | --- |
 | `name` | Query | String | Filter by name (contains match). |
-| `orderBy` | Query | Enumeration | Sort order. Default: `NameAscending` (0). Options: `NameDescending` (1). |
-| `take` | Query | Integer | Number of results. Default: 200. |
-| `skip` | Query | Integer | Number to skip. Default: 0. |
+| `orderBy` | Query | Enumeration | Sort order. Default is `NameAscending` (0). Also accepts `NameDescending` (1). |
+| `take` | Query | Integer | Number of results. Default is 200. |
+| `skip` | Query | Integer | Number to skip. Default is 0. |
 
 #### GET /SystemEventTypes/{id}
 
@@ -1861,7 +1861,7 @@ The credentials required depend on the data provider:
 - **SoapEwsRestProvider:** Use the EWS User credentials for the referenced server.
 - **SboEwsRestProvider:** Use the EBO user account configured in the endpoint settings.
 
-After authenticating, the Swagger UI automatically includes the `Authorization: Bearer` header in all subsequent requests. Tokens expire after the configured duration (default: 5 minutes). If the token expires, select **Log in** again to request a new token. No page refresh is required.
+After authenticating, the Swagger UI automatically includes the `Authorization: Bearer` header in all subsequent requests. Tokens expire after the configured duration (default 5 minutes). If the token expires, select **Log in** again to request a new token. No page refresh is required.
 
 ### 13.3 Issuing Requests
 
@@ -1940,7 +1940,7 @@ The SboEwsRestProvider supports individual resource lookups for Values, Alarms, 
 
 | Limitation | Affected Endpoints | Response |
 | --- | --- | --- |
-| Root not supported | `GET /Root` | `404 Not Found`. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
+| Root not supported | `GET /Root` | `404 Not Found`. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
 | No bulk retrieval | `GET /Containers`, `GET /Values`, `GET /Alarms`, `GET /Trends` | `405 Method Not Allowed`. |
 | No write operations | All `POST /*/Create`, `PATCH /*/Update`, `DELETE /*/Delete` | `405 Method Not Allowed` for all resource types. |
 | No Alarm-level transitions | `POST /Alarms/{id}/Acknowledge`, `Activate`, `Disable`, `Reset`, `ChangeState` | `405 Method Not Allowed` with `Create for Alarm Event is not allowed`. Use `POST /AlarmEvents/{id}/Acknowledge` instead. |
@@ -1986,7 +1986,7 @@ The SoapEwsRestProvider proxies requests to a remote EWS server via SOAP. Many o
 
 | Limitation | Affected Endpoints |
 | --- | --- |
-| Root not supported | `GET /Root` returns `404 Not Found`. This operation is not available through the EWS SOAP protocol. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
+| Root not supported | `GET /Root` returns `404 Not Found`. This operation is not available through the EWS SOAP protocol. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
 | No bulk retrieval | `GET /Containers`, `GET /Values`, `GET /Alarms`, `GET /Trends` |
 | No CRUD operations | All `POST /*/Create`, `PATCH /*/Update`, `DELETE /*/Delete` for Containers, Values, Alarms, Trends, AlarmEventTypes |
 | No PUT property updates (except Value) | All `PUT` property endpoints for Containers, Alarms, Trends, AlarmEventTypes, and all Value properties except `Value` |
@@ -2049,7 +2049,7 @@ The SoapEwsRestProvider proxies requests to a remote EWS server via SOAP. Many o
 - IDs are case-sensitive. Verify the exact casing.
 - Verify the ID includes the correct EWS DataType prefix (`00` for Container, `01` for Value, `02` for Alarm, `03` for Trend). An ID without the prefix will not resolve. See [6.4 EWS ID Format](#64-ews-id-format).
 - IDs in URL path segments must be double URL encoded. For example, `01/Server 1/Building/Temperature` becomes `01%252FServer%25201%252FBuilding%252FTemperature`.
-- With MongooseEwsRestProvider, the Root container is accessible via `GET /Root`. With SoapEwsRestProvider and SboEwsRestProvider, `GET /Root` is not supported. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not resolve, contact your site or system administrator for the root server name.
+- With MongooseEwsRestProvider, the Root container is accessible via `GET /Root`. With SoapEwsRestProvider and SboEwsRestProvider, `GET /Root` is not supported. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID `00/Server 1`). If this does not resolve, contact your site or system administrator for the root server name.
 
 #### Requests return 405 Method Not Allowed
 
@@ -2148,7 +2148,7 @@ This appendix lists every endpoint exposed by the RESTful EWS Gateway and indica
 | --- | --- | --- | --- | --- |
 | `GET` | `/Root` | ✓ | ✗ | ✗ |
 
-> **Note:** `GET /Root` is not available through the EWS SOAP protocol, so SoapEwsRestProvider and SboEwsRestProvider both return `404 Not Found`. With these providers, use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not work, contact your site or system administrator for the root server name.
+> **Note:** `GET /Root` is not available through the EWS SOAP protocol, so SoapEwsRestProvider and SboEwsRestProvider both return `404 Not Found`. With these providers, use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID `00/Server 1`). If this does not work, contact your site or system administrator for the root server name.
 
 ### 16.2 Containers
 

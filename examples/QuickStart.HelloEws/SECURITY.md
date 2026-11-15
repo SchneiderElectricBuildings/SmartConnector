@@ -1,6 +1,6 @@
 # Security
 
-This document describes the security posture of the HelloEws quick-start sample. It is intentionally minimal: the processor creates its own EWS Server and writes a UTC timestamp to a single value. It holds **no third-party API credentials and makes no outbound network calls**, so the posture is narrower than the full example extensions.
+This document describes the security posture of the HelloEws quick-start sample. It is intentionally minimal. The processor creates its own EWS Server and writes a UTC timestamp to a single value. It holds **no third-party API credentials and makes no outbound network calls**, so the posture is narrower than the full example extensions.
 
 ## Credential Management
 
@@ -70,7 +70,7 @@ flowchart LR
 
 - **Network boundary:** between the EWS client/EBO and the EWS endpoint (flow 2). Authenticated with HTTP Digest over the configured realm.
 - **Process / machine boundary:** between the processor and the EWS data store (flows 1, 3), mediated by the Smart Connector runtime on the same host.
-- There is **no Internet boundary**: the sample makes no outbound calls.
+- There is **no Internet boundary**, because the sample makes no outbound calls.
 
 ### STRIDE Analysis
 

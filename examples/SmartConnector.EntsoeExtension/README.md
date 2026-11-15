@@ -128,7 +128,7 @@ Obtaining a security token is a multi-step process that involves registration, e
 3. Enter a **Description** (e.g., `Runs every 15 minutes`).
 4. Set the **Start Date** to the current date/time or a future date.
 5. In the **Type** section, select **Cron**.
-6. Enter the cron expression: `*/15 * * * *`.
+6. Enter the cron expression `*/15 * * * *`.
 7. Click **Save**.
 
 ### Step 3. Assign the Schedule and Start
@@ -237,7 +237,7 @@ Table – Zone points (/ENTSOE/Countries/{Country}/{Zone}); ★ marks trend logs
 | LoadShifting/RenewablePercent | Analog (%) | Renewable share of generation |
 | LoadShifting/RenewablePercentHistory ★ | Trend | Auto-sampled |
 
-Items marked ★ are **Trend Logs**: the Smart Connector service captures a historical sample (TrendSample) and the processor adds the current value each cycle plus seeds history on first run (see [Trend Logs](#trend-logs)). Trend names include the country and zone (e.g. `Current Price History Sweden SE_1`) so they remain unique when one server hosts multiple zones. They can be queried via the REST API (`GET /TrendSamples?trendId=...`) or consumed directly from EBO as Trend Log objects.
+Items marked ★ are **Trend Logs**. The Smart Connector service captures a historical sample (TrendSample) and the processor adds the current value each cycle plus seeds history on first run (see [Trend Logs](#trend-logs)). Trend names include the country and zone (e.g. `Current Price History Sweden SE_1`) so they remain unique when one server hosts multiple zones. They can be queried via the REST API (`GET /TrendSamples?trendId=...`) or consumed directly from EBO as Trend Log objects.
 
 ## OpenADR 3.0 Signal Mapping
 
@@ -268,7 +268,7 @@ The Standard Energy Market Interface aligns EWS points with [OpenADR 3.0](https:
 
 - `qudt:CCY_EUR-PER-KiloW-HR` is the closest standard QUDT unit for EUR/MWh (scaled by 1000). QUDT defines EUR as `qudt:CCY_EUR` and energy units separately.
 - `gCO₂/kWh` has no standard QUDT URI. If carbon intensity is added in a future version, it will be reported as a raw numeric value.
-- Full QUDT unit catalog: <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
+- **Full QUDT unit catalog:** <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
 
 **Brick Schema note:** Brick Schema defines building-side equipment and point classes (`brick:Electrical_Meter`, `brick:Power_Sensor`) but does not model grid-market signals. The OpenADR mapping applies at the SmartConnector extension level; Brick applies at the EBO consumption side when mapping EWS points to equipment models.
 
@@ -309,7 +309,7 @@ Each cycle runs in five explicit phases so the long-running backfill always happ
 4. **Update metadata:** stamp `Meta/LastUpdate`, `DataHealthy`, `CycleCount`, and the other observability points.
 5. **Backfill:** seed/repair historical trend data (may take minutes).
 
-Because backfill can exceed a short schedule interval, a re-entrancy guard prevents overlap: if the schedule re-triggers while a previous cycle is still running (typically inside a backfill), the new trigger logs a message and returns immediately. A stale lock is released automatically after 30 minutes so a crashed run cannot block the processor permanently.
+Because backfill can exceed a short schedule interval, a re-entrancy guard prevents overlap. If the schedule re-triggers while a previous cycle is still running (typically inside a backfill), the new trigger logs a message and returns immediately. A stale lock is released automatically after 30 minutes so a crashed run cannot block the processor permanently.
 
 ```mermaid
 sequenceDiagram
@@ -486,7 +486,7 @@ Summary:
 ## What This Demonstrates
 
 - Standard Energy Market Interface aligned with GridStatus extension (same paths, types, semantics)
-- OpenADR 3.0 signal semantics: Price → `EventType.Price`, Level → `EventType.Simple`
+- **OpenADR 3.0 signal semantics:** Price → `EventType.Price`, Level → `EventType.Simple`
 - Single `Processor` combining setup and scheduled updates (eliminates configuration mismatch)
 - Country drop-down (enum) that auto-expands multi-zone countries into per-zone EWS subtrees (`/ENTSOE/Countries/{Country}/{Zone}/...`)
 - `ConnectNew → Dispose → ConnectExisting` lifecycle for EWS server management (avoids duplicate-key errors)
