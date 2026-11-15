@@ -21,6 +21,7 @@ This document describes the security posture of the HelloEws quick-start sample.
 
 - The sample makes **no outbound calls** to any third-party service.
 - The EWS Server is created at the configured `EwsAddress`. Its listener accepts connections on every network interface of the host, whatever host name `EwsAddress` uses, so allow the port in the Windows Firewall only for the EBO servers and other EWS clients that need it. It uses HTTP Digest authentication with a configurable realm.
+- Select the Digest hash algorithms the EWS Server offers on the **EWS Servers** tab of the Portal. For a production deployment, offer only SHA-256 or SHA-512. See [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host).
 
 ## Input Validation
 

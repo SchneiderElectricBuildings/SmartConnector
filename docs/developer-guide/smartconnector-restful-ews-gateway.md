@@ -2092,6 +2092,7 @@ By default, the RESTful EWS Gateway listens on HTTP. For production deployments:
 - Bind a certificate to the endpoint's port with `netsh http add sslcert` and give the endpoint an `https://` address. Smart Connector has no certificate management of its own. Do not trust self-signed or expired certificates in production.
 - Do not use TLS 1.0, TLS 1.1, SSLv2, or SSLv3 — these protocols have known vulnerabilities.
 - Avoid transmitting credentials over unencrypted HTTP in production environments.
+- The TLS versions the endpoint accepts follow the Windows SChannel settings of the host. For the certificate binding and the other host settings, see [Hardening the Smart Connector Host](smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host) in the Developers Guide.
 
 > **Important:** The OAuth2 token request (`POST /GetToken`) transmits credentials in the request body. Without HTTPS, these credentials are sent in plain text and can be intercepted by any network observer.
 

@@ -81,6 +81,7 @@
    - 11.18 [REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling)
    - 11.19 [Resource Disposal](#1119-resource-disposal)
    - 11.20 [Troubleshooting](#1120-troubleshooting)
+   - 11.21 [Hardening the Smart Connector Host](#1121-hardening-the-smart-connector-host)
 
 ## 1 Support
 
@@ -611,7 +612,7 @@ All communication with external services must be encrypted. Use **TLS 1.2 or hig
 
 Leave `ServicePointManager.SecurityProtocol` at its default. The Smart Connector service is a .NET Framework 4.8 process, so the default is `SystemDefault`, which uses the TLS versions Windows allows. The setting is shared by every extension in the service, and a line such as `ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12` replaces that default with TLS 1.2 only, for all of them. Administrators switch TLS 1.0 and 1.1 off in the Windows SChannel settings of the host.
 
-Use `https://` endpoints exclusively for third-party APIs; reject a downgrade to plain HTTP. The native EWS Server and REST Gateway transport security is configured at the service level — this rule covers the third-party endpoints your code calls.
+Use `https://` endpoints exclusively for third-party APIs; reject a downgrade to plain HTTP. The native EWS Server and REST Gateway transport security is configured at the service level — this rule covers the third-party endpoints your code calls. For the service-level settings, see [Section 11.21 Hardening the Smart Connector Host](#1121-hardening-the-smart-connector-host).
 
 ### 5.4 Logging Guidelines
 
@@ -689,6 +690,7 @@ Before submitting any extension for deployment, walk this checklist:
 - [ ] `IsLicensed` is intentionally set (see [Section 10 Licensing Your Extension](#10-licensing-your-extension)).
 - [ ] HTTP endpoints exposed by your extension enforce authentication ([Section 11.18 REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling)).
 - [ ] Service settings reviewed for production: account lockout, password complexity, syslog ([Section 11.15 Security Configuration](#1115-security-configuration)).
+- [ ] Host settings reviewed for production, covering database connection encryption, the configuration files, HTTPS, and the EWS Digest algorithms ([Section 11.21 Hardening the Smart Connector Host](#1121-hardening-the-smart-connector-host)).
 
 ### 5.8 Support Policy and Extension Author Responsibilities
 
@@ -2775,7 +2777,7 @@ Smart Connector supports semantic metadata on EWS entities. Metadata provides co
 
 All retrieval endpoints that return model items accept an optional `includeMetadata` query parameter:
 
-```
+```text
 GET /api/values/{id}?includeMetadata=true
 GET /api/trends/{id}?includeMetadata=true
 GET /api/alarms/{id}?includeMetadata=true
@@ -2786,7 +2788,7 @@ When `includeMetadata=true`, the response includes the `Metadata` property. When
 
 **Dedicated metadata endpoints:**
 
-```
+```text
 GET /api/values/{id}/Metadata
 GET /api/trends/{id}/Metadata
 GET /api/alarms/{id}/Metadata
@@ -2804,7 +2806,7 @@ All list/query endpoints in the EWS REST API enforce a maximum page size of **5,
 
 If a client requests more than 5,000 items in a single request, the value is silently capped to 5,000. A log message is written at the Info level:
 
-```
+```text
 Take=10000 is too high. Limiting to 5000.
 ```
 
@@ -2812,7 +2814,7 @@ Take=10000 is too high. Limiting to 5000.
 
 Clients that previously requested large result sets in a single call must now paginate using `skip` and `take`:
 
-```
+```text
 GET /api/values?take=5000&skip=0      → items 1-5,000
 GET /api/values?take=5000&skip=5000   → items 5,001-10,000
 GET /api/values?take=5000&skip=10000  → items 10,001-15,000
@@ -2872,7 +2874,7 @@ Smart Connector supports forwarding log output to a syslog server via the NLog S
 
 At startup, the `Logger` checks for an external `NLog.config` file in the Smart Connector data directory:
 
-```
+```text
 %PROGRAMDATA%\SmartConnector\NLog.config
 ```
 
@@ -2925,6 +2927,13 @@ Replace `YOUR_SYSLOG_SERVER` with the hostname or IP address of your syslog serv
 - **UDP** (default, port 514)
 - **TCP** (port 514 or custom)
 - **TLS over TCP** (for encrypted syslog transport)
+
+#### Confirming Delivery
+
+Check delivery at the syslog server, because the Smart Connector log does not record it.
+
+- Confirm at the syslog server that messages arrive, after the first setup and after every certificate change.
+- The TLS transport validates the server certificate, so the Smart Connector host must trust the certificate of the syslog server.
 
 ### 11.17 Dependency Injection
 
@@ -3061,7 +3070,7 @@ In the Smart Connector Portal, when editing an Endpoint Configuration:
 
 REST endpoints automatically generate Swagger documentation when `ServeSwaggerMetadata` is `true` (the default). The Swagger UI is available at:
 
-```
+```text
 http://<endpoint-address>/swagger
 ```
 
@@ -3119,7 +3128,7 @@ This section covers common problems encountered during extension development and
 
 All Smart Connector logs are written to:
 
-```
+```text
 %PROGRAMDATA%\SmartConnector\Logs
 ```
 
@@ -3217,5 +3226,110 @@ Log files are named by date (e.g., `2026-05-12.log`). Each line contains a times
 **Cause:** The password does not meet the configured complexity requirements.
 
 **Fix:** Ensure the password meets all requirements: minimum length, uppercase, lowercase, digit, and special character. See [Section 11.15 Security Configuration](#1115-security-configuration).
+
+##### Service Is Stopped After a Reboot
+
+**Symptom:** After the host restarts, `SmartConnectorService` is stopped. The Windows System log shows Service Control Manager event 7023.
+
+**Cause:** When SQL Server runs on the same host, the service can start before the database instance is ready. It then fails with `SqlException` error 26 and stays stopped.
+
+**Fix:** Look for error 26 in the Smart Connector log to confirm the cause. Start the service once the SQL Server instance is running.
+
+##### Service Does Not Start After the Configuration Files Are Encrypted
+
+**Symptom:** After the `connectionStrings` and `appSettings` sections are encrypted, the service does not start. The Smart Connector log shows nothing.
+
+**Cause:** The key container that encrypted the sections is missing on the host.
+
+**Fix:** Read the Windows Application log. The cause is recorded there as .NET Runtime event 1026, which names `ConfigurationErrorsException` from `RsaProtectedConfigurationProvider`. It is followed by Application Error event 1000, and by Service Control Manager event 7023 in the System log. See [Section 11.21 Hardening the Smart Connector Host](#1121-hardening-the-smart-connector-host).
+
+### 11.21 Hardening the Smart Connector Host
+
+The settings in this section belong to the Smart Connector service, not to an extension. An extension cannot change them, so an administrator applies them on each host for a production deployment.
+
+#### Database Connection Encryption
+
+The service reads two connection strings, `SmartConnectorDb` and `SmartConnectorUserDb`, from `Mongoose.Service.exe.config`. `Mongoose.Utility.exe.config` holds a copy of both. Every database connection the service opens uses one of these strings as written.
+
+To encrypt the connection to SQL Server, append one of the following to both strings in both files, then restart `SmartConnectorService`.
+
+| SQL Server certificate | Append to each string | Result |
+| --- | --- | --- |
+| Issued by a certificate authority the host trusts, with a name that matches the server | `;Encrypt=True` | The connection is encrypted and the identity of the server is validated |
+| Self-signed | `;Encrypt=True;TrustServerCertificate=True` | The connection is encrypted and the identity of the server is not validated |
+
+- With a self-signed certificate, `Encrypt=True` alone fails with "certificate chain was issued by an authority that is not trusted".
+- Use `TrustServerCertificate=True` only when the database is on the same host as the service or on a network you control.
+- `Encrypt=Strict` is not supported. The service rejects it with "Invalid value for key 'encrypt'" and cannot connect.
+- A database on the same host as the service connects over Shared Memory, and that traffic never reaches the network. Encryption matters when SQL Server runs on another host.
+- Check both strings again after you reinstall the database.
+
+To confirm the result, run this query on the SQL Server instance. Replace `<service-process-id>` with the process ID of `SmartConnectorService`. Every row reads `TRUE` in the `encrypt_option` column.
+
+```sql
+SELECT s.session_id, s.program_name, DB_NAME(s.database_id) AS db, c.net_transport, c.encrypt_option
+FROM sys.dm_exec_sessions s JOIN sys.dm_exec_connections c ON s.session_id = c.session_id
+WHERE s.host_process_id = <service-process-id>;
+```
+
+#### Secrets in the Configuration Files
+
+`Mongoose.Service.exe.config` and `Mongoose.Utility.exe.config` hold the database connection strings and the `EncryptionKey` setting, which protects every `[EncryptedString]` value in the database. The installer generates a different key for each installation. Treat both files as sensitive.
+
+- Limit read access to the installation folder to administrators and the service account.
+- Where the database is local, choose the implicit Windows authentication option of the installer, so that no database password is needed.
+- Mask the connection strings and the key before you share a configuration file, for example in a support request.
+
+For additional protection, encrypt both sections on disk with .NET protected configuration and the default RSA provider. Run `aspnet_regiis.exe` from `%WINDIR%\Microsoft.NET\Framework64\v4.0.30319` in an elevated command prompt.
+
+1. Copy `Mongoose.Service.exe.config` to a working folder and rename the copy `web.config`.
+2. Encrypt the two sections of the copy.
+
+   ```text
+   aspnet_regiis -pef "connectionStrings" "<working-folder>"
+   aspnet_regiis -pef "appSettings" "<working-folder>"
+   ```
+
+3. Copy the file back over the original, under its original name.
+4. Repeat steps 1 to 3 for `Mongoose.Utility.exe.config`.
+5. Restart `SmartConnectorService` and delete the working copies.
+
+The service, the Portal, the EWS endpoints, and scheduled Processors run normally on the encrypted files. The sections stay encrypted through a database update and through a repair of the installation. Check them again after an upgrade.
+
+If the service does not start afterwards, see [Section 11.20 Troubleshooting](#1120-troubleshooting).
+
+#### HTTPS for the EWS Server, the Portal, and REST Endpoints
+
+An endpoint uses HTTPS when its address starts with `https://`. Smart Connector has no certificate management of its own, so the certificate comes from a Windows binding that you create outside the Portal.
+
+To move an EWS Server to HTTPS:
+
+1. Bind the certificate to the port.
+
+   ```text
+   netsh http add sslcert ipport=0.0.0.0:<port> certhash=<certificate-thumbprint> appid={<application-guid>}
+   ```
+
+2. On the **EWS Servers** tab of the Portal, click the edit icon of the server and change its address to start with `https://`. The service moves the server to the new address within a second, with no restart.
+3. Run `netsh http show servicestate` and confirm the new URL is registered.
+4. Set the `EwsAddress` property of the Processor Configuration that owns the server to the same address, and point the EWS clients at it.
+
+The TLS versions on every endpoint follow the Windows SChannel settings of the host, so switch TLS 1.0 and 1.1 off there.
+
+The Portal listens on `http://127.0.0.1:8082` by default, so it is reachable only from the host itself.
+
+#### EWS Digest Algorithms
+
+Each EWS Server authenticates its clients with HTTP Digest, and you select the hash algorithms it offers. For a production deployment, offer only SHA-256 or SHA-512.
+
+To select the algorithms, edit the server on the **EWS Servers** tab of the Portal.
+
+- The change applies without a restart. The next challenge the server sends carries only the algorithms that are on.
+- The server refuses a request that uses an algorithm that is off, and the client receives `401 Unauthorized`.
+- Confirm that each EWS client still connects after the change.
+
+An EWS Server can also accept a cookie in place of a Digest exchange. When cookies are on, each signed-in response sets a `CSPCID` cookie that works once, expires after five minutes, and is tied to the address of the client. A request that carries a valid cookie is accepted without a Digest exchange.
+
+`ConnectNew` leaves cookies off. A call to `ModifyServerAllowCookies(true)` turns them on, as the walkthrough in [Section 7.6](#76-the-processor-a-phased-execution-cycle) and the Weather, ENTSO-E, and GridStatus examples do. Leave the call out of your own extension where every request must authenticate with Digest.
 
 *© 2017–2026 Schneider Electric. All rights reserved.*
