@@ -5,7 +5,7 @@
 <!-- Revision: 1 -->
 <!-- Date: June 2026 -->
 <!-- Author: Karim Hussain -->
-<!-- Audience: API consumers — system integrators, third-party developers, building automation engineers -->
+<!-- Audience: API consumers (system integrators, third-party developers, building automation engineers) -->
 
 ## Table of Contents
 
@@ -41,19 +41,19 @@
    - 6.7 [HTTP Status Codes](#67-http-status-codes)
    - 6.8 [Response Headers](#68-response-headers)
    - 6.9 [Rate Limiting](#69-rate-limiting)
-7. [API Reference — Root and Containers](#7-api-reference--root-and-containers)
+7. [API Reference, Root and Containers](#7-api-reference-root-and-containers)
    - 7.1 [Root](#71-root)
    - 7.2 [Container Model](#72-container-model)
    - 7.3 [Browsing the Hierarchy](#73-browsing-the-hierarchy)
    - 7.4 [Container CRUD Operations](#74-container-crud-operations)
    - 7.5 [Container Property Endpoints](#75-container-property-endpoints)
-8. [API Reference — Values](#8-api-reference--values)
+8. [API Reference, Values](#8-api-reference-values)
    - 8.1 [Value Model](#81-value-model)
    - 8.2 [Retrieving Values](#82-retrieving-values)
    - 8.3 [Creating and Updating Values](#83-creating-and-updating-values)
    - 8.4 [Force and Unforce](#84-force-and-unforce)
    - 8.5 [Value Property Endpoints](#85-value-property-endpoints)
-9. [API Reference — Alarms and Alarm Events](#9-api-reference--alarms-and-alarm-events)
+9. [API Reference, Alarms and Alarm Events](#9-api-reference-alarms-and-alarm-events)
    - 9.1 [Alarm Model](#91-alarm-model)
    - 9.2 [Alarm Event Model](#92-alarm-event-model)
    - 9.3 [Alarm Event Type Model](#93-alarm-event-type-model)
@@ -63,7 +63,7 @@
    - 9.7 [Alarm Property Endpoints](#97-alarm-property-endpoints)
    - 9.8 [AlarmEvent Property Endpoints](#98-alarmevent-property-endpoints)
    - 9.9 [AlarmEventType CRUD and Property Endpoints](#99-alarmeventtype-crud-and-property-endpoints)
-10. [API Reference — Trends and Trend Samples](#10-api-reference--trends-and-trend-samples)
+10. [API Reference, Trends and Trend Samples](#10-api-reference-trends-and-trend-samples)
    - 10.1 [Trend Model](#101-trend-model)
    - 10.2 [TrendSample Model](#102-trendsample-model)
    - 10.3 [Retrieving Trends](#103-retrieving-trends)
@@ -72,7 +72,7 @@
    - 10.6 [Trend CRUD Operations](#106-trend-crud-operations)
    - 10.7 [Deleting Trend Samples](#107-deleting-trend-samples)
    - 10.8 [Trend Property Endpoints](#108-trend-property-endpoints)
-11. [API Reference — Subscriptions and Notifications](#11-api-reference--subscriptions-and-notifications)
+11. [API Reference, Subscriptions and Notifications](#11-api-reference-subscriptions-and-notifications)
    - 11.1 [Subscription Model](#111-subscription-model)
    - 11.2 [Notification Model](#112-notification-model)
    - 11.3 [NotificationItem Model](#113-notificationitem-model)
@@ -81,7 +81,7 @@
    - 11.6 [Subscription Property Endpoints](#116-subscription-property-endpoints)
    - 11.7 [Creating and Retrieving Notifications](#117-creating-and-retrieving-notifications)
    - 11.8 [Notification Property Endpoints](#118-notification-property-endpoints)
-12. [API Reference — System Events](#12-api-reference--system-events)
+12. [API Reference, System Events](#12-api-reference-system-events)
    - 12.1 [SystemEvent Model](#121-systemevent-model)
    - 12.2 [SystemEventType Model](#122-systemeventtype-model)
    - 12.3 [Retrieving System Events](#123-retrieving-system-events)
@@ -105,7 +105,7 @@
    - 15.4 [Network Access](#154-network-access)
    - 15.5 [Logging and Personal Data](#155-logging-and-personal-data)
    - 15.6 [Swagger UI in Production](#156-swagger-ui-in-production)
-16. [Appendix — Endpoint Support by Data Provider](#16-appendix--endpoint-support-by-data-provider)
+16. [Appendix, Endpoint Support by Data Provider](#16-appendix-endpoint-support-by-data-provider)
    - 16.1 [Root](#161-root)
    - 16.2 [Containers](#162-containers)
    - 16.3 [Values](#163-values)
@@ -123,12 +123,12 @@
 
 For development questions and peer-to-peer help, visit the [SmartConnector Forum](https://community.se.com/t5/SmartConnector-Forum/bd-p/smart-connector-developer) on the Schneider Electric Community.
 
-For product-related enquiries, contact your local [Schneider Electric representative](https://www.se.com/ww/en/work/support/country-selector/distributors.jsp).
+For product-related inquiries, contact your local [Schneider Electric representative](https://www.se.com/ww/en/work/support/country-selector/distributors.jsp).
 
 ## 2 Revision History
 
 | Date | Author | Revision | Changes Made |
-|------|--------|----------|--------------|
+| --- | --- | --- | --- |
 | 06/04/2026 | KH | 1 | Initial release for Smart Connector v2.6. |
 
 <!-- © 2017-2026 Schneider Electric. All Rights Reserved. Schneider Electric, StruxureWare, SmartStruxure solution, and EcoStruxure™ are trademarks owned by Schneider Electric Industries SAS or its affiliated companies. All other trademarks are the property of their respective owners. -->
@@ -160,7 +160,7 @@ This guide was validated against the following environment:
 
 Where behavior differs between data providers, provider-specific notes are included. For a comprehensive comparison, see [14.1 Data Provider Limitations](#141-data-provider-limitations).
 
-> **Note on the worked examples:** The request/response examples throughout this guide were captured using `SboEwsRestProvider` against a **pre-3.0** EcoStruxure™ Building Operation server. `SboEwsRestProvider` is deprecated and does **not** work with EBO 3.0 and later (the EBO 7.1.2 validation above applies to the gateway framework and the `SoapEwsRestProvider` path). For EBO 3.0+ integrations, use `SoapEwsRestProvider`; its supported operations are listed in [14.1 Data Provider Limitations](#141-data-provider-limitations). The request shapes, IDs, and JSON bodies are the same across providers — only the set of supported operations differs.
+> **Note on the worked examples:** The request/response examples throughout this guide were captured using `SboEwsRestProvider` against a **pre-3.0** EcoStruxure™ Building Operation server. `SboEwsRestProvider` is deprecated and does **not** work with EBO 3.0 and later (the EBO 7.1.2 validation above applies to the gateway framework and the `SoapEwsRestProvider` path). For EBO 3.0+ integrations, use `SoapEwsRestProvider`; its supported operations are listed in [14.1 Data Provider Limitations](#141-data-provider-limitations). The request shapes, IDs, and JSON bodies are the same across providers. Only the set of supported operations differs.
 
 This guide does **not** cover:
 
@@ -169,7 +169,7 @@ This guide does **not** cover:
 
 ### 3.2 What Is the EcoStruxure™ Smart Connector RESTful EWS Gateway?
 
-Simple Object Access Protocol (SOAP) and Representational State Transfer (REST) are often compared directly, but they are fundamentally different. SOAP is a messaging protocol — designed by Winer, Box, Atkinson, and Al-Ghosein for Microsoft in 1998, submitted to IETF in 1999, and elevated to a W3C recommendation (as v1.2) in 2003. Its major characteristics are extensibility, transport layer neutrality, and programming model independence. REST is an architecture — first described by Roy Fielding in his 2000 PhD dissertation on network-based software architectures. Its major characteristics are: client-server based, stateless, cacheable for performance optimization, with layered abstractions.
+Simple Object Access Protocol (SOAP) and Representational State Transfer (REST) are often compared directly, but they are fundamentally different. SOAP is a messaging protocol, designed by Winer, Box, Atkinson, and Al-Ghosein for Microsoft in 1998, submitted to IETF in 1999, and elevated to a W3C recommendation (as v1.2) in 2003. Its major characteristics are extensibility, transport layer neutrality, and programming model independence. REST is an architecture, first described by Roy Fielding in his 2000 PhD dissertation on network-based software architectures. Its major characteristics are: client-server based, stateless, cacheable for performance optimization, with layered abstractions.
 
 EcoStruxure™ Web Services (EWS) is Schneider Electric's SOAP interface for system-to-system data exchange. From the EWS Specification itself:
 
@@ -177,7 +177,7 @@ EcoStruxure™ Web Services (EWS) is Schneider Electric's SOAP interface for sys
 
 If a SOAP API already exists, why provide a RESTful one? The honest answer is that you may not need it. If you are comfortable developing applications using a SOAP client against an EWS server, you can continue to do so. However, if you prefer to move away from SOAP to a more portable, lightweight abstraction with full Create, Retrieve, Update, and Delete (CRUD) capabilities, then this gateway is for you.
 
-The RESTful EWS Gateway exposes building automation data through a standard HTTP REST API based on the EWS data model. The gateway is built on the Smart Connector REST Extension Framework — a general-purpose infrastructure for hosting RESTful APIs within Smart Connector. The RESTful EWS Gateway is a specific implementation of that framework, mapping EWS data structures and concepts to RESTful resources and HTTP verbs.
+The RESTful EWS Gateway exposes building automation data through a standard HTTP REST API based on the EWS data model. The gateway is built on the Smart Connector REST Extension Framework, a general-purpose infrastructure for hosting RESTful APIs within Smart Connector. The RESTful EWS Gateway is a specific implementation of that framework, mapping EWS data structures and concepts to RESTful resources and HTTP verbs.
 
 > **Note:** The RESTful EWS Gateway is not a direct port of EWS SOAP methods to HTTP. It leverages EWS data structures and concepts while providing a RESTful experience. The REST gateway is an alternative for consumers who prefer a lightweight HTTP-based approach.
 
@@ -193,7 +193,7 @@ The gateway supports multiple data providers, each sourcing data from a differen
 
 > **Important:** Not all data providers support all API actions. This is expected and is a by-product of the layered design approach. Provider-specific restrictions are noted throughout the API reference sections. When an action is not supported by a provider, the server typically returns `405 Method Not Allowed` or `500 Internal Server Error`.
 
-The EWS data model and operations referenced in this guide are defined in the *EcoStruxure™ Web Services Specification* (available separately upon request). That specification defines EWS Profiles — logical groupings of SOAP methods — that determine which operations a given server implementation supports. Not every server implements every Profile or every method within a Profile. The REST gateway exposes the full API surface, but the underlying data provider determines which operations succeed.
+The EWS data model and operations referenced in this guide are defined in the *EcoStruxure™ Web Services Specification* (available separately upon request). That specification defines EWS Profiles (logical groupings of SOAP methods) that determine which operations a given server implementation supports. Not every server implements every Profile or every method within a Profile. The REST gateway exposes the full API surface, but the underlying data provider determines which operations succeed.
 
 #### 3.3.1 Choosing a Data Provider
 
@@ -203,7 +203,7 @@ Select the provider when you provision the endpoint based on the back-end system
 | --- | --- | --- |
 | Native Smart Connector EWS Server | `MongooseEwsRestProvider` | Full read, write (CRUD), and hierarchy browsing. Only the bulk `GET` collection endpoints are unsupported. |
 | EcoStruxure™ Building Operation (EBO) 3.0 and later | `SoapEwsRestProvider` | The provider to use for current EBO. Supports alarm events, alarm event types, subscriptions/notifications, and value read/write/force. Does not support `GET /Root`, bulk retrieval, container/value CRUD, or System Events. |
-| EcoStruxure™ Building Operation (EBO) before 3.0 | `SboEwsRestProvider` | **Deprecated** — not compatible with EBO 3.0 and later. Do not use for new integrations. |
+| EcoStruxure™ Building Operation (EBO) before 3.0 | `SboEwsRestProvider` | **Deprecated:** not compatible with EBO 3.0 and later. Do not use for new integrations. |
 | Any other EWS 1.1 / 1.2 SOAP server | `SoapEwsRestProvider` | Available operations depend on which EWS Profiles the server implements. |
 
 Per-operation support is detailed in [14.1 Data Provider Limitations](#141-data-provider-limitations). The alarm event, alarm event type, and subscription read operations have been validated against a live EBO server through `SoapEwsRestProvider`; because `GET /Root` and bulk browsing are unavailable, navigate using known container IDs or obtain object IDs from returned alarm data and your EBO configuration.
@@ -242,7 +242,7 @@ flowchart TD
     DP --> EWS
 ```
 
-The REST Extension Framework handles cross-cutting concerns — authentication, API documentation, rate limiting, and request routing — while the gateway controllers implement the EWS-specific resource operations. The data provider abstracts the underlying data source, allowing the same API to serve data from different building automation systems.
+The REST Extension Framework handles cross-cutting concerns (authentication, API documentation, rate limiting, and request routing) while the gateway controllers implement the EWS-specific resource operations. The data provider abstracts the underlying data source, allowing the same API to serve data from different building automation systems.
 
 ```mermaid
 graph LR
@@ -264,11 +264,11 @@ graph LR
     style GW fill:#E6F4FA,stroke:#9AA0A6,stroke-width:2px
 ```
 
-> **Figure 1 — Request flow through the RESTful EWS Gateway.** The data provider selected during endpoint configuration determines the back-end data source.
+> **Figure 1 – Request flow through the RESTful EWS Gateway.** The data provider selected during endpoint configuration determines the back-end data source.
 
 ### 3.5 EWS Profiles
 
-The EcoStruxure™ Web Services Specification defines five Profiles. Each Profile is a logical grouping of SOAP methods that a server may implement. Not all servers implement all Profiles — this is why some REST endpoints return errors with certain data providers.
+The EcoStruxure™ Web Services Specification defines five Profiles. Each Profile is a logical grouping of SOAP methods that a server may implement. Not all servers implement all Profiles, which is why some REST endpoints return errors with certain data providers.
 
 | Profile | REST Endpoints | Description |
 | --- | --- | --- |
@@ -341,7 +341,7 @@ Expanding the **Http Configuration** node displays additional options:
 
 Expanding the **Throttling Policy** node displays rate limiting options. A minimum level of throttling is mandatory for every REST endpoint.
 
-**Default Rates** establish a baseline. Values work cooperatively — for example, you can limit calls to 2 per second and no more than 100 per day. An empty or `0` value indicates no restriction for that interval.
+**Default Rates** establish a baseline. Values work cooperatively. For example, you can limit calls to 2 per second and no more than 100 per day. An empty or `0` value indicates no restriction for that interval.
 
 | Parameter | Description |
 | --- | --- |
@@ -351,11 +351,11 @@ Expanding the **Throttling Policy** node displays rate limiting options. A minim
 | **Per Day** | Maximum requests allowed per day. |
 | **Per Week** | Maximum requests allowed per week. |
 
-**White List IP Addresses** — IP addresses or ranges that are exempt from throttling. Use only for trusted clients.
+**White List IP Addresses:** IP addresses or ranges that are exempt from throttling. Use only for trusted clients.
 
-**Client Overrides** — Rate overrides based on an API key. Clients include the key in an `Authorization-Token` header to receive the overridden rates.
+**Client Overrides:** Rate overrides based on an API key. Clients include the key in an `Authorization-Token` header to receive the overridden rates.
 
-**IP Overrides** — Rate overrides based on a specific IP address or range.
+**IP Overrides:** Rate overrides based on a specific IP address or range.
 
 #### 4.3.3 Provider-Specific Parameters
 
@@ -369,7 +369,7 @@ Expanding the **Throttling Policy** node displays rate limiting options. A minim
 
 | Parameter | Description |
 | --- | --- |
-| **Server Address** | The full SOAP endpoint URL for the EWS server. The URL must end with `/EcoStruxure/DataExchange` — for example, `https://localhost:443/EcoStruxure/DataExchange`. Use HTTPS in production environments. |
+| **Server Address** | The full SOAP endpoint URL for the EWS server. The URL must end with `/EcoStruxure/DataExchange`, for example, `https://localhost:443/EcoStruxure/DataExchange`. Use HTTPS in production environments. |
 
 **SboEwsRestProvider:**
 
@@ -393,14 +393,14 @@ The endpoint starts automatically every time the Smart Connector service starts.
 
 ### 5.1 OAuth2 Overview
 
-The RESTful EWS Gateway uses OAuth2 with the Resource Owner Password Credentials grant type. Every request (except the token request itself) must include a valid bearer token in the `Authorization` header. The API is stateless — requests never rely on sessions or cookies.
+The RESTful EWS Gateway uses OAuth2 with the Resource Owner Password Credentials grant type. Every request (except the token request itself) must include a valid bearer token in the `Authorization` header. The API is stateless. Requests never rely on sessions or cookies.
 
 The authentication flow is:
 
-1. **Request a token** — POST credentials to the token endpoint.
-2. **Receive a token** — The server returns an access token with an expiry time.
-3. **Use the token** — Include the token in the `Authorization` header of every subsequent request.
-4. **Renew when expired** — Request a new token when the current one expires.
+1. **Request a token:** POST credentials to the token endpoint.
+2. **Receive a token:** The server returns an access token with an expiry time.
+3. **Use the token:** Include the token in the `Authorization` header of every subsequent request.
+4. **Renew when expired:** Request a new token when the current one expires.
 
 ### 5.2 Acquiring a Bearer Token
 
@@ -546,13 +546,13 @@ Use this double-encoded value in the URL path:
 GET /Containers/00%252FServer%25201
 ```
 
-> **Note:** Query parameters only require standard (single) URL encoding. Double encoding applies only to path parameters — specifically, the `{id}` segment.
+> **Note:** Query parameters only require standard (single) URL encoding. Double encoding applies only to path parameters, specifically, the `{id}` segment.
 >
 > **Tip:** When using Swagger UI, Swagger automatically applies one level of URL encoding. You must manually encode the ID once before entering it into Swagger. Free tools such as [URL Decoder/Encoder](https://meyerweb.com/eric/tools/dencoder/) can simplify this.
 
 ### 6.4 EWS ID Format
 
-Every resource ID in EWS is prefixed with a two-digit **DataType identifier** that indicates the resource type. This prefix is a critical part of the ID — omitting it will result in `404 Not Found` responses.
+Every resource ID in EWS is prefixed with a two-digit **DataType identifier** that indicates the resource type. This prefix is a critical part of the ID. Omitting it will result in `404 Not Found` responses.
 
 | Prefix | Resource Type | Example |
 | --- | --- | --- |
@@ -563,7 +563,7 @@ Every resource ID in EWS is prefixed with a two-digit **DataType identifier** th
 
 The DataType prefix is always present in IDs returned by the API. For example, when you retrieve a Value, its `ParentId` will have the `00` prefix (Container), and a Trend's `ValueId` will have the `01` prefix (Value).
 
-> **Important:** When constructing IDs manually (e.g., from a known path in your building automation system), you **must** include the correct DataType prefix. An ID of `/Server 1/Building/Temperature` will not resolve — it must be `01/Server 1/Building/Temperature` for a Value, `02/...` for an Alarm, etc.
+> **Important:** When constructing IDs manually (e.g., from a known path in your building automation system), you **must** include the correct DataType prefix. An ID of `/Server 1/Building/Temperature` will not resolve. It must be `01/Server 1/Building/Temperature` for a Value, `02/...` for an Alarm, etc.
 >
 > **Note:** Bulk retrieval endpoints (e.g., `GET /Values`, `GET /Alarms`) are not supported by any current data provider. You must know the resource ID (including its DataType prefix) to retrieve individual resources. Use `GET /Containers/{id}/Children` to discover available resources within a container, or refer to your building automation system's configuration to determine resource paths. This discovery approach is described in the EWS Specification, Chapter 6.
 
@@ -588,18 +588,18 @@ For `POST`, `PUT`, and `PATCH` request bodies, set the `Content-Type` header to 
 
 Collection endpoints support optional query parameters for filtering, sorting, and paging.
 
-**Filtering** — Filter parameters work in logical AND fashion. Only resources matching all supplied filter criteria are returned.
+**Filtering:** Filter parameters work in logical AND fashion. Only resources matching all supplied filter criteria are returned.
 
-**Sorting** — Use the `orderBy` query parameter. If no `orderBy` is provided, a default sort order is applied so that resources are always returned in a deterministic order.
+**Sorting:** Use the `orderBy` query parameter. If no `orderBy` is provided, a default sort order is applied so that resources are always returned in a deterministic order.
 
-**Paging** — Use `take` and `skip` query parameters:
+**Paging:** Use `take` and `skip` query parameters:
 
 | Parameter | Description | Default |
 | --- | --- | --- |
 | `take` | Maximum number of resources to return. | 200 |
 | `skip` | Number of resources to skip before returning results. | 0 |
 
-**Example — retrieve the second page of 50 alarm events, sorted by most recent:**
+**Example:** Retrieve the second page of 50 alarm events, sorted by most recent.
 
 ```text
 GET /AlarmEvents?take=50&skip=50&orderBy=1
@@ -647,15 +647,15 @@ When a request exceeds the configured rate limits, the server responds with `429
 
 Rate limits can be configured at three levels (see [4.3.2 Throttling Policy](#432-throttling-policy)):
 
-1. **Default rates** — Applied to all clients. Values work cooperatively — for example, you can limit calls to 2 per second and no more than 100 per day. An empty or `0` value indicates no restriction for that interval.
-2. **Client overrides** — Applied to clients that include a specific API key in the `Authorization-Token` header. Use this to grant higher limits to trusted integration partners.
-3. **IP overrides** — Applied to requests from a specific IP address or range.
+1. **Default rates:** Applied to all clients. Values work cooperatively. For example, you can limit calls to 2 per second and no more than 100 per day. An empty or `0` value indicates no restriction for that interval.
+2. **Client overrides:** Applied to clients that include a specific API key in the `Authorization-Token` header. Use this to grant higher limits to trusted integration partners.
+3. **IP overrides:** Applied to requests from a specific IP address or range.
 
-**White-listed IP addresses** bypass throttling entirely. Use this only for trusted clients on controlled networks — for example, a known integration server on the same local network as Smart Connector.
+**White-listed IP addresses** bypass throttling entirely. Use this only for trusted clients on controlled networks, for example, a known integration server on the same local network as Smart Connector.
 
-## 7 API Reference — Root and Containers
+## 7 API Reference, Root and Containers
 
-The EWS data model is organized as a hierarchy of containers. A **Container** is the parent for other types — Values, Alarms, Trends, and other Containers. The **Root** resource provides the entry point into this hierarchy.
+The EWS data model is organized as a hierarchy of containers. A **Container** is the parent for other types (Values, Alarms, Trends, and other Containers). The **Root** resource provides the entry point into this hierarchy.
 
 ### 7.1 Root
 
@@ -720,7 +720,7 @@ Returns all children (Containers, Values, Alarms, or Trends) of the specified co
 | Parameter | Location | Type | Description |
 | --- | --- | --- | --- |
 | `id` | Path | String | ID of the parent container. Must be double URL encoded. |
-| `type` | Query | Enumeration | Filter by child type. Optional — all types returned by default. |
+| `type` | Query | Enumeration | Filter by child type. Optional. All types returned by default. |
 
 **Child type filter values:**
 
@@ -731,7 +731,7 @@ Returns all children (Containers, Values, Alarms, or Trends) of the specified co
 | 2 | `Trend` |
 | 3 | `Alarm` |
 
-**Example — get all children of the root container:**
+**Example:** Get all children of the root container.
 
 ```bash
 curl -X GET "http://YOUR_HOST:YOUR_PORT/Containers/DOUBLE_ENCODED_ID/Children" \
@@ -739,7 +739,7 @@ curl -X GET "http://YOUR_HOST:YOUR_PORT/Containers/DOUBLE_ENCODED_ID/Children" \
   -H "Accept: application/json"
 ```
 
-**Example — get only Value children:**
+**Example:** Get only Value children.
 
 ```bash
 curl -X GET "http://YOUR_HOST:YOUR_PORT/Containers/DOUBLE_ENCODED_ID/Children?type=Value" \
@@ -868,7 +868,7 @@ For `PUT` property endpoints, the new value is sent in the request body. When us
 
 > **Note:** All `PUT` Container property endpoints are not supported by SoapEwsRestProvider or SboEwsRestProvider. These providers are read-only for Container properties.
 
-## 8 API Reference — Values
+## 8 API Reference, Values
 
 A **Value** represents a singular point value. Point values can be physical values from a sensor or controller, internal properties such as a software version, or any other value an implementing server decides to expose.
 
@@ -1075,13 +1075,13 @@ For all property endpoints, the `id` path parameter must be double URL encoded.
 
 > **Note:** SoapEwsRestProvider supports `PUT /Values/{id}/Value` (via the EWS `SetValues` method). All other `PUT` property endpoints for Values are not supported by SoapEwsRestProvider.
 
-## 9 API Reference — Alarms and Alarm Events
+## 9 API Reference, Alarms and Alarm Events
 
-> **Note:** Don't confuse `GET /Alarms/{id}` with `GET /AlarmEvents/{id}` — they are two different things. An **Alarm** defines alarm criteria for a Value. An **AlarmEvent** is created when an Alarm transitions state (e.g., goes into alarm). To retrieve an Alarm's definition, use `GET /Alarms/{id}` with the Alarm's `02/`-prefixed ID. To retrieve a specific event occurrence, use `GET /AlarmEvents/{id}` with the AlarmEvent's pipe-separated ID.
+> **Note:** Don't confuse `GET /Alarms/{id}` with `GET /AlarmEvents/{id}`. They are two different things. An **Alarm** defines alarm criteria for a Value. An **AlarmEvent** is created when an Alarm transitions state (e.g., goes into alarm). To retrieve an Alarm's definition, use `GET /Alarms/{id}` with the Alarm's `02/`-prefixed ID. To retrieve a specific event occurrence, use `GET /AlarmEvents/{id}` with the AlarmEvent's pipe-separated ID.
 
 ### 9.1 Alarm Model
 
-An **Alarm** defines alarm criteria. The existence of an Alarm does not imply that an alarm condition has occurred — only that alarm criteria exist. If an Alarm is associated with a Value, the ID of that Value is included.
+An **Alarm** defines alarm criteria. The existence of an Alarm does not imply that an alarm condition has occurred, only that alarm criteria exist. If an Alarm is associated with a Value, the ID of that Value is included.
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1116,7 +1116,7 @@ An **Alarm** defines alarm criteria. The existence of an Alarm does not imply th
 
 ### 9.2 Alarm Event Model
 
-An **AlarmEvent** represents a single state transition of an Alarm. Every transition — including a return to normal — generates an AlarmEvent instance.
+An **AlarmEvent** represents a single state transition of an Alarm. Every transition, including a return to normal, generates an AlarmEvent instance.
 
 | Property | Type | Description |
 | --- | --- | --- |
@@ -1201,7 +1201,7 @@ Returns all AlarmEvents matching the filter criteria. This endpoint is supported
 | 2 | `OriginallyAlarmedAtAscending` |
 | 3 | `OriginallyAlarmedAtDescending` |
 
-**Example — retrieve recent alarm events:**
+**Example:** Retrieve recent alarm events.
 
 ```bash
 curl -X GET "http://YOUR_HOST:YOUR_PORT/AlarmEvents?take=10&orderBy=1" \
@@ -1247,7 +1247,7 @@ For the Alarm transition actions (`Acknowledge`, `Activate`, `Disable`, `Reset`,
 | `Priority` | Integer | Priority for the generated AlarmEvent. |
 | `Type` | String | Server-specific type for the generated AlarmEvent. |
 
-**Example — acknowledge an alarm:**
+**Example:** Acknowledge an alarm.
 
 ```bash
 curl -X POST "http://YOUR_HOST:YOUR_PORT/Alarms/DOUBLE_ENCODED_ID/Acknowledge" \
@@ -1260,7 +1260,7 @@ curl -X POST "http://YOUR_HOST:YOUR_PORT/Alarms/DOUBLE_ENCODED_ID/Acknowledge" \
   }'
 ```
 
-> **Note:** Neither SoapEwsRestProvider nor SboEwsRestProvider supports Alarm-level state transitions (`POST /Alarms/{id}/Acknowledge`, `Activate`, `Disable`, `Reset`, `ChangeState`). To acknowledge an alarm event, use `POST /AlarmEvents/{id}/Acknowledge` instead — this is supported by all providers.
+> **Note:** Neither SoapEwsRestProvider nor SboEwsRestProvider supports Alarm-level state transitions (`POST /Alarms/{id}/Acknowledge`, `Activate`, `Disable`, `Reset`, `ChangeState`). To acknowledge an alarm event, use `POST /AlarmEvents/{id}/Acknowledge` instead, which is supported by all providers.
 
 ### 9.6 Alarm CRUD Operations
 
@@ -1339,9 +1339,9 @@ Deletes the Alarm with the specified ID.
 
 > **Note:** SoapEwsRestProvider and SboEwsRestProvider do not support Create, Update, Delete, or PUT property actions on AlarmEventTypes.
 
-## 10 API Reference — Trends and Trend Samples
+## 10 API Reference, Trends and Trend Samples
 
-A **Trend** references a specific Value for which historical value trending has been enabled. The existence of a Trend does not imply that historical data exists — only that history will be captured for a Value.
+A **Trend** references a specific Value for which historical value trending has been enabled. The existence of a Trend does not imply that historical data exists, only that history will be captured for a Value.
 
 A **TrendSample** represents the value and state of a Value at a given point in time, belonging to a specific Trend.
 
@@ -1406,7 +1406,7 @@ Returns all TrendSamples matching the filter criteria. The `trendId` parameter i
 | `take` | Query | Integer | No | Number of results. Default: 200. |
 | `skip` | Query | Integer | No | Number to skip. Default: 0. |
 
-**Example — retrieve the last 50 trend samples for a specific trend:**
+**Example:** Retrieve the last 50 trend samples for a specific trend.
 
 ```bash
 curl -X GET "http://YOUR_HOST:YOUR_PORT/TrendSamples?trendId=TREND_ID&take=50&orderBy=1" \
@@ -1513,11 +1513,11 @@ To delete all TrendSamples before a specific date, omit the `OnOrAfter` property
 
 > **Note:** All `PUT` Trend property endpoints are not supported by SoapEwsRestProvider or SboEwsRestProvider.
 
-## 11 API Reference — Subscriptions and Notifications
+## 11 API Reference, Subscriptions and Notifications
 
 Subscriptions and Notifications provide a mechanism for clients to receive change notifications without polling individual resources.
 
-A **Subscription** is a registration for change tracking on one or more items. After creating a Subscription, clients can periodically request a **Notification** to retrieve **NotificationItems** — records describing what has changed since the last Notification was created.
+A **Subscription** is a registration for change tracking on one or more items. After creating a Subscription, clients can periodically request a **Notification** to retrieve **NotificationItems**, records describing what has changed since the last Notification was created.
 
 > **Important:** With SboEwsRestProvider, only `ValueItemChanged` (type 0) subscriptions are supported. Attempting to create an `AlarmEventChanged` (1), `SystemEventChanged` (2), or `HierarchyChanged` (3) subscription returns `500 Internal Server Error` with the message `Invalid Event Type`. Subscription `Renew` is also not supported (returns `405`); create a new subscription instead. Subscription `Delete` works normally.
 
@@ -1590,10 +1590,10 @@ A NotificationItem describes a single change detected by a Subscription.
 
 The typical Subscription lifecycle is:
 
-1. **Create** — register a Subscription with a type, duration, and item IDs.
-2. **Poll** — periodically create Notifications to retrieve changes.
-3. **Renew** — extend the Subscription before it expires.
-4. **Terminate** or **Delete** — end the Subscription when no longer needed.
+1. **Create:** register a Subscription with a type, duration, and item IDs.
+2. **Poll:** periodically create Notifications to retrieve changes.
+3. **Renew:** extend the Subscription before it expires.
+4. **Terminate** or **Delete** to end the Subscription when no longer needed.
 
 #### POST /Subscriptions/Create
 
@@ -1610,7 +1610,7 @@ Creates a new Subscription.
 | `PriorityTo` | Integer | No | Maximum priority filter (AlarmEventChanged and SystemEventChanged only). |
 | `Types` | Array of String | No | Type filter (AlarmEventChanged and SystemEventChanged only). |
 
-**Example — subscribe to value changes:**
+**Example:** Subscribe to value changes.
 
 ```bash
 curl -X POST "http://YOUR_HOST:YOUR_PORT/Subscriptions/Create" \
@@ -1700,7 +1700,7 @@ Creates a new Notification for a Subscription. This triggers the server to colle
 
 > **Note:** The `ChangesOnly` property name is counterintuitive. Despite the name, setting `ChangesOnly` to `true` returns **all** items, while `false` returns only changes since the last Notification.
 
-**Example — create a notification for changes only:**
+**Example:** Create a notification for changes only.
 
 ```bash
 curl -X POST "http://YOUR_HOST:YOUR_PORT/Notifications/Create" \
@@ -1749,13 +1749,13 @@ Deletes the Notification and all its NotificationItems.
 | `/Notifications/{id}/Subscription` | `GET` | Returns the associated Subscription object. |
 | `/Notifications/{id}/SubscriptionId` | `GET` | Returns the SubscriptionId. |
 
-## 12 API Reference — System Events
+## 12 API Reference, System Events
 
 A **SystemEvent** represents the occurrence of a server-specific event. These events track system-level activities not tied to alarms or value changes.
 
 A **SystemEventType** defines a server-specific classification for a SystemEvent.
 
-> **Important:** SystemEvent and SystemEventType operations are available only when using SoapEwsRestProvider against an EWS server that supports the **System Profile**. MongooseEwsRestProvider and SboEwsRestProvider return `500 Internal Server Error` with the message `Operation not supported`. EcoStruxure™ Building Operation (EBO) does not support the System Profile — requests return a SOAP fault with `OPERATION_NOT_SUPPORTED`. The SoapEwsRestProvider correctly implements the call, but the underlying EWS server must advertise `GetSystemEvents` in its `GetWebServiceInformation` response.
+> **Important:** SystemEvent and SystemEventType operations are available only when using SoapEwsRestProvider against an EWS server that supports the **System Profile**. MongooseEwsRestProvider and SboEwsRestProvider return `500 Internal Server Error` with the message `Operation not supported`. EcoStruxure™ Building Operation (EBO) does not support the System Profile. Requests return a SOAP fault with `OPERATION_NOT_SUPPORTED`. The SoapEwsRestProvider correctly implements the call, but the underlying EWS server must advertise `GetSystemEvents` in its `GetWebServiceInformation` response.
 
 ### 12.1 SystemEvent Model
 
@@ -1853,15 +1853,15 @@ You authenticate in the Swagger UI to obtain a Bearer Token before issuing any A
 
 1. Enter your **Username** and **Password** in the fields at the top of the page.
 2. Select **Log in**.
-3. A green border around the credential fields indicates successful authentication. A red border indicates failure — verify your credentials and try again.
+3. A green border around the credential fields indicates successful authentication. A red border indicates failure. Verify your credentials and try again.
 
 The credentials required depend on the data provider:
 
-- **MongooseEwsRestProvider** — Use any User account in the referenced native EWS Server.
-- **SoapEwsRestProvider** — Use the EWS User credentials for the referenced server.
-- **SboEwsRestProvider** — Use the EBO user account configured in the endpoint settings.
+- **MongooseEwsRestProvider:** Use any User account in the referenced native EWS Server.
+- **SoapEwsRestProvider:** Use the EWS User credentials for the referenced server.
+- **SboEwsRestProvider:** Use the EBO user account configured in the endpoint settings.
 
-After authenticating, the Swagger UI automatically includes the `Authorization: Bearer` header in all subsequent requests. Tokens expire after the configured duration (default: 5 minutes). If the token expires, select **Log in** again to request a new token — no page refresh is required.
+After authenticating, the Swagger UI automatically includes the `Authorization: Bearer` header in all subsequent requests. Tokens expire after the configured duration (default: 5 minutes). If the token expires, select **Log in** again to request a new token. No page refresh is required.
 
 ### 13.3 Issuing Requests
 
@@ -1869,16 +1869,16 @@ You issue requests in the Swagger UI to exercise the RESTful EWS Gateway interac
 
 1. Expand the endpoint by selecting it. The top portion displays the expected success status code and an **Example Value** / **Model** synopsis of the data to be returned.
 2. Select **Try it out**.
-3. Fill in the required parameters. For `id` path parameters, enter the ID value with a single URL encoding — the Swagger UI applies the second encoding automatically (see note below).
+3. Fill in the required parameters. For `id` path parameters, enter the ID value with a single URL encoding. The Swagger UI applies the second encoding automatically (see note below).
 4. Select **Execute**.
 5. Review the results section, which includes:
-   - **Curl** — The complete `curl` command that Swagger issued, including all header and parameter information. This is useful for reproducing the request outside of Swagger.
-   - **Request URL** — The URL-only portion of the request. This is helpful when parameters are present.
-   - **Response Body** — The actual response payload. By default this is JSON (when the `Accept` header is `application/json`).
-   - **Response Code** — The HTTP status code.
-   - **Response Headers** — All response headers, including any custom headers such as `X-Total-Count` and `Link` headers.
+   - **Curl:** The complete `curl` command that Swagger issued, including all header and parameter information. This is useful for reproducing the request outside of Swagger.
+   - **Request URL:** The URL-only portion of the request. This is helpful when parameters are present.
+   - **Response Body:** The actual response payload. By default this is JSON (when the `Accept` header is `application/json`).
+   - **Response Code:** The HTTP status code.
+   - **Response Headers:** All response headers, including any custom headers such as `X-Total-Count` and `Link` headers.
 
-> **Note:** The Smart Connector REST architecture requires double URL encoding for path parameters (see [6.3 Double URL Encoding](#63-double-url-encoding)). The Swagger UI automatically applies one level of URL encoding to all path parameters. This means you must enter the ID with a single URL encoding in the Swagger input field — not the raw ID and not the double-encoded ID. For example, for the ID `00/Server 1`, enter `00%2FServer%201` in Swagger. This differs from `curl` and other HTTP clients where you must double URL encode the ID yourself.
+> **Note:** The Smart Connector REST architecture requires double URL encoding for path parameters (see [6.3 Double URL Encoding](#63-double-url-encoding)). The Swagger UI automatically applies one level of URL encoding to all path parameters. This means you must enter the ID with a single URL encoding in the Swagger input field, not the raw ID and not the double-encoded ID. For example, for the ID `00/Server 1`, enter `00%2FServer%201` in Swagger. This differs from `curl` and other HTTP clients where you must double URL encode the ID yourself.
 
 #### Switching Between JSON and XML
 
@@ -1893,9 +1893,9 @@ The response format is a consumer preference and has no functional difference. X
 
 Body parameters are used in `POST`, `PUT`, and `PATCH` actions. They are not part of the URL and do not need to be URL encoded. Select the **Parameter content type** to control the format:
 
-- `application/json` — The body must be valid JSON. Select anywhere in the **Example Value** area and the Swagger UI copies the expected format into the input field as a starting point.
-- `application/xml` — The body must be valid XML.
-- `application/x-www-form-urlencoded` — Used for scalar value updates (e.g., `PUT /Values/{id}/Value`). The value must be preceded by an `=` character.
+- **`application/json`:** The body must be valid JSON. Select anywhere in the **Example Value** area and the Swagger UI copies the expected format into the input field as a starting point.
+- **`application/xml`:** The body must be valid XML.
+- **`application/x-www-form-urlencoded`:** Used for scalar value updates (e.g., `PUT /Values/{id}/Value`). The value must be preceded by an `=` character.
 
 ### 13.4 Schema Exploration
 
@@ -1940,7 +1940,7 @@ The SboEwsRestProvider supports individual resource lookups for Values, Alarms, 
 
 | Limitation | Affected Endpoints | Response |
 | --- | --- | --- |
-| Root not supported | `GET /Root` | `404 Not Found`. Use `GET /Containers/{id}` with a known container ID instead — in most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
+| Root not supported | `GET /Root` | `404 Not Found`. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
 | No bulk retrieval | `GET /Containers`, `GET /Values`, `GET /Alarms`, `GET /Trends` | `405 Method Not Allowed`. |
 | No write operations | All `POST /*/Create`, `PATCH /*/Update`, `DELETE /*/Delete` | `405 Method Not Allowed` for all resource types. |
 | No Alarm-level transitions | `POST /Alarms/{id}/Acknowledge`, `Activate`, `Disable`, `Reset`, `ChangeState` | `405 Method Not Allowed` with `Create for Alarm Event is not allowed`. Use `POST /AlarmEvents/{id}/Acknowledge` instead. |
@@ -1980,18 +1980,18 @@ The SboEwsRestProvider supports individual resource lookups for Values, Alarms, 
 
 The SoapEwsRestProvider proxies requests to a remote EWS server via SOAP. Many operations that require server-side object creation or modification are not available through the EWS SOAP protocol.
 
-> **Important:** The SoapEwsRestProvider endpoint must point to the EWS SOAP service. The URL always ends with `/EcoStruxure/DataExchange` — for example, `https://localhost:443/EcoStruxure/DataExchange`. Use HTTPS in production environments.
+> **Important:** The SoapEwsRestProvider endpoint must point to the EWS SOAP service. The URL always ends with `/EcoStruxure/DataExchange`, for example, `https://localhost:443/EcoStruxure/DataExchange`. Use HTTPS in production environments.
 
 **Blocked operations:**
 
 | Limitation | Affected Endpoints |
 | --- | --- |
-| Root not supported | `GET /Root` returns `404 Not Found`. This operation is not available through the EWS SOAP protocol. Use `GET /Containers/{id}` with a known container ID instead — in most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
+| Root not supported | `GET /Root` returns `404 Not Found`. This operation is not available through the EWS SOAP protocol. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not work, contact your site or system administrator for the root server name. |
 | No bulk retrieval | `GET /Containers`, `GET /Values`, `GET /Alarms`, `GET /Trends` |
 | No CRUD operations | All `POST /*/Create`, `PATCH /*/Update`, `DELETE /*/Delete` for Containers, Values, Alarms, Trends, AlarmEventTypes |
 | No PUT property updates (except Value) | All `PUT` property endpoints for Containers, Alarms, Trends, AlarmEventTypes, and all Value properties except `Value` |
 | No Alarm-level state transitions | `POST /Alarms/{id}/Acknowledge`, `Activate`, `Disable`, `Reset`, `ChangeState` |
-| SystemEvents dependent on server | `GET /SystemEvents`, `GET /SystemEventTypes` — implemented in the provider, but the underlying EWS server must support the System Profile. EBO does not support this profile (returns `OPERATION_NOT_SUPPORTED`). EBO 3.0 and later broke compatibility for these operations. |
+| SystemEvents dependent on server | `GET /SystemEvents`, `GET /SystemEventTypes` are implemented in the provider, but the underlying EWS server must support the System Profile. EBO does not support this profile (returns `OPERATION_NOT_SUPPORTED`). EBO 3.0 and later broke compatibility for these operations. |
 
 **Supported write operations:**
 
@@ -2049,7 +2049,7 @@ The SoapEwsRestProvider proxies requests to a remote EWS server via SOAP. Many o
 - IDs are case-sensitive. Verify the exact casing.
 - Verify the ID includes the correct EWS DataType prefix (`00` for Container, `01` for Value, `02` for Alarm, `03` for Trend). An ID without the prefix will not resolve. See [6.4 EWS ID Format](#64-ews-id-format).
 - IDs in URL path segments must be double URL encoded. For example, `01/Server 1/Building/Temperature` becomes `01%252FServer%25201%252FBuilding%252FTemperature`.
-- With MongooseEwsRestProvider, the Root container is accessible via `GET /Root`. With SoapEwsRestProvider and SboEwsRestProvider, `GET /Root` is not supported — use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not resolve, contact your site or system administrator for the root server name.
+- With MongooseEwsRestProvider, the Root container is accessible via `GET /Root`. With SoapEwsRestProvider and SboEwsRestProvider, `GET /Root` is not supported. Use `GET /Containers/{id}` with a known container ID instead. In most default installations, the root container is named `Server 1` (ID: `00/Server 1`). If this does not resolve, contact your site or system administrator for the root server name.
 
 #### Requests return 405 Method Not Allowed
 
@@ -2090,7 +2090,7 @@ By default, the RESTful EWS Gateway listens on HTTP. For production deployments:
 
 - **Use HTTPS (TLS 1.2 or later)** to encrypt all communication between clients and the gateway. This protects OAuth2 bearer tokens transmitted in the `Authorization` header, credentials sent in token requests, and all response data.
 - Bind a certificate to the endpoint's port with `netsh http add sslcert` and give the endpoint an `https://` address. Smart Connector has no certificate management of its own. Do not trust self-signed or expired certificates in production.
-- Do not use TLS 1.0, TLS 1.1, SSLv2, or SSLv3 — these protocols have known vulnerabilities.
+- Do not use TLS 1.0, TLS 1.1, SSLv2, or SSLv3. These protocols have known vulnerabilities.
 - Avoid transmitting credentials over unencrypted HTTP in production environments.
 - The TLS versions the endpoint accepts follow the Windows SChannel settings of the host. For the certificate binding and the other host settings, see [Hardening the Smart Connector Host](smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host) in the Developers Guide.
 
@@ -2106,7 +2106,7 @@ By default, the RESTful EWS Gateway listens on HTTP. For production deployments:
 ### 15.3 Credential Management
 
 - **Never hard-code credentials** in client applications, scripts, or configuration files that are stored in version control.
-- Store service account passwords using a secrets manager, credential vault, or operating system credential store. Smart Connector uses `[EncryptedString]` for stored secrets — follow the same principle in your client applications.
+- Store service account passwords using a secrets manager, credential vault, or operating system credential store. Smart Connector uses `[EncryptedString]` for stored secrets. Follow the same principle in your client applications.
 - **Rotate credentials periodically.** If a service account password is changed on the back-end system, update the corresponding Smart Connector endpoint configuration immediately.
 - Do not reuse the same service account across multiple environments (development, staging, production).
 
@@ -2128,9 +2128,9 @@ By default, the RESTful EWS Gateway listens on HTTP. For production deployments:
 - Set **Serve Swagger Metadata** to `False` in production environments unless interactive testing is specifically required. Swagger UI exposes the full API surface and schema definitions to anyone who can reach the endpoint.
 - If Swagger UI must remain enabled in production, restrict access to the `/swagger` path using network-level controls.
 
-## 16 Appendix — Endpoint Support by Data Provider
+## 16 Appendix, Endpoint Support by Data Provider
 
-This appendix lists every endpoint exposed by the RESTful EWS Gateway and indicates whether each data provider supports it. The Swagger UI displays all 147 endpoints regardless of the data provider configured — an endpoint appearing in Swagger does not guarantee it is supported at runtime.
+This appendix lists every endpoint exposed by the RESTful EWS Gateway and indicates whether each data provider supports it. The Swagger UI displays all 147 endpoints regardless of the data provider configured. An endpoint appearing in Swagger does not guarantee it is supported at runtime.
 
 **Legend:**
 
@@ -2251,7 +2251,7 @@ This appendix lists every endpoint exposed by the RESTful EWS Gateway and indica
 | `GET` | `/AlarmEvents/{id}/State` | ✓ | ✓ | ✓ |
 | `GET` | `/AlarmEvents/{id}/Type` | ✓ | ✓ | ✓ |
 
-> **Note:** Use `POST /AlarmEvents/{id}/Acknowledge` for alarm acknowledgement with SoapEwsRestProvider and SboEwsRestProvider. The `POST /Alarms/{id}/Acknowledge` route is not supported by these providers.
+> **Note:** Use `POST /AlarmEvents/{id}/Acknowledge` for alarm acknowledgment with SoapEwsRestProvider and SboEwsRestProvider. The `POST /Alarms/{id}/Acknowledge` route is not supported by these providers.
 
 ### 16.6 Alarm Event Types
 
@@ -2291,7 +2291,7 @@ This appendix lists every endpoint exposed by the RESTful EWS Gateway and indica
 | `GET` | `/Trends/{id}/Value` | ✓ | ✓ | ✓ |
 | `GET` | `/Trends/{id}/ValueId` | ✓ | ✓ | ✓ |
 
-> **Note:** For SoapEwsRestProvider, `DELETE /Trends/{id}/DeleteTrendSamples` only evicts the in-memory cache entry — it does not delete samples on the upstream SOAP server.
+> **Note:** For SoapEwsRestProvider, `DELETE /Trends/{id}/DeleteTrendSamples` only evicts the in-memory cache entry. It does not delete samples on the upstream SOAP server.
 
 ### 16.8 Trend Samples
 
@@ -2320,7 +2320,7 @@ This appendix lists every endpoint exposed by the RESTful EWS Gateway and indica
 | `PUT` | `/Subscriptions/{id}/Terminate` | ✓ | ✓ | ✓ |
 | `GET` | `/Subscriptions/{id}/Type` | ✓ | ✓ | ✓ |
 
-> **Note:** SboEwsRestProvider only supports `ValueItemChanged` (type 0) subscriptions. Types 1 (`AlarmEventChanged`), 2 (`SystemEventChanged`), and 3 (`HierarchyChanged`) return `500 Internal Server Error` with `Invalid Event Type`. SboEwsRestProvider does not support `Renew` — create a new subscription instead.
+> **Note:** SboEwsRestProvider only supports `ValueItemChanged` (type 0) subscriptions. Types 1 (`AlarmEventChanged`), 2 (`SystemEventChanged`), and 3 (`HierarchyChanged`) return `500 Internal Server Error` with `Invalid Event Type`. SboEwsRestProvider does not support `Renew`. Create a new subscription instead.
 
 ### 16.10 Notifications
 

@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// Price Analyzer — Percentile Calculation and Classification
+// Price Analyzer, Percentile Calculation and Classification
 //
 // Classifies hourly electricity prices into Cheap/Normal/Expensive categories
 // based on user-configured percentile thresholds. Provides load-shifting

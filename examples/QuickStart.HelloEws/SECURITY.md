@@ -32,7 +32,7 @@ This document describes the security posture of the HelloEws quick-start sample.
 | UserName | Non-empty | `[Required]` |
 | Password | Non-empty, encrypted | `[Required]`, `[EncryptedString]` |
 
-The only data persisted is a server-generated UTC timestamp — no external or user-supplied payload is written to the EWS Server.
+The only data persisted is a server-generated UTC timestamp. No external or user-supplied payload is written to the EWS Server.
 
 ## Logging Practices
 
@@ -46,14 +46,14 @@ The only data persisted is a server-generated UTC timestamp — no external or u
 
 ## Threat Model
 
-This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool. Because the sample has no external API, there is **no Internet trust boundary** — the only boundaries are the network boundary to the EWS client and the process boundary to the data store.
+This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool. Because the sample has no external API, there is **no Internet trust boundary**. The only boundaries are the network boundary to the EWS client and the process boundary to the data store.
 
 ### Data Flow Diagram
 
 ```mermaid
 flowchart LR
-    subgraph host["Smart Connector host — trusted"]
-        subgraph svc["Smart Connector service — process boundary"]
+    subgraph host["Smart Connector host (trusted)"]
+        subgraph svc["Smart Connector service (process boundary)"]
             P["HelloEwsProcessor<br/>(process)"]
         end
         DB[("EWS Server store<br/>SQL database (data store)")]
@@ -68,16 +68,16 @@ flowchart LR
 
 ### Trust Boundaries
 
-- **Network boundary** — between the EWS client/EBO and the EWS endpoint (flow 2). Authenticated with HTTP Digest over the configured realm.
-- **Process / machine boundary** — between the processor and the EWS data store (flows 1, 3), mediated by the Smart Connector runtime on the same host.
+- **Network boundary:** between the EWS client/EBO and the EWS endpoint (flow 2). Authenticated with HTTP Digest over the configured realm.
+- **Process / machine boundary:** between the processor and the EWS data store (flows 1, 3), mediated by the Smart Connector runtime on the same host.
 - There is **no Internet boundary**: the sample makes no outbound calls.
 
 ### STRIDE Analysis
 
 | Category | Threat (element / flow) | Mitigation | Status |
 | --- | --- | --- | --- |
-| **Spoofing** | An unauthorised EWS client reads or writes data (2) | The EWS endpoint requires HTTP Digest authentication | Mitigated |
-| **Tampering** | EWS values modified by an unauthorised client (2) | EWS writes require authentication; the value is server-generated, not externally supplied | Mitigated |
+| **Spoofing** | An unauthorized EWS client reads or writes data (2) | The EWS endpoint requires HTTP Digest authentication | Mitigated |
+| **Tampering** | EWS values modified by an unauthorized client (2) | EWS writes require authentication; the value is server-generated, not externally supplied | Mitigated |
 | **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor logs each write | Partly mitigated |
 | **Information Disclosure** | The EWS password leaks via logs or configuration export | `[EncryptedString]` at rest; no credential in any `Logger` call | Mitigated |
 | **Denial of Service** | A very frequent schedule writes the value repeatedly | One value write per cycle, no external calls, no unbounded history growth (the sample provisions no trend logs) | Mitigated |
@@ -85,4 +85,4 @@ flowchart LR
 
 ## Compliance
 
-This sample follows the security practices documented in the [Smart Connector Developer Guide — Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).
+This sample follows the security practices documented in the [Smart Connector Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).

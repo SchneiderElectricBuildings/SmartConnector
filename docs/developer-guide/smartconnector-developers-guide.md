@@ -5,7 +5,7 @@
 <!-- Revision: 7 -->
 <!-- Date: June 2026 -->
 <!-- Author: Karim Hussain -->
-<!-- Audience: Extension developers — system integrators, third-party developers, building automation engineers -->
+<!-- Audience: Extension developers (system integrators, third-party developers, building automation engineers) -->
 
 ## Table of Contents
 
@@ -22,7 +22,7 @@
    - 4.1 [Scope](#41-scope)
    - 4.2 [What is Smart Connector?](#42-what-is-smart-connector)
 5. [Security Advisory for Production Deployments](#5-security-advisory-for-production-deployments)
-   - 5.1 [Threat Modelling](#51-threat-modelling)
+   - 5.1 [Threat Modeling](#51-threat-modeling)
    - 5.2 [Credential Handling](#52-credential-handling)
    - 5.3 [Data Protection and Privacy](#53-data-protection-and-privacy)
    - 5.4 [Logging Guidelines](#54-logging-guidelines)
@@ -87,12 +87,12 @@
 
 For development questions and peer-to-peer help, visit the [SmartConnector Forum](https://community.se.com/t5/SmartConnector-Forum/bd-p/smart-connector-developer) on the Schneider Electric Community.
 
-For product-related enquiries, contact your local [Schneider Electric representative](https://www.se.com/ww/en/work/support/country-selector/distributors.jsp).
+For product-related inquiries, contact your local [Schneider Electric representative](https://www.se.com/ww/en/work/support/country-selector/distributors.jsp).
 
 ## 2 Revision History
 
 | Date | Author | Revision | Changes Made |
-|------|--------|----------|--------------|
+| --- | --- | --- | --- |
 | 10/21/2014 | MRS | 1 | Initial release |
 | 02/16/2015 | MRS | 2 | Updated for v1.3 |
 | 09/30/2015 | MRS | 3 | Updated for v2.0 |
@@ -112,7 +112,7 @@ This chapter gets you from zero to a running Processor that writes a single valu
 ### 3.1 Prerequisites
 
 | Item | Version | Notes |
-|------|---------|-------|
+| --- | --- | --- |
 | Windows | 10 / 11 / Server 2019+ | 64-bit |
 | Visual Studio | 2019 or later | Community edition is sufficient |
 | .NET Framework | 4.8 SDK | Required by all Smart Connector extensions |
@@ -121,7 +121,7 @@ This chapter gets you from zero to a running Processor that writes a single valu
 
 ### 3.2 Configure the NuGet Feed (90 seconds)
 
-Smart Connector libraries ship from GitHub Packages on the `SchneiderElectricBuildings` organisation. You need a GitHub Personal Access Token (PAT) with the `read:packages` scope. If you do not have one, see [Section 7.3 Generate a Personal Access Token](#73-configure-nuget-feed) for step-by-step instructions.
+Smart Connector libraries ship from GitHub Packages on the `SchneiderElectricBuildings` organization. You need a GitHub Personal Access Token (PAT) with the `read:packages` scope. If you do not have one, see [Section 7.3 Generate a Personal Access Token](#73-configure-nuget-feed) for step-by-step instructions.
 
 **Never write a PAT in plain text into `nuget.config`**. Instead, use one of the two patterns below.
 
@@ -240,7 +240,7 @@ namespace Quickstart.HelloEws
 
             // Provision the structure. Ensure* helpers are idempotent: they
             // create the folder/value on the first run and return the existing
-            // items on every run after that — so no manual Portal setup is needed.
+            // items on every run after that, so no manual Portal setup is needed.
             var hello = EnsureFolder(adapter, "/Hello", "Hello", null);
             EnsureValue(adapter, "/Hello/LastSeen", "LastSeen",
                 EwsValueTypeEnum.String, hello);
@@ -257,7 +257,7 @@ namespace Quickstart.HelloEws
         // Returns an adapter for the EWS Server, creating it on the first run.
         // ConnectExisting is tried first: on every run after the first it
         // succeeds. Only when it fails (the server does not yet exist) do we
-        // ConnectNew — ConnectNew throws up front if the name is already in use,
+        // ConnectNew. ConnectNew throws up front if the name is already in use,
         // so it must never run for an existing server.
         private EwsServerDataAdapter ConnectOrCreateServer()
         {
@@ -273,7 +273,7 @@ namespace Quickstart.HelloEws
                     + $"'{ServerName}'.");
             }
 
-            // First run — create the server, then reconnect with a clean context.
+            // First run. Create the server, then reconnect with a clean context.
             using (EwsServerDataAdapter.ConnectNew(
                 name: ServerName, address: EwsAddress, realm: Realm,
                 username: UserName, password: Password, autoStart: true))
@@ -316,7 +316,7 @@ namespace Quickstart.HelloEws
 }
 ```
 
-> **Why these APIs?** `Processor` is the base class for all custom processors ([Section 7.5](#75-the-base-class-configuration-and-validation)). `EwsServerDataAdapter.ConnectNew` creates the EWS Server and starts its HTTP listener; disposing it and calling `ConnectExisting` returns a clean adapter ([Section 11.4](#114-ewsserverdataadapter)). The idempotent `EnsureFolder` / `EnsureValue` helpers provision the structure so the same code runs safely on every cycle — this is the recommended pattern ([Section 7.8](#78-recommended-patterns-for-production-extensions)). `ModifyValueItemValue` updates a single value, and `EwsValueStateEnum.Good` is the quality flag ([Section 11.4](#114-ewsserverdataadapter)). `EncryptedString` ensures the password is encrypted in the database ([Section 5.2](#52-credential-handling)).
+> **Why these APIs?** `Processor` is the base class for all custom processors ([Section 7.5](#75-the-base-class-configuration-and-validation)). `EwsServerDataAdapter.ConnectNew` creates the EWS Server and starts its HTTP listener; disposing it and calling `ConnectExisting` returns a clean adapter ([Section 11.4](#114-ewsserverdataadapter)). The idempotent `EnsureFolder` / `EnsureValue` helpers provision the structure so the same code runs safely on every cycle. This is the recommended pattern ([Section 7.8](#78-recommended-patterns-for-production-extensions)). `ModifyValueItemValue` updates a single value, and `EwsValueStateEnum.Good` is the quality flag ([Section 11.4](#114-ewsserverdataadapter)). `EncryptedString` ensures the password is encrypted in the database ([Section 5.2](#52-credential-handling)).
 
 ### 3.5 Build, Deploy, Configure (5 minutes)
 
@@ -327,7 +327,7 @@ namespace Quickstart.HelloEws
 5. Open the Smart Connector Portal in a browser.
 6. Create a schedule (Portal → **Setup → Configuration Schedules → Add New**). Set it to run every minute.
 7. Create a Processor Configuration (Portal → **Processors → Add**), select `Quickstart.HelloEws.HelloEwsProcessor`, fill in `UserName` and `Password` (the `ServerName`, `Realm`, and `EwsAddress` already have working defaults), and assign the schedule you created in step 6.
-8. Wait one minute. The processor creates an EWS Server named **Hello EWS Server** with a `/Hello/LastSeen` value. Open **EWS Servers** in the Portal, select that server, and refresh — the value shows the current UTC timestamp. You never created the server or the value by hand.
+8. Wait one minute. The processor creates an EWS Server named **Hello EWS Server** with a `/Hello/LastSeen` value. Open **EWS Servers** in the Portal, select that server, and refresh. The value shows the current UTC timestamp. You never created the server or the value by hand.
 
 ### 3.6 You Did It! Now What?
 
@@ -335,9 +335,9 @@ You have just exercised the full Smart Connector round-trip: NuGet → Processor
 
 - **Understand what you built:** [Section 4 Overview](#4-overview) explains every concept (Processor, EWS Server, Worker, etc.).
 - **Read this before going further:** [Section 5 Security Advisory for Production Deployments](#5-security-advisory-for-production-deployments): the security rules every extension author must follow before deploying anywhere except a local dev machine.
-- **Build a real extension:** [Section 7 Develop an Extension](#7-develop-an-extension) walks through a non-trivial weather-data example — a single self-provisioning processor that fetches from a third-party API and serves the data over EWS with trend history.
+- **Build a real extension:** [Section 7 Develop an Extension](#7-develop-an-extension) walks through a non-trivial weather-data example, a single self-provisioning processor that fetches from a third-party API and serves the data over EWS with trend history.
 - **Test it:** [Section 8 Testing an Extension](#8-testing-an-extension) shows how to unit-test Processors with `IProcessorTestFixture<T>` so they never touch a real database.
-- **Reference:** [Section 11 Appendix](#11-appendix) is the alphabetised reference for every interface, attribute, and helper.
+- **Reference:** [Section 11 Appendix](#11-appendix) is the alphabetized reference for every interface, attribute, and helper.
 
 > **Where is the RESTful EWS Gateway?** The REST gateway (used to expose Smart Connector EWS data over HTTP/JSON) is documented in a separate companion document: *Smart Connector RESTful EWS API Gateway Guide*. This developer guide focuses exclusively on the SDK.
 
@@ -391,7 +391,7 @@ graph TB
     style REST fill:#E6F4FA,stroke:#9AA0A6,stroke-width:2px
 ```
 
-> **Figure 1 — Smart Connector high-level architecture.** Your extension code (blue boxes) runs inside the service as Processors executed by Worker threads. Data flows to and from EWS Servers, the REST Gateway, and external systems.
+> **Figure 1 – Smart Connector high-level architecture.** Your extension code (blue boxes) runs inside the service as Processors executed by Worker threads. Data flows to and from EWS Servers, the REST Gateway, and external systems.
 
 Smart Connector also provides the infrastructure to provision HTTP endpoints. These endpoints can either serve data to Schneider Electric systems and third-party clients via Schneider Electric's EcoStruxure™ Web Services (EWS) SOAP protocol or generic RESTful services.
 
@@ -445,7 +445,7 @@ In addition to a persistent data store, Smart Connector provides a mechanism to 
 
 Smart Connector provides an integrated logging framework. Logging levels of Info, Status, Error, Debug, and Trace are extensively used throughout the Smart Connector runtime and public libraries. The Logger is also available to Extension authors for adding their own log information to the common log file output.
 
-Smart Connector supports forwarding all log output to a syslog server for centralised log management. See [Section 11.16 Syslog Logging](#1116-syslog-logging) for configuration details.
+Smart Connector supports forwarding all log output to a syslog server for centralized log management. See [Section 11.16 Syslog Logging](#1116-syslog-logging) for configuration details.
 
 #### 4.2.12 Licensing
 
@@ -459,7 +459,7 @@ This chapter is mandatory reading before deploying any extension outside a local
 
 > **Scope:** This chapter covers what *extension authors* control. Service-side runtime knobs (account lockout thresholds, password complexity, syslog forwarding) are documented in [Section 11.15 Security Configuration](#1115-security-configuration) and [Section 11.16 Syslog Logging](#1116-syslog-logging).
 
-### 5.1 Threat Modelling
+### 5.1 Threat Modeling
 
 A threat model is a structured analysis of who might attack your system, what they are after, and which parts of the system are most exposed. It is not a one-time exercise; it should be revisited whenever the extension's architecture, data flows, or external integrations change.
 
@@ -476,7 +476,7 @@ Microsoft publishes the **Threat Modeling Tool**, a free desktop application tha
 The recommended workflow:
 
 1. **Draw a data-flow diagram** of your extension: which systems it talks to, which credentials it holds, where data is stored, and which network boundaries are crossed.
-2. **Run the Threat Modeling Tool** against the diagram. It generates a list of potential threats categorised by STRIDE.
+2. **Run the Threat Modeling Tool** against the diagram. It generates a list of potential threats categorized by STRIDE.
 3. **Triage each threat:** decide whether to mitigate, accept, or transfer the risk.
 4. **Document mitigations** alongside the extension's design documentation.
 5. **Revisit** whenever you add a new API, a new data store, a new credential, or a new network path.
@@ -484,25 +484,25 @@ The recommended workflow:
 #### 5.1.3 What to Consider for Smart Connector Extensions
 
 | Area | Questions to ask |
-|------|------------------|
+| --- | --- |
 | Credentials | Which passwords, API keys, or tokens does the extension hold? Are they all marked `[EncryptedString]`? |
 | Network exposure | Does the extension open new HTTP endpoints? Are they authenticated? |
-| Data stores | Does the extension write to the Smart Connector database or to external stores? What happens if that data is read by an unauthorised party? |
+| Data stores | Does the extension write to the Smart Connector database or to external stores? What happens if that data is read by an unauthorized party? |
 | Log output | Could a log line reveal a credential, a personal identifier, or an internal URL? |
 | Third-party APIs | What happens if the third-party API returns malicious or unexpected data? |
 | Supply chain | Are all NuGet dependencies from trusted sources? Are their licences compatible? |
 
 #### 5.1.4 Example: Weather Extension Threat Model
 
-The Weather Extension from [Section 7 Develop an Extension](#7-develop-an-extension) connects to an external weather API and writes values to an EWS server. The data-flow diagram below identifies the elements and the **trust boundaries** they cross — the same lens the Microsoft Threat Modeling Tool uses. Each boundary crossing is then examined for STRIDE threats.
+The Weather Extension from [Section 7 Develop an Extension](#7-develop-an-extension) connects to an external weather API and writes values to an EWS server. The data-flow diagram below identifies the elements and the **trust boundaries** they cross, the same lens the Microsoft Threat Modeling Tool uses. Each boundary crossing is then examined for STRIDE threats.
 
 ```mermaid
 flowchart LR
-    subgraph inet["Internet — untrusted"]
+    subgraph inet["Internet (untrusted)"]
         API["Weather API<br/>(external entity)"]
     end
-    subgraph host["Smart Connector host — trusted"]
-        subgraph svc["Smart Connector service — process boundary"]
+    subgraph host["Smart Connector host (trusted)"]
+        subgraph svc["Smart Connector service (process boundary)"]
             P["WeatherProcessor<br/>(process)"]
         end
         DB[("EWS Server store<br/>SQL database (data store)")]
@@ -521,14 +521,14 @@ Applying STRIDE to the elements and flows yields, for example:
 
 | Category | Threat | Mitigation |
 | --- | --- | --- |
-| **Spoofing** | A spoofed weather endpoint (flow 2) feeds false data; an unauthorised EWS client (flow 4) | TLS 1.2 with certificate validation; HTTP Digest auth on the EWS endpoint |
+| **Spoofing** | A spoofed weather endpoint (flow 2) feeds false data; an unauthorized EWS client (flow 4) | TLS 1.2 with certificate validation; HTTP Digest auth on the EWS endpoint |
 | **Tampering** | Data altered in transit (flows 2, 4) | TLS in transit; validate and bound API values before persisting |
 | **Repudiation** | An action cannot be traced | The application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records last-update, health, and counters to `Meta/*` |
 | **Information Disclosure** | The API key or EWS password leaks (flows 1, 4) | `[EncryptedString]` at rest; no credential in any log call; credentials only over TLS |
 | **Denial of Service** | The API is unreachable or floods the worker; an oversized response (flow 2) | Fail gracefully (a `MayNotContinue` prompt, not an infinite retry); HTTP timeout; bounded response parsing; guard against overlapping runs |
 | **Elevation of Privilege** | A crafted response or dependency runs as the service account | Treat all external data as untrusted and validate it; trusted dependencies only; least-privilege service account |
 
-Each example extension ships a `SECURITY.md` with this diagram and table filled in for its specific API — use one as a template for your own (see [`examples/SmartConnector.WeatherExtension/SECURITY.md`](../../examples/SmartConnector.WeatherExtension/SECURITY.md)).
+Each example extension ships a `SECURITY.md` with this diagram and table filled in for its specific API. Use one as a template for your own (see [`examples/SmartConnector.WeatherExtension/SECURITY.md`](../../examples/SmartConnector.WeatherExtension/SECURITY.md)).
 
 ### 5.2 Credential Handling
 
@@ -560,7 +560,7 @@ The runtime encrypts the value at write-time and decrypts it only when the prope
 
 #### 5.2.3 Never Read Encrypted Values into Local Logs
 
-The decrypted value is intended for transport to the third-party system that needs it. Never log it, never write it to a file, never serialise it to a `Prompt` message, and never include it in an exception message that propagates upstream.
+The decrypted value is intended for transport to the third-party system that needs it. Never log it, never write it to a file, never serialize it to a `Prompt` message, and never include it in an exception message that propagates upstream.
 
 ```csharp
 // FORBIDDEN
@@ -591,7 +591,7 @@ Extension authors are responsible for the data their code handles. The Smart Con
 #### 5.3.1 Data Your Extension Controls
 
 | Data type | Example | Your responsibility |
-|-----------|---------|---------------------|
+| --- | --- | --- |
 | Third-party API credentials | Weather-API key, OAuth client secret | Mark with `[EncryptedString]`; never log |
 | EWS server credentials | Username, password passed to `EwsServerDataAdapter` | Mark with `[EncryptedString]`; never log |
 | EWS value data | `ValueItem` values your Processor writes | If values contain personal identifiers (e.g. badge numbers, email addresses), document why and ensure downstream consumers are aware |
@@ -600,7 +600,7 @@ Extension authors are responsible for the data their code handles. The Smart Con
 
 #### 5.3.2 What the Runtime Already Handles
 
-The following are managed by the Smart Connector runtime. Extension code cannot change their behaviour and should not attempt to duplicate them:
+The following are managed by the Smart Connector runtime. Extension code cannot change their behavior and should not attempt to duplicate them:
 
 - Portal user account storage and password hashing
 - Logging of failed Portal sign-ins and attempts on locked accounts, when the `Portal` log category is included
@@ -612,7 +612,7 @@ All communication with external services must be encrypted. Use **TLS 1.2 or hig
 
 Leave `ServicePointManager.SecurityProtocol` at its default. The Smart Connector service is a .NET Framework 4.8 process, so the default is `SystemDefault`, which uses the TLS versions Windows allows. The setting is shared by every extension in the service, and a line such as `ServicePointManager.SecurityProtocol |= SecurityProtocolType.Tls12` replaces that default with TLS 1.2 only, for all of them. Administrators switch TLS 1.0 and 1.1 off in the Windows SChannel settings of the host.
 
-Use `https://` endpoints exclusively for third-party APIs; reject a downgrade to plain HTTP. The native EWS Server and REST Gateway transport security is configured at the service level — this rule covers the third-party endpoints your code calls. For the service-level settings, see [Section 11.21 Hardening the Smart Connector Host](#1121-hardening-the-smart-connector-host).
+Use `https://` endpoints exclusively for third-party APIs; reject a downgrade to plain HTTP. The native EWS Server and REST Gateway transport security is configured at the service level. This rule covers the third-party endpoints your code calls. For the service-level settings, see [Section 11.21 Hardening the Smart Connector Host](#1121-hardening-the-smart-connector-host).
 
 ### 5.4 Logging Guidelines
 
@@ -623,7 +623,7 @@ The single overriding rule: **never log credentials or secrets at any log level.
 #### 5.4.1 What to Log at Each Level
 
 | Level | Purpose | Appropriate content | Not appropriate |
-|-------|---------|---------------------|-----------------|
+| --- | --- | --- | --- |
 | `LogError` | Operation failed; cannot continue | Exception type and message, operation name, affected resource identifier | Passwords, tokens, raw connection strings, full stack traces from third-party libraries that may embed credentials in query parameters |
 | `LogInfo` | Normal operational messages an operator reads in production | "Connected to server X", "Wrote N values", "Processor completed in M ms" | User-supplied free-text values, email addresses, raw API responses |
 | `LogStatus` | Heartbeat or progress | "Processing batch 3 of 10" | Detailed data values |
@@ -642,16 +642,16 @@ Logger.LogTrace(LogCategory.Processor, $"Token={ApiToken}");
 Logger.LogTrace(LogCategory.Processor, "Authenticating with token [REDACTED]");
 ```
 
-#### 5.4.3 Centralise via Syslog
+#### 5.4.3 Centralize via Syslog
 
-For any non-trivial deployment, forward Smart Connector logs to a centralised syslog target (Splunk, Graylog, Sentinel). This delivers tamper-evidence, retention, and access control that local log files cannot. See [Section 11.16 Syslog Logging](#1116-syslog-logging) for configuration.
+For any non-trivial deployment, forward Smart Connector logs to a centralized syslog target (Splunk, Graylog, Sentinel). This delivers tamper-evidence, retention, and access control that local log files cannot. See [Section 11.16 Syslog Logging](#1116-syslog-logging) for configuration.
 
 ### 5.5 Validation as a Security Control
 
-Schematic and semantic validation are not just for usability. They are the first line of defence against malformed configuration that could be used to attack a downstream system. Apply them rigorously to every public property:
+Schematic and semantic validation are not just for usability. They are the first line of defense against malformed configuration that could be used to attack a downstream system. Apply them rigorously to every public property:
 
 | Property type | Required validation |
-|---------------|---------------------|
+| --- | --- |
 | URL or address | `[Url]` (DataAnnotations) plus your own scheme/host check in `Validate` |
 | File path | `[Required]` + reject path traversal sequences (`..`, absolute paths outside data dir) |
 | Username | `[Required]` + maximum length |
@@ -682,7 +682,7 @@ Before submitting any extension for deployment, walk this checklist:
 - [ ] No `Logger.Log*` call interpolates a password, token, or PII field.
 - [ ] Outbound calls to external services use TLS 1.2 or higher and reject invalid certificates.
 - [ ] All `IDisposable` resources are wrapped in `using` or disposed in `Dispose`.
-- [ ] Resource use is bounded — query/result sizes and any backfill window are capped, and a long-running execution is guarded against overlapping runs.
+- [ ] Resource use is bounded. Query/result sizes and any backfill window are capped, and a long-running execution is guarded against overlapping runs.
 - [ ] All public properties have `[Required]`, `[StringLength]`, or `[Range]` as appropriate.
 - [ ] `nuget.config` is gitignored and a `.template` is committed in its place.
 - [ ] PAT used for NuGet has `read:packages` scope only and an expiry.
@@ -765,7 +765,7 @@ flowchart LR
     end
 ```
 
-In **asynchronous** management a Processor refreshes the database on a schedule and clients read the stored values (fast reads, possibly stale between cycles). In **synchronous** management every client request is served live by a custom request processor (always fresh, slower, more code). The **hybrid** approach is asynchronous for reads but overrides just the methods that must be synchronous — typically write, force, and unforce.
+In **asynchronous** management a Processor refreshes the database on a schedule and clients read the stored values (fast reads, possibly stale between cycles). In **synchronous** management every client request is served live by a custom request processor (always fresh, slower, more code). The **hybrid** approach is asynchronous for reads but overrides just the methods that must be synchronous, typically write, force, and unforce.
 
 #### 6.2.1 Asynchronous Data Management
 
@@ -832,7 +832,7 @@ Hybrid solutions are asynchronous solutions where only those method(s) which nee
 
 ### 6.3 Providing Data to a Third Party
 
-The manner in which you provide data to third parties depends on the capabilities of the third party. If the third party can consume the EWS SOAP endpoint, no further customisation is needed. More commonly, the third party can be classified as either an active or passive participant.
+The manner in which you provide data to third parties depends on the capabilities of the third party. If the third party can consume the EWS SOAP endpoint, no further customization is needed. More commonly, the third party can be classified as either an active or passive participant.
 
 #### 6.3.1 Active Third Party
 
@@ -871,19 +871,19 @@ A requirement exists to obtain current weather data (temperature, "feels like" t
 - Resolve the configured city to coordinates and report the resolved location, so an operator can confirm the geocoded target.
 - Maintain historical (trend) data for the current conditions so EWS clients can graph them over time.
 - Expose its own operational health (last update, next update, error state, and counters) so operators can alarm on integration failures.
-- Provision everything it needs on first run — no manual EWS Server or point creation.
+- Provision everything it needs on first run, with no manual EWS Server or point creation.
 
 We will pull weather data from the free OpenWeatherMap service at <https://openweathermap.org/api>. You must register for a free account and obtain your own API key; the [Weather Extension README](../../examples/SmartConnector.WeatherExtension/README.md) has step-by-step instructions for obtaining and activating one.
 
 ### 7.2 The Design
 
-Earlier versions of this guide built this solution as two cooperating processors (a setup processor and an update processor) plus a customised EWS Server. The modern, recommended approach — and the one this chapter follows — is a **single, self-provisioning processor**. One processor that both provisions its EWS structure and updates it on a schedule avoids the configuration mismatch that two separate processors can drift into, where the update side expects points the setup side never created. See [Recommended Patterns for Production Extensions](#78-recommended-patterns-for-production-extensions) for why, and the larger `EntsoeExtension` and `GridStatusExtension` examples for the same pattern at scale.
+Earlier versions of this guide built this solution as two cooperating processors (a setup processor and an update processor) plus a customized EWS Server. The modern, recommended approach, and the one this chapter follows, is a **single, self-provisioning processor**. One processor that both provisions its EWS structure and updates it on a schedule avoids the configuration mismatch that two separate processors can drift into, where the update side expects points the setup side never created. See [Recommended Patterns for Production Extensions](#78-recommended-patterns-for-production-extensions) for why, and the larger `EntsoeExtension` and `GridStatusExtension` examples for the same pattern at scale.
 
 The design has three parts:
 
-- **`WeatherProcessorBase`** — an abstract base class holding the configuration properties (EWS Server details, API key, city, units), validation, the unit labels, and the `EwsServerDataAdapter` lifecycle.
-- **`WeatherProcessor`** — the concrete processor. On every scheduled execution it provisions the EWS structure idempotently, fetches data from OpenWeatherMap, writes values and trend samples, and updates its health metadata — all in a fixed phase order, guarded against overlapping runs.
-- **Helper classes** — `OpenWeatherMapClient` (HTTPS with TLS 1.2 and retry), `OpenWeatherMapResponseParser` (JSON to typed objects), `ForecastAggregator` (3-hour steps rolled into daily summaries), and `EwsStructure` (the EWS path constants). Keeping these separate keeps the processor readable and lets the pure logic be unit-tested without a Smart Connector runtime.
+- **`WeatherProcessorBase`:** an abstract base class holding the configuration properties (EWS Server details, API key, city, units), validation, the unit labels, and the `EwsServerDataAdapter` lifecycle.
+- **`WeatherProcessor`:** the concrete processor. On every scheduled execution it provisions the EWS structure idempotently, fetches data from OpenWeatherMap, writes values and trend samples, and updates its health metadata, all in a fixed phase order, guarded against overlapping runs.
+- **Helper classes:** `OpenWeatherMapClient` (HTTPS with TLS 1.2 and retry), `OpenWeatherMapResponseParser` (JSON to typed objects), `ForecastAggregator` (3-hour steps rolled into daily summaries), and `EwsStructure` (the EWS path constants). Keeping these separate keeps the processor readable and lets the pure logic be unit-tested without a Smart Connector runtime.
 
 OpenWeatherMap has deprecated city-name weather queries, so the processor first resolves the city to latitude/longitude via the Geocoding API, then fetches weather by coordinates. The geocode result is cached in the EWS tree and only re-fetched when the configured city changes, which conserves the free-tier API budget.
 
@@ -902,7 +902,7 @@ flowchart TD
     EWS --> REST["REST Client<br/>(via Gateway)"]
 ```
 
-> **Figure 2 — Weather extension architecture.** A single `WeatherProcessor` runs on a schedule. On first run it creates the EWS Server and provisions the data tree; on every run it geocodes the city (cached), fetches current conditions and the forecast from OpenWeatherMap, and writes values, trend samples, and health metadata. EWS clients such as EBO read the served data.
+> **Figure 2 – Weather extension architecture.** A single `WeatherProcessor` runs on a schedule. On first run it creates the EWS Server and provisions the data tree; on every run it geocodes the city (cached), fetches current conditions and the forecast from OpenWeatherMap, and writes values, trend samples, and health metadata. EWS clients such as EBO read the served data.
 
 The processor provisions a single tree under `/Weather`, with a `Meta` container for health, a `Location` container for the geocoded coordinates, a `Current` container (whose temperature, pressure, and humidity points carry trend logs), and a `Forecast` container with one folder per forecast day:
 
@@ -922,11 +922,11 @@ The ★ points have a linked trend log (history item). Let's build it.
 
 ### 7.3 Configure NuGet Feed
 
-Before we code anything, we need to configure Visual Studio to have access to Smart Connector's public libraries. These libraries are distributed via NuGet packages hosted on **GitHub Packages** within the Schneider Electric Buildings organisation.
+Before we code anything, we need to configure Visual Studio to have access to Smart Connector's public libraries. These libraries are distributed via NuGet packages hosted on **GitHub Packages** within the Schneider Electric Buildings organization.
 
 #### Prerequisites
 
-- A GitHub account with access to the `SchneiderElectricBuildings` organisation
+- A GitHub account with access to the `SchneiderElectricBuildings` organization
 - A GitHub Personal Access Token (PAT) with the `read:packages` scope
 
 #### Generate a Personal Access Token
@@ -941,10 +941,10 @@ Before we code anything, we need to configure Visual Studio to have access to Sm
 
 #### Add the NuGet Package Source
 
-There are three ways to register the feed. All are equivalent — choose the one that fits your workflow:
+There are three ways to register the feed. All are equivalent, so choose the one that fits your workflow:
 
 | Method | Best for | Details |
-|--------|----------|--------|
+| --- | --- | --- |
 | `dotnet nuget add source` (CLI) | Local Windows dev | DPAPI-encrypted, no plain-text PAT on disk |
 | Environment-variable `nuget.config` | CI pipelines and teams | PAT resolved at runtime from env var |
 | Visual Studio UI | Developers who prefer GUI workflows | Prompted for credentials on first restore |
@@ -1049,7 +1049,7 @@ Run `dotnet restore` (or let Visual Studio restore on first build) and confirm a
 
 #### 7.4.2 Assembly Metadata
 
-The Portal displays assembly information to the user when adding Processor and Endpoint Configurations and EWS Servers. With an SDK-style project this information comes from the MSBuild properties shown above — `Description`, `Company`, `Copyright`, and `Version` — not from a separate `AssemblyInfo.cs` file. Set them to useful, descriptive values for your extension.
+The Portal displays assembly information to the user when adding Processor and Endpoint Configurations and EWS Servers. With an SDK-style project this information comes from the MSBuild properties shown above (`Description`, `Company`, `Copyright`, and `Version`), not from a separate `AssemblyInfo.cs` file. Set them to useful, descriptive values for your extension.
 
 > **Note:** Set `IncludeSourceRevisionInInformationalVersion` to `false` so the build does not append a source-control hash to the version string the Portal displays.
 
@@ -1102,23 +1102,23 @@ public override bool IsLicensed => false;
 
 #### 7.5.3 Configurable Properties
 
-As you write your code, you will almost always need input that is not available at design time. This information is obtained from the person configuring your code in the Portal. To facilitate this, **every public read/write property on your Processor is treated as a configurable property** and is extracted when a Processor Configuration is generated, for both value-type and reference-type properties. Use the `ConfigurationIgnoreAttribute` to hide a property that would otherwise be configurable (for example, an injected service — see [Section 11.17 Dependency Injection](#1117-dependency-injection)).
+As you write your code, you will almost always need input that is not available at design time. This information is obtained from the person configuring your code in the Portal. To facilitate this, **every public read/write property on your Processor is treated as a configurable property** and is extracted when a Processor Configuration is generated, for both value-type and reference-type properties. Use the `ConfigurationIgnoreAttribute` to hide a property that would otherwise be configurable (for example, an injected service, see [Section 11.17 Dependency Injection](#1117-dependency-injection)).
 
 The Weather Extension needs the following inputs:
 
-- **ServerName** — name of the EWS Server to create or connect to. Required.
-- **UserName** — EWS Server user name. Required.
-- **Password** — EWS Server password. Required, and sensitive.
-- **ApiKey** — OpenWeatherMap API key. Required, and sensitive.
-- **City** — the city to report on. Required.
-- **Units** — measurement system (Metric, Imperial, or Standard). Required.
-- **UpdateForecast** — whether to fetch the forecast. Optional.
+- **ServerName:** name of the EWS Server to create or connect to. Required.
+- **UserName:** EWS Server user name. Required.
+- **Password:** EWS Server password. Required, and sensitive.
+- **ApiKey:** OpenWeatherMap API key. Required, and sensitive.
+- **City:** the city to report on. Required.
+- **Units:** measurement system (Metric, Imperial, or Standard). Required.
+- **UpdateForecast:** whether to fetch the forecast. Optional.
 
 Some are required, some optional, and two (`Password`, `ApiKey`) hold sensitive information. Smart Connector handles all of this through the validation and configuration-aid attributes described next; the complete property block, with its attributes, appears in [Section 7.5.5](#755-the-base-class-properties-in-full).
 
 ##### 7.5.3.1 DefaultValueAttribute
 
-`DefaultValueAttribute` (from `System.ComponentModel`) seeds the initial value shown in the Portal when a Processor Configuration is first created — for strings, numbers, enumerations, or booleans. The value remains editable; you are only controlling the starting point. We use it to default `ServerName`, `EwsAddress`, `Realm`, `City`, `Units`, and `UpdateForecast`.
+`DefaultValueAttribute` (from `System.ComponentModel`) seeds the initial value shown in the Portal when a Processor Configuration is first created, for strings, numbers, enumerations, or booleans. The value remains editable; you are only controlling the starting point. We use it to default `ServerName`, `EwsAddress`, `Realm`, `City`, `Units`, and `UpdateForecast`.
 
 > **Security:** Do not use `[DefaultValue]` on properties that hold secrets (passwords, API keys, tokens). A default credential is a hard-coded credential that ships with your extension. Leave secret properties without a default so the Portal forces the operator to supply a value at configuration time.
 
@@ -1138,11 +1138,11 @@ Because the state of a Processor is loaded from a Processor Configuration at run
 
 Schematic validation confirms that the instance holds values the author deems acceptable. Smart Connector makes extensive use of the .NET `System.ComponentModel.DataAnnotations` namespace; any attribute from it can annotate a property. Common ones are `Required`, `Range`, `MinLength`, `MaxLength`, and `StringLength`. The Weather Extension marks every mandatory property `[Required]`.
 
-You can author your own validation attribute by subclassing `ValidationAttribute`, and Smart Connector will honor it. Smart Connector ships several specialised attributes this way; see the [Appendix](#113-smart-connector-attributes).
+You can author your own validation attribute by subclassing `ValidationAttribute`, and Smart Connector will honor it. Smart Connector ships several specialized attributes this way; see the [Appendix](#113-smart-connector-attributes).
 
 ##### 7.5.4.2 Semantic Validation
 
-Semantic validation is contextual — it needs meaning beyond a single attribute. It is based on the .NET `IValidatableObject` interface. Because `Processor` implements that interface, you can override `Validate` to add contextual checks. The Weather Extension enforces two rules: the EWS user name and password must differ (a common security best practice), and the city must not be blank.
+Semantic validation is contextual. It needs meaning beyond a single attribute. It is based on the .NET `IValidatableObject` interface. Because `Processor` implements that interface, you can override `Validate` to add contextual checks. The Weather Extension enforces two rules: the EWS user name and password must differ (a common security best practice), and the city must not be blank.
 
 ```csharp
 public override IEnumerable<ValidationResult> Validate(
@@ -1291,7 +1291,7 @@ protected override void Dispose(bool disposing)
 }
 ```
 
-> **Why `ConnectExisting` is wrapped in try/catch:** `ConnectExisting` *throws* when the named server does not exist — it does not return `null`. The lazy property swallows that first-run failure and logs it at debug level; the concrete processor then creates the server. See [Section 11.4 EwsServerDataAdapter](#114-ewsserverdataadapter).
+> **Why `ConnectExisting` is wrapped in try/catch:** `ConnectExisting` *throws* when the named server does not exist. It does not return `null`. The lazy property swallows that first-run failure and logs it at debug level; the concrete processor then creates the server. See [Section 11.4 EwsServerDataAdapter](#114-ewsserverdataadapter).
 
 ### 7.6 The Processor: A Phased Execution Cycle
 
@@ -1324,8 +1324,8 @@ The return type is a list of `Prompt` instances. Each `Prompt` conveys a message
 
 **`PromptSeverity` values:**
 
-| Severity | Meaning | Runtime behaviour |
-|----------|---------|-------------------|
+| Severity | Meaning | Runtime behavior |
+| --- | --- | --- |
 | `MayNotContinue` | Fatal: the Processor cannot complete its task | Execution is marked as **failed**. If multiple Processors depend on this one, they should check the result. |
 | `MayContinue` | Warning: something went wrong but the Processor can continue | Execution is marked as **successful** (as long as no `MayNotContinue` is present). |
 
@@ -1382,7 +1382,7 @@ foreach (var item in items)
 
 **CheckCancellationToken()**
 
-A somewhat less graceful albeit faster exit can be achieved by calling the protected `CheckCancellationToken` method. This approach should only be used if an uncontrolled and immediate termination of the method is acceptable as it will cause a `TaskCancelledException` to be thrown if a stop request is pending. Smart Connector will call the virtual `CleanupBeforeCancellation` method prior to throwing the exception if cleanup of any type is required.
+A somewhat less graceful albeit faster exit can be achieved by calling the protected `CheckCancellationToken` method. This approach should only be used if an uncontrolled and immediate termination of the method is acceptable as it will cause an `OperationCanceledException` to be thrown if a stop request is pending. Smart Connector will call the virtual `CleanupBeforeCancellation` method prior to throwing the exception if cleanup of any type is required.
 
 ```csharp
 foreach (var item in items)
@@ -1437,7 +1437,7 @@ public class MyProcessor : Processor, ILongRunningProcess
 
 #### 7.6.4 Execution Mode
 
-The `Processor` base class exposes an `ExecutionMode` property that tells your code how it was triggered. This is useful when a Processor should behave differently depending on context. For example, performing a full synchronisation on startup but only a delta update on subsequent scheduled runs.
+The `Processor` base class exposes an `ExecutionMode` property that tells your code how it was triggered. This is useful when a Processor should behave differently depending on context. For example, performing a full synchronization on startup but only a delta update on subsequent scheduled runs.
 
 ```csharp
 protected override IEnumerable<Prompt> Execute_Subclass()
@@ -1454,14 +1454,14 @@ protected override IEnumerable<Prompt> Execute_Subclass()
 ```
 
 | Mode | When it fires |
-|------|---------------|
+| --- | --- |
 | `OnServiceStartup` | The Processor Configuration has "Runs On Start" set to True and the Smart Connector service is starting |
 | `OnSchedule` | The Processor Configuration was triggered by its configured schedule (Interval, Weekly, Monthly, or Cron) |
 | `OnDemand` | A user clicked **Start** in the Portal or an `IActionBroker` call started the configuration programmatically |
 
 #### 7.6.5 The Execution Cycle and Re-entrancy Guard
 
-`Execute_Subclass` runs the work in four explicit phases — provision, update values, sample history, update metadata — and is wrapped in a re-entrancy guard so a slow cycle cannot overlap the next scheduled trigger:
+`Execute_Subclass` runs the work in four explicit phases (provision, update values, sample history, update metadata) and is wrapped in a re-entrancy guard so a slow cycle cannot overlap the next scheduled trigger:
 
 ```csharp
 protected override IEnumerable<Prompt> Execute_Subclass()
@@ -1550,7 +1550,7 @@ private static void ExitExecution(string key)
 }
 ```
 
-The processor stays a normal scheduled processor — it still returns each cycle. The guard only prevents *concurrent* runs. The phases are covered next.
+The processor stays a normal scheduled processor. It still returns each cycle. The guard only prevents *concurrent* runs. The phases are covered next.
 
 #### 7.6.6 Connecting to or Creating the EWS Server
 
@@ -1611,7 +1611,7 @@ private static void ConfigureServer(EwsServerDataAdapter adapter)
 
 > **Advertise alarm operations even with no alarms.** EWS clients such as EcoStruxure Building Operation poll for alarms. If the server does not advertise the alarm operations, that poll fails with an `OPERATION_NOT_SUPPORTED` fault, which EBO logs as a recurring "CWS Alarm Poll failed" system alarm. Enabling `GetAlarmEvents` (and the related alarm operations) makes the server return an empty alarm list instead, so the poll succeeds quietly. The supported-method set is stored when the server is created, so changing it later requires the server to be recreated.
 
-#### 7.6.7 Phase 1 — Idempotent Provisioning
+#### 7.6.7 Phase 1. Idempotent Provisioning
 
 Provisioning runs on *every* cycle. Each create call is wrapped in an "ensure" helper that returns the existing item if it is already there, so re-running is harmless:
 
@@ -1681,7 +1681,7 @@ private void EnsureProvisioned(EwsServerDataAdapter adapter)
 
 The complete `EnsureProvisioned` (including the `Meta` and `Location` containers) is in the example project; the elided lines follow exactly the same pattern.
 
-#### 7.6.8 Phase 2 — Fetching and Writing Values
+#### 7.6.8 Phase 2. Fetching and Writing Values
 
 Phase 2 batches all writes into one database transaction with the `AutoCommit` pattern ([Section 11.4](#114-ewsserverdataadapter)), and fails softly: if a fetch throws, it discards the pending writes, records the error, and keeps the last good values rather than aborting the cycle:
 
@@ -1737,7 +1737,7 @@ private void UpdateValues(
 
 `ResolveLocation` caches the geocoded coordinates in the `Location` container and only calls the Geocoding API when the configured `City` changes, conserving the free-tier budget. `FetchCurrent` and `FetchForecast` parse the API responses and write each point with `ModifyValueItemValue`.
 
-> **Match the value type when writing.** `ModifyValueItemValue` validates the supplied value against the `EwsValueTypeEnum` set at provisioning. Pass the matching CLR type — a `double` to a `Double` point, and a `DateTime?` to a `DateTime` point — not a pre-formatted string:
+> **Match the value type when writing.** `ModifyValueItemValue` validates the supplied value against the `EwsValueTypeEnum` set at provisioning. Pass the matching CLR type (a `double` to a `Double` point, and a `DateTime?` to a `DateTime` point), not a pre-formatted string:
 >
 > ```csharp
 > adapter.ModifyValueItemValue(EwsStructure.CurrentTemperature,
@@ -1746,9 +1746,9 @@ private void UpdateValues(
 >     (DateTime?)current.ObservedAtUtc, EwsValueStateEnum.Good); // DateTime?
 > ```
 
-#### 7.6.9 Phase 3 — Trend Samples
+#### 7.6.9 Phase 3. Trend Samples
 
-The EWS Server auto-samples a trend whenever a value *changes*. To make the trends grow every cycle — even when a value is unchanged — the processor appends the current value of each trended point at the cycle timestamp, but skips any point the server has already sampled this cycle so it does not write a duplicate:
+The EWS Server auto-samples a trend whenever a value *changes*. To make the trends grow every cycle, even when a value is unchanged, the processor appends the current value of each trended point at the cycle timestamp, but skips any point the server has already sampled this cycle so it does not write a duplicate:
 
 ```csharp
 private void AddCurrentHistorySamples(EwsServerDataAdapter adapter, DateTime now)
@@ -1779,7 +1779,7 @@ private void AddCurrentHistorySamples(EwsServerDataAdapter adapter, DateTime now
 
 > **No backfill here.** OpenWeatherMap's free tier has no historical endpoint, so the trends accumulate from the first run forward. Extensions whose data source provides history (such as the ENTSO-E and GridStatus examples) add a backfill phase last; see [How-To: Populate Trend Logs with Per-Cycle Samples and Backfill](../how-to-guides.md#11-populate-trend-logs-with-per-cycle-samples-and-backfill).
 
-#### 7.6.10 Phase 4 — Health Metadata
+#### 7.6.10 Phase 4. Health Metadata
 
 The final phase stamps the `Meta` container so operators can alarm on integration health. `NextUpdate` is derived from the interval between runs, but the interval is **clamped** so a long idle gap during development cannot project the next-run time absurdly far into the future. The clamp is a pure, unit-tested method:
 
@@ -1813,7 +1813,7 @@ The processor delegates the non–Smart Connector work to four small classes. Ke
 | `OpenWeatherMapClient` | Synchronous HTTPS client. Enforces TLS 1.2, passes the API key as the `appid` query parameter (never logged), and retries HTTP 429 with exponential backoff. Throws `WeatherApiException` (carrying the status code) on failure; does not retry 401/403. |
 | `OpenWeatherMapResponseParser` | Parses the Geocoding, Current Weather, and Forecast JSON into typed `GeocodeResult`, `CurrentWeather`, and `ForecastResponse` objects using `JavaScriptSerializer` (from `System.Web.Extensions`, so no external dependency). |
 | `ForecastAggregator` | Pure logic that rolls the API's 3-hour steps into daily highs/lows, average pressure and humidity, and a near-noon description, in the location's timezone. |
-| `EwsStructure` | The EWS `AlternateId` path constants and the `TrendDefinitions` table (trend id → linked value id → name). Centralising the paths keeps the processor and the tests in agreement. |
+| `EwsStructure` | The EWS `AlternateId` path constants and the `TrendDefinitions` table (trend id → linked value id → name). Centralizing the paths keeps the processor and the tests in agreement. |
 
 > **Note:** The client targets the OpenWeatherMap **Geocoding**, **Current Weather 2.5**, and **5 day / 3 hour Forecast 2.5** endpoints, all on the free tier. Earlier OpenWeatherMap integrations queried weather by city name directly; that is deprecated, which is why the client geocodes first and then queries by coordinates.
 
@@ -1823,9 +1823,9 @@ With the extension built, we move on to testing.
 
 The Weather Extension you just built already applies the core production patterns. This section gathers them as a checklist and notes the ones a free, history-less weather API does not exercise. The larger `SmartConnector.EntsoeExtension` and `SmartConnector.GridStatusExtension` examples apply all of them at scale.
 
-**Use one self-provisioning processor.** A single processor that both provisions and updates avoids the configuration mismatch that two separate processors can drift into (the update side expecting points the setup side did not create). Make provisioning idempotent — wrap each create call in an "ensure" helper that returns the existing item if present — so the processor can run the provisioning step on every cycle harmlessly (see [Section 7.6.7](#767-phase-1--idempotent-provisioning)). See also [How-To: Run a Self-Provisioning Processor Safely on a Schedule](../how-to-guides.md#12-run-a-self-provisioning-processor-safely-on-a-schedule).
+**Use one self-provisioning processor.** A single processor that both provisions and updates avoids the configuration mismatch that two separate processors can drift into (the update side expecting points the setup side did not create). Make provisioning idempotent (wrap each create call in an "ensure" helper that returns the existing item if present), so the processor can run the provisioning step on every cycle harmlessly (see [Section 7.6.7](#767-phase-1-idempotent-provisioning)). See also [How-To: Run a Self-Provisioning Processor Safely on a Schedule](../how-to-guides.md#12-run-a-self-provisioning-processor-safely-on-a-schedule).
 
-**Manage the EWS Server lifecycle defensively.** Try `EwsServerDataAdapter.ConnectExisting` first and only call `ConnectNew` when it fails — i.e. when the server does not yet exist. `ConnectNew` validates the server name up front and throws if it is already in use (`AssertEwsServerNameNotUsed`), *before* any row insert, so a name collision is **not** a `DbUpdateException` and cannot be caught as one. The reliable first-run sequence is: `ConnectNew` (starts the listener) → dispose it → `ConnectExisting` (returns a clean adapter). Gating `ConnectNew` behind a successful-or-failed `ConnectExisting` keeps a restart against an existing server harmless.
+**Manage the EWS Server lifecycle defensively.** Try `EwsServerDataAdapter.ConnectExisting` first and only call `ConnectNew` when it fails, that is, when the server does not yet exist. `ConnectNew` validates the server name up front and throws if it is already in use (`AssertEwsServerNameNotUsed`), *before* any row insert, so a name collision is **not** a `DbUpdateException` and cannot be caught as one. The reliable first-run sequence is: `ConnectNew` (starts the listener) → dispose it → `ConnectExisting` (returns a clean adapter). Gating `ConnectNew` behind a successful-or-failed `ConnectExisting` keeps a restart against an existing server harmless.
 
 **Order each cycle in phases, with slow work last.** Provision → update values → sample history → update metadata → backfill. Running a multi-minute history backfill at the end means the live values and health metadata are already committed before it starts. Capture any backfill decision *before* you stamp the new `LastUpdate`, or the fresh timestamp will suppress the backfill you intended.
 
@@ -1833,11 +1833,11 @@ The Weather Extension you just built already applies the core production pattern
 
 **Advertise the alarm operations even with no alarms.** EWS clients such as EcoStruxure Building Operation poll every connected server for alarms. If `ModifyServerSupportedMethods` does not enable `GetAlarmEvents` and the related alarm operations, that poll fails with an `OPERATION_NOT_SUPPORTED` fault, which EBO logs as a recurring "CWS Alarm Poll failed" system alarm. Enable them so the server returns an empty alarm list and the poll succeeds quietly. The supported-method set is fixed when the server is created, so set it correctly up front (see [Section 7.6.6](#766-connecting-to-or-creating-the-ews-server)).
 
-**Guard against overlapping runs.** If a cycle can outlast its schedule interval, hold a static, server-scoped lock for the duration of the cycle and skip a re-trigger while it is held; give the lock a timeout so a crashed run cannot block the processor permanently. This keeps the processor a normal scheduled processor — it still returns each cycle.
+**Guard against overlapping runs.** If a cycle can outlast its schedule interval, hold a static, server-scoped lock for the duration of the cycle and skip a re-trigger while it is held; give the lock a timeout so a crashed run cannot block the processor permanently. This keeps the processor a normal scheduled processor. It still returns each cycle.
 
 **Publish observability points.** Provision a `Meta/` container with `LastUpdate`, `NextUpdate`, `DataHealthy`, `LastError`, and cycle/row counters so operators can build EBO alarms on integration health without polling each value. When estimating `NextUpdate` from the interval between runs, clamp the interval to a sane range so a long idle gap cannot project it far into the future.
 
-**Match the EWS value type when writing.** `ModifyValueItemValue` validates the supplied value against the `EwsValueTypeEnum` set at provisioning. Pass a real `DateTime` (or `DateTime?`) to a `DateTime` point, a `long` to a `Long` point, and so on — passing a pre-formatted string fails the type check.
+**Match the EWS value type when writing.** `ModifyValueItemValue` validates the supplied value against the `EwsValueTypeEnum` set at provisioning. Pass a real `DateTime` (or `DateTime?`) to a `DateTime` point, a `long` to a `Long` point, and so on. Passing a pre-formatted string fails the type check.
 
 **Fail each data group independently.** Fetch prices, load, generation, and so on in separate try/catch blocks. A failure in one group should set health to degraded and keep the last good values for the others, never abort the whole cycle.
 
@@ -1856,7 +1856,7 @@ In order to execute the tests we will be writing we need a "test runner". A "tes
 Add the following NuGet packages to your test project:
 
 | Package | Purpose |
-|---------|---------|
+| --- | --- |
 | `NUnit` | Test framework (attributes, assertions) |
 | `NUnit3TestAdapter` | Integrates NUnit with the Visual Studio Test Explorer |
 | `Microsoft.NET.Test.Sdk` | Required for VS Test Explorer discovery |
@@ -2052,7 +2052,7 @@ Once displayed you can either "Run" or "Debug" a single test, all tests in your 
 
 ### 8.5 Test the Supporting Logic
 
-The processor fixture covers validation and (when a runtime is available) execution. The pure helper classes — `OpenWeatherMapResponseParser`, `ForecastAggregator`, and the `ComputeNextUpdate` clamp — take plain inputs and return plain outputs, so they are tested directly without any Smart Connector runtime. The Weather Extension's test project includes `ResponseParserFixture`, `ForecastAggregatorFixture`, `EwsStructureFixture`, and `NextUpdateFixture` for exactly this.
+The processor fixture covers validation and (when a runtime is available) execution. The pure helper classes (`OpenWeatherMapResponseParser`, `ForecastAggregator`, and the `ComputeNextUpdate` clamp) take plain inputs and return plain outputs, so they are tested directly without any Smart Connector runtime. The Weather Extension's test project includes `ResponseParserFixture`, `ForecastAggregatorFixture`, `EwsStructureFixture`, and `NextUpdateFixture` for exactly this.
 
 ### 8.6 Runnable Example Test Projects
 
@@ -2061,11 +2061,11 @@ The `examples/` folder ships four buildable test projects that apply the pattern
 | Test project | Demonstrates |
 | --- | --- |
 | `QuickStart.HelloEws.Tests` | The minimal shape: a single `ProcessorFixture` with validation tests (clean configuration plus missing-required cases) and the two `[Explicit]` integration tests. Start here. |
-| `SmartConnector.WeatherExtension.Tests` | Adds pure-logic fixtures — response parser, forecast aggregator, EWS paths, and the `NextUpdate` clamp. |
+| `SmartConnector.WeatherExtension.Tests` | Adds pure-logic fixtures for the response parser, forecast aggregator, EWS paths, and the `NextUpdate` clamp. |
 | `SmartConnector.EntsoeExtension.Tests` | A larger suite: area mapping, price/load analysers, the backfill planner, and parser fixtures. |
 | `SmartConnector.GridStatusExtension.Tests` | Signal derivation, response parsing, the backfill planner, and EWS structure. |
 
-The validation fixture is the same in every project — instantiate the processor, call `ValidateProcessor`, and assert on the result. `QuickStart.HelloEws.Tests/ProcessorFixture.cs` is the smallest complete example:
+The validation fixture is the same in every project. Instantiate the processor, call `ValidateProcessor`, and assert on the result. `QuickStart.HelloEws.Tests/ProcessorFixture.cs` is the smallest complete example:
 
 ```csharp
 [TestFixture]
@@ -2152,14 +2152,14 @@ To confirm the Extension works, create a Processor Configuration for the `Weathe
    | Units | `Metric` | Metric, Imperial, or Standard |
    | UpdateForecast | `True` | Fetch the 3-day forecast |
 
-8. Click **Save**, then **Validate**. Correct any issues — for example, the user name and password must differ, and the city must not be blank.
+8. Click **Save**, then **Validate**. Correct any issues. For example, the user name and password must differ, and the city must not be blank.
 
 ### 9.3 Schedule and Run
 
 The processor provisions everything on its first run and refreshes on every run, so it is designed to run on a schedule.
 
-1. Create a schedule (Portal → **Setup → Configuration Schedules → Add New**) — for example a Cron schedule of `*/15 * * * *` (every 15 minutes). See [Section 11.12 Cron Scheduling](#1112-cron-scheduling).
-2. On the Processor Configuration's **Control** tab, set **Runs On Schedule** to "True" and select the schedule. Creating the schedule alone is not enough — the processor must be told to run on it.
+1. Create a schedule (Portal → **Setup → Configuration Schedules → Add New**), for example a Cron schedule of `*/15 * * * *` (every 15 minutes). See [Section 11.12 Cron Scheduling](#1112-cron-scheduling).
+2. On the Processor Configuration's **Control** tab, set **Runs On Schedule** to "True" and select the schedule. Creating the schedule alone is not enough. The processor must be told to run on it.
 3. Click **Save**, then **Start** to run immediately rather than waiting for the first scheduled trigger.
 
 To confirm the first run succeeded:
@@ -2186,7 +2186,7 @@ In production you would leave the processor running on its schedule, choosing an
 
 ## 10 Licensing Your Extension
 
-Smart Connector supports licensing for any portion of your Extension Assembly. If you as the Smart Connector Developer wish to protect your intellectual property and/or derive revenue from the sale of your Smart Connector-based solution, licensing is a prudent endeavour.
+Smart Connector supports licensing for any portion of your Extension Assembly. If you as the Smart Connector Developer wish to protect your intellectual property and/or derive revenue from the sale of your Smart Connector-based solution, licensing is a prudent endeavor.
 
 Smart Connector licenses are created and managed entirely by you in your personal Tenant at www.SmartConnectorServer.com. Once generated, the license itself is immutable. Additionally, once a license is added to the Smart Connector runtime, the data cannot be altered even though it is stored in the Smart Connector database. Any edits to either the physical file or the database license fields will render the license unusable.
 
@@ -2211,7 +2211,7 @@ The "Extension" we are creating here is a logical representation of your actual 
 4. Enter a **Name**. Names should be considered public facing so you should create a descriptive one. For our Extension Assembly, we will enter "Smart Connector Sample WeatherExtension".
 5. Enter an optional **Description**. Descriptions are for your internal use.
 6. Enter the **Assembly Name**. This is the actual Extension Assembly file name (e.g. `SmartConnector.WeatherExtension.dll`).
-7. Enter the **Assembly Id**. This value must match the GUID assigned to your Extension Assembly (the assembly's `Guid` attribute — see [Section 10.2](#102-update-extension-assembly)). It must be unique within SmartConnectorServer, which prevents another developer from creating fraudulent licenses for your assemblies.
+7. Enter the **Assembly Id**. This value must match the GUID assigned to your Extension Assembly (the assembly's `Guid` attribute, see [Section 10.2](#102-update-extension-assembly)). It must be unique within SmartConnectorServer, which prevents another developer from creating fraudulent licenses for your assemblies.
 8. Click **Save**.
 
 You will notice a new **Public Key** field. This is one half of a public/private key pair that SmartConnectorServer uses to create license files. We will use this Public Key shortly to update our Extension Assembly.
@@ -2246,7 +2246,7 @@ Now that we have created the licensing infrastructure, we update our Extension A
 [assembly: SxL.Common.PublicKey("PASTE_YOUR_PUBLIC_KEY_HERE")]
 ```
 
-If you have not already assigned your assembly a GUID (the **Assembly Id** from [Section 10.1.1](#1011-create-extension)), add one in the same file. The value must be a valid GUID — replace the zero GUID below with your own (for example from Visual Studio's **Tools → Create GUID**):
+If you have not already assigned your assembly a GUID (the **Assembly Id** from [Section 10.1.1](#1011-create-extension)), add one in the same file. The value must be a valid GUID. Replace the zero GUID below with your own (for example from Visual Studio's **Tools → Create GUID**):
 
 ```csharp
 [assembly: System.Runtime.InteropServices.Guid("00000000-0000-0000-0000-000000000000")]
@@ -2287,16 +2287,16 @@ Smart Connector provides the following NuGet packages to facilitate Extension de
 #### Framework Packages
 
 | Package | Description |
-|---------|-------------|
+| --- | --- |
 | `SxL.Common` | Low-level support classes: logging framework, attribute base classes, common utilities |
-| `SxL.Licensing` | Licensing infrastructure for extension licence validation |
+| `SxL.Licensing` | Licensing infrastructure for extension license validation |
 | `Ews.Common` | EWS data constructs used when serving or consuming EWS endpoints |
 | `Ews.Client` | Full EWS v1.1/1.2 client: all classes and proxy data constructs needed to consume any compliant endpoint |
 | `Ews.Server.Contract` | Fully customisable MVC-style EWS Server implementation for custom SOAP servers |
 | `Ews.RestExtensions` | RESTful implementation based on an EWS-like data model. Includes controllers, models, and provider interfaces |
 | `Mongoose.Common` | Low-level support classes for the Smart Connector runtime: attributes, scheduling, API middleware, helpers |
 | `Mongoose.Configuration` | Data classes for creating and managing Smart Connector Processor and Endpoint Configurations |
-| `Mongoose.Csp` | Native CSP protocol client for EcoStruxure™ Building Operation servers (AS/ES). **Licence required. Deprecated: incompatible with EBO 3.0+.** |
+| `Mongoose.Csp` | Native CSP protocol client for EcoStruxure™ Building Operation servers (AS/ES). **License required. Deprecated: incompatible with EBO 3.0+.** |
 | `Mongoose.Ews.Server` | Standard Smart Connector EWS Server implementation. Customisable via subclassing |
 | `Mongoose.Ews.Server.Data` | Classes for managing native Smart Connector EWS Server data (`EwsServerDataAdapter`) |
 | `Mongoose.Process` | Core Smart Connector framework library. Required for all custom Processor development |
@@ -2307,19 +2307,19 @@ Smart Connector provides the following NuGet packages to facilitate Extension de
 #### Utility Packages
 
 | Package | Description |
-|---------|-------------|
+| --- | --- |
 | `SmartConnector.Utilities` | Utility classes for Smart Connector development |
 | `SmartConnector.Utilities.Redundancy` | Redundancy utility classes for Smart Connector development |
 
 #### Package Selection Guide
 
 | Your Task | Required Packages |
-|-----------|-------------------|
+| --- | --- |
 | Write a Processor that reads from an EWS server | `Mongoose.Process`, `Ews.Client` |
 | Write a Processor that writes to a native Smart Connector EWS server | `Mongoose.Process`, `Mongoose.Ews.Server.Data` |
 | Create a custom EWS Server | `Mongoose.Process`, `Mongoose.Ews.Server`, `Mongoose.Ews.Server.Data` |
 | Create a custom REST provider | `Mongoose.Common`, `Ews.RestExtensions` |
-| ~~Connect to Building Operation via CSP~~ | ~~`Mongoose.Process`, `Mongoose.Csp`~~ — **Deprecated: incompatible with EBO 3.0+** |
+| ~~Connect to Building Operation via CSP~~ | ~~`Mongoose.Process`, `Mongoose.Csp`~~ (**deprecated, incompatible with EBO 3.0+**) |
 | Write unit tests | `Mongoose.Test` (plus `NUnit` and `NUnit3TestAdapter`) |
 
 ### 11.2 Smart Connector Interfaces
@@ -2425,7 +2425,7 @@ public string ServerUrl { get; set; }
 public string CertificateThumbprint { get; set; }
 ```
 
-**Portal behaviour notes:**
+**Portal behavior notes:**
 
 - When a property is hidden by `VisibleWhen`, its value is **retained** in the database. It is not cleared.
 - Validation attributes (e.g., `[Required]`) still apply to hidden properties. Use `[Required]` together with `[VisibleWhen]` carefully.
@@ -2466,9 +2466,9 @@ EwsServerDataAdapter adapter = EwsServerDataAdapter.ConnectNew(
 
 #### AutoCommit Pattern (v2.6.37+)
 
-By default, every modification made through the `EwsServerDataAdapter` is immediately committed to the database. This behaviour is controlled by the `AutoCommit` property.
+By default, every modification made through the `EwsServerDataAdapter` is immediately committed to the database. This behavior is controlled by the `AutoCommit` property.
 
-For **bulk operations** (updating many values in a single processor execution), the default auto-commit-per-operation behaviour causes significant performance overhead. The AutoCommit pattern allows batching multiple changes into a single database transaction.
+For **bulk operations** (updating many values in a single processor execution), the default auto-commit-per-operation behavior causes significant performance overhead. The AutoCommit pattern allows batching multiple changes into a single database transaction.
 
 ```csharp
 // Disable auto-commit before bulk operations
@@ -2490,7 +2490,7 @@ DataAdapter.AutoCommit = true;
 **Properties and Methods:**
 
 | Member | Type | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | `AutoCommit` | `bool` (get/set) | When `true` (default), each modification is immediately persisted. Set to `false` before bulk operations. |
 | `HasPendingChanges` | `bool` (get) | Indicates whether uncommitted changes exist. |
 | `CommitChanges()` | `void` | Persists all pending changes in a single transaction. |
@@ -2549,10 +2549,10 @@ public class MyProcessor : Processor
 
     protected override IEnumerable<Prompt> Execute_Subclass()
     {
-        // Store data — AddOrUpdateItem(item, key, tenantId, minutesUntilExpiry).
+        // Store data with AddOrUpdateItem(item, key, tenantId, minutesUntilExpiry).
         Cache.AddOrUpdateItem(currentWeather, "weatherData", "myTenant", 60);
 
-        // Retrieve data — RetrieveItem(key, tenantId) returns object; cast to your type.
+        // Retrieve data. RetrieveItem(key, tenantId) returns object; cast to your type.
         var cached = (WeatherData)Cache.RetrieveItem("weatherData", "myTenant");
 
         return new List<Prompt>();
@@ -2662,7 +2662,7 @@ See `SxL.Common.Logger` class for available methods.
 
 See *Smart Connector Installation and Configuration Guide* on how to configure Smart Connector logging.
 
-For centralised log forwarding to a syslog server, see [Section 11.16 Syslog Logging](#1116-syslog-logging).
+For centralized log forwarding to a syslog server, see [Section 11.16 Syslog Logging](#1116-syslog-logging).
 
 ### 11.10 Third Party Tools
 
@@ -2681,7 +2681,7 @@ Fiddler can be downloaded for free from http://www.telerik.com/download/fiddler.
 
 #### 11.10.3 Postman
 
-Postman is available at https://www.postman.com/. It supports both SOAP and REST API testing in a single tool, making it suitable for testing EWS SOAP endpoints as well as the REST API gateway. Postman provides built-in OAuth2 authentication flows, request history, collections for organising test suites, and team collaboration features.
+Postman is available at https://www.postman.com/. It supports both SOAP and REST API testing in a single tool, making it suitable for testing EWS SOAP endpoints as well as the REST API gateway. Postman provides built-in OAuth2 authentication flows, request history, collections for organizing test suites, and team collaboration features.
 
 ### 11.11 Prerequisites and Target Framework
 
@@ -2718,7 +2718,7 @@ Smart Connector supports cron expressions as an alternative to interval-based, w
 Smart Connector provides four scheduling patterns, selected via the `ScheduleType` enumeration:
 
 | ScheduleType | Description |
-|-------------|-------------|
+| --- | --- |
 | `Interval` | Run at fixed time intervals (e.g., every 5 minutes) |
 | `Weekly` | Run on specific days of the week |
 | `Monthly` | Run on specific days of the month |
@@ -2732,7 +2732,7 @@ A 5-part expression (`* * * * *`) has minute granularity; a 6-part expression (`
 
 | Position (5-part) | Position (6-part) | Field | Allowed values |
 | --- | --- | --- | --- |
-| — | 1 | Second | 0–59 |
+| n/a | 1 | Second | 0–59 |
 | 1 | 2 | Minute | 0–59 |
 | 2 | 3 | Hour | 0–23 |
 | 3 | 4 | Day of month | 1–31 |
@@ -2742,7 +2742,7 @@ A 5-part expression (`* * * * *`) has minute granularity; a 6-part expression (`
 #### Examples
 
 | Expression | Meaning |
-|-----------|---------|
+| --- | --- |
 | `*/5 * * * *` | Every 5 minutes |
 | `0 */2 * * *` | Every 2 hours, on the hour |
 | `0 8 * * 1-5` | 08:00 every weekday |
@@ -2767,7 +2767,7 @@ Smart Connector supports semantic metadata on EWS entities. Metadata provides co
 #### Data Model
 
 | Class | Namespace | Description |
-|-------|-----------|-------------|
+| --- | --- | --- |
 | `IMetadataModel` | `Ews.RestExtensions.Models` | Interface that entities implement to support metadata |
 | `Metadata` | `Ews.RestExtensions.Models` | Container holding a list of `MetadataModel` instances |
 | `MetadataModel` | `Ews.RestExtensions.Models` | Single metadata model with Id, version, and categories |
@@ -2796,7 +2796,7 @@ GET /api/alarms/{id}/Metadata
 
 #### Custom IEwsRestProvider Impact
 
-If you implement a custom `IEwsRestProvider`, retrieval methods include the `includeMetadata` parameter that your implementation should honour.
+If you implement a custom `IEwsRestProvider`, retrieval methods include the `includeMetadata` parameter that your implementation should honor.
 
 ### 11.14 Take Limit and Pagination
 
@@ -2833,11 +2833,11 @@ Smart Connector v2.5.6 introduced several security hardening features configured
 After a configurable number of failed login attempts, a user account is temporarily locked.
 
 | Setting | Default | Description |
-|---------|---------|-------------|
+| --- | --- | --- |
 | `MaxFailedAccessAttemptsBeforeLockout` | 3 | Consecutive failed attempts before lockout |
 | `AccountLockoutTimeInMinutes` | 10 | Duration (minutes) the account remains locked |
 
-**Behaviour:**
+**Behavior:**
 - After the configured number of failed attempts, the account is locked for the specified duration, or until another Portal user unlocks it on the Users page.
 - The lockout counter resets after a successful authentication.
 - Lockout applies to Portal sign-in. Protect REST endpoints with a throttling policy and an IP allow list, see [Section 11.18 REST API Authentication and Throttling](#1118-rest-api-authentication-and-throttling).
@@ -2847,7 +2847,7 @@ After a configurable number of failed login attempts, a user account is temporar
 New and changed passwords must meet complexity requirements:
 
 | Setting | Default | Description |
-|---------|---------|-------------|
+| --- | --- | --- |
 | `PasswordRequiredLength` | 6 | Minimum number of characters |
 | `PasswordRequireDigit` | True | Must contain at least one digit (0-9) |
 | `PasswordRequireLowercase` | True | Must contain at least one lowercase letter |
@@ -2858,7 +2858,7 @@ These settings apply to Portal users, when a user is created or a password is ch
 
 #### Authentication Timing
 
-Smart Connector introduces a randomised delay on failed authentication responses to prevent timing-based username enumeration attacks. This behaviour is automatic and not configurable.
+Smart Connector introduces a randomized delay on failed authentication responses to prevent timing-based username enumeration attacks. This behavior is automatic and not configurable.
 
 #### Implications for Extension Developers
 
@@ -2868,7 +2868,7 @@ Smart Connector introduces a randomised delay on failed authentication responses
 
 ### 11.16 Syslog Logging
 
-Smart Connector supports forwarding log output to a syslog server via the NLog Syslog target (`NLog.Targets.Syslog` v6.0.3). This allows integration with centralised log management systems (SIEM, Splunk, Graylog, etc.).
+Smart Connector supports forwarding log output to a syslog server via the NLog Syslog target (`NLog.Targets.Syslog` v6.0.3). This allows integration with centralized log management systems (SIEM, Splunk, Graylog, etc.).
 
 #### How It Works
 
@@ -2973,7 +2973,7 @@ public class MyProcessor : Processor
 The following interfaces are registered in the IoC container and available for injection:
 
 | Interface | Singleton | Description |
-|-----------|-----------|-------------|
+| --- | --- | --- |
 | `ICache` | Yes | Thread-safe in-memory cache with tenant isolation and expiration |
 | `IManagedEwsClient` | Yes | Managed pool of `EwsClient` connections: **do not dispose** |
 | `IActionBroker` | No | Start/stop Processor Configurations and EWS Servers |
@@ -3029,10 +3029,10 @@ Authorization: Bearer eyJhbGciOiJIUzI...
 
 #### Configuration Properties
 
-The following properties on `RestHttpConfigurationBase` control authentication behaviour:
+The following properties on `RestHttpConfigurationBase` control authentication behavior:
 
 | Property | Default | Description |
-|----------|---------|-------------|
+| --- | --- | --- |
 | `TokenEndpointPath` | `/GetToken` | Relative path clients use to obtain a bearer token |
 | `AccessTokenExpireTimeSpanMinutes` | `5` | Token validity period in minutes (1–60) |
 
@@ -3049,7 +3049,7 @@ Rate limits can be set at five granularities: per-second, per-minute, per-hour, 
 **Configuration options:**
 
 | Property | Description |
-|----------|-------------|
+| --- | --- |
 | `ThrottlingPolicy.DefaultRates` | Base rate limits applied to all callers |
 | `ThrottlingPolicy.WhiteListIpAddresses` | IP addresses exempt from throttling |
 | `ThrottlingPolicy.IpOverrides` | Custom rate limits for specific IP addresses |
@@ -3083,7 +3083,7 @@ Correct disposal of resources prevents connection pool exhaustion, memory leaks,
 #### What to Dispose
 
 | Resource | Dispose? | Why |
-|----------|----------|-----|
+| --- | --- | --- |
 | `EwsServerDataAdapter` | **Yes**: in your `Dispose` override | Holds a database context |
 | `EwsClient` (created directly by you) | **Yes**: standard `using` or `Dispose` | Holds an HTTP connection |
 | `IProcessorValueDataSource` | **Automatic**: `Processor` base class handles it | Database context |
@@ -3092,7 +3092,7 @@ Correct disposal of resources prevents connection pool exhaustion, memory leaks,
 #### What NOT to Dispose
 
 | Resource | Why |
-|----------|-----|
+| --- | --- |
 | `IManagedEwsClient` connections | **Pooled**: returned to the managed pool; disposing kills the shared connection |
 | `ICache` | **Singleton**: shared across all threads |
 | `IActionBroker` | **Not disposable** |
@@ -3135,7 +3135,7 @@ All Smart Connector logs are written to:
 Log files are named by date (e.g., `2026-05-12.log`). Each line contains a timestamp, log category, and message. Filter by category to find relevant entries:
 
 | Category | What it covers |
-|----------|---------------|
+| --- | --- |
 | `Processor` | Processor execution, validation, and errors |
 | `Portal` | Portal UI requests, extension discovery |
 | `RestServe` | REST endpoint requests and responses |
@@ -3153,7 +3153,7 @@ Log files are named by date (e.g., `2026-05-12.log`). Each line contains a times
 1. Check the log file for errors during assembly scanning. Filter for "Portal" category.
 2. Verify the DLL is in the same folder as `Mongoose.Service.exe`.
 3. Verify the DLL targets **.NET Framework 4.8** (not .NET Standard or .NET Core).
-4. Verify the project's assembly metadata is set. For an SDK-style project this comes from MSBuild properties in the `.csproj` — confirm `<Description>` and `<Company>` are defined (see [Section 7.4.2](#742-assembly-metadata)) — not from a legacy `AssemblyInfo.cs` file.
+4. Verify the project's assembly metadata is set. For an SDK-style project this comes from MSBuild properties in the `.csproj`, so confirm `<Description>` and `<Company>` are defined (see [Section 7.4.2](#742-assembly-metadata)). It does not come from a legacy `AssemblyInfo.cs` file.
 5. Verify the DLL is not blocked by Windows (right-click → Properties → Unblock).
 
 ##### MissingMethodException or TypeLoadException
@@ -3187,7 +3187,7 @@ Log files are named by date (e.g., `2026-05-12.log`). Each line contains a times
 **Cause:** The Processor exceeded the configured timeout in Portal Settings.
 
 **Fix options:**
-1. Optimise the Processor to complete within the timeout period.
+1. Optimize the Processor to complete within the timeout period.
 2. Implement `ILongRunningProcess` to signal to the runtime that the Processor is intentionally long-running.
 3. Increase the Processor timeout in Portal Settings (not recommended for production).
 

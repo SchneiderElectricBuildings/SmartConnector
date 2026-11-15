@@ -2,7 +2,7 @@
 
 A Smart Connector extension that integrates with the [OpenWeatherMap API](https://openweathermap.org/api) to publish current conditions and a 3-day forecast for a configured city to EWS clients, including EcoStruxure™ Building Operation (EBO).
 
-This is the worked example built in [Developer Guide — Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension): a single self-provisioning processor with idempotent provisioning, per-cycle trend sampling, a phased cycle, and a re-entrancy guard.
+This is the worked example built in [Developer Guide, Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension): a single self-provisioning processor with idempotent provisioning, per-cycle trend sampling, a phased cycle, and a re-entrancy guard.
 
 ## What This Extension Does
 
@@ -17,11 +17,11 @@ This is the worked example built in [Developer Guide — Develop an Extension](.
 
 ## Use Cases
 
-1. **Free-Cooling / Economizer** — Use outdoor temperature and humidity to drive economizer logic.
-2. **Pre-Conditioning** — Use the 3-day forecast highs/lows to pre-cool or pre-heat ahead of extreme days.
-3. **Weather-Compensated Setpoints** — Shift setpoints with outdoor conditions.
-4. **Dashboards** — Show live conditions and a forecast on BMS graphics.
-5. **Historical Analysis** — Trend outdoor temperature/pressure/humidity over time.
+1. **Free-Cooling / Economizer:** Use outdoor temperature and humidity to drive economizer logic.
+2. **Pre-Conditioning:** Use the 3-day forecast highs/lows to pre-cool or pre-heat ahead of extreme days.
+3. **Weather-Compensated Setpoints:** Shift setpoints with outdoor conditions.
+4. **Dashboards:** Show live conditions and a forecast on BMS graphics.
+5. **Historical Analysis:** Trend outdoor temperature/pressure/humidity over time.
 
 ## Prerequisites
 
@@ -32,7 +32,7 @@ This is the worked example built in [Developer Guide — Develop an Extension](.
 | .NET Framework | 4.8 SDK | Required by all Smart Connector extensions |
 | Smart Connector | 2.6 or later | Installed locally; the service must be running |
 | GitHub PAT | `read:packages` scope | For the Smart Connector NuGet feed |
-| OpenWeatherMap API Key | — | Free tier; see below |
+| OpenWeatherMap API Key | n/a | Free tier; see below |
 
 ### Obtain an OpenWeatherMap API Key
 
@@ -78,7 +78,7 @@ This is the worked example built in [Developer Guide — Develop an Extension](.
 
 ## Portal Configuration
 
-### Step 1 — Configure the Processor
+### Step 1. Configure the Processor
 
 1. Open the Smart Connector Portal (`http://localhost:8082`).
 2. Authenticate with your portal credentials.
@@ -102,7 +102,7 @@ This is the worked example built in [Developer Guide — Develop an Extension](.
 
 8. Click **Save** → **Validate**.
 
-### Step 2 — Create a Schedule
+### Step 2. Create a Schedule
 
 1. Navigate to **Setup → Configuration Schedules**.
 2. Click **Add New**.
@@ -114,19 +114,19 @@ This is the worked example built in [Developer Guide — Develop an Extension](.
 
 > **Budget tip:** The free OpenWeatherMap tier allows 60 calls/minute and ~1,000,000 calls/month. This extension makes at most three calls per cycle (geocode + current + forecast), and the geocode result is cached so it is only re-fetched when the City changes. A 15-minute schedule uses roughly 200 calls/day.
 
-### Step 3 — Assign the Schedule and Start
+### Step 3. Assign the Schedule and Start
 
-To ensure the extension actually runs on the schedule, you must enable **Runs On Schedule** on the processor's **Control** sub-tab — creating the schedule in Step 2 alone is not enough.
+To ensure the extension actually runs on the schedule, you must enable **Runs On Schedule** on the processor's **Control** sub-tab. Creating the schedule in Step 2 alone is not enough.
 
 1. Navigate back to **Configurations → Processor** and select the Weather Processor.
 2. Click the **Control** sub-tab.
-3. Set **Runs On Schedule** to `True`. *(Required — without this the processor will not run on the schedule.)*
+3. Set **Runs On Schedule** to `True`. *(Required. Without this the processor will not run on the schedule.)*
 4. Select the schedule created in Step 2.
 5. Click **Save** → **Start**.
 
 On the first run, the processor creates the EWS Server (if it does not already exist), provisions the data hierarchy with trend logs, geocodes the city, and starts fetching data.
 
-### Step 4 — Verify
+### Step 4. Verify
 
 1. Wait for the first scheduled execution (or click **Start** to run immediately).
 2. Navigate to **EWS Servers** → click the edit icon for `Weather Service`.
@@ -138,7 +138,7 @@ On the first run, the processor creates the EWS Server (if it does not already e
 
 ## EWS Data Structure
 
-The tree is organised under `/Weather`, with a root-level `/Weather/Meta` container for integration health.
+The tree is organized under `/Weather`, with a root-level `/Weather/Meta` container for integration health.
 
 ```mermaid
 flowchart LR
@@ -214,18 +214,18 @@ The extension provisions 3 trend logs for the current conditions:
 
 ### How Trend Logs Are Populated
 
-Every cycle, after updating the point values, the processor writes the current value of each trended point as a history record at the cycle timestamp, so the trends grow on every run rather than only when a value happens to change. The EWS Server already auto-samples a trend whenever the linked value *changes*, so the processor skips its manual write for any point the server has already sampled this cycle — this avoids a duplicate record with the same value and timestamp.
+Every cycle, after updating the point values, the processor writes the current value of each trended point as a history record at the cycle timestamp, so the trends grow on every run rather than only when a value happens to change. The EWS Server already auto-samples a trend whenever the linked value *changes*, so the processor skips its manual write for any point the server has already sampled this cycle, which avoids a duplicate record with the same value and timestamp.
 
-> **No historical backfill.** OpenWeatherMap's free tier has **no historical-weather endpoint**, so there is nothing to backfill — the trends accumulate from the first run forward via per-cycle sampling. (Seeding past history would require the paid *One Call 3.0* "timemachine" endpoint, which is out of scope for this free-tier example.) This is the one place this example differs from the GridStatus and ENTSO-E extensions, whose data sources do provide history.
+> **No historical backfill.** OpenWeatherMap's free tier has **no historical-weather endpoint**, so there is nothing to backfill. The trends accumulate from the first run forward via per-cycle sampling. (Seeding past history would require the paid *One Call 3.0* "timemachine" endpoint, which is out of scope for this free-tier example.) This is the one place this example differs from the GridStatus and ENTSO-E extensions, whose data sources do provide history.
 
 ### Cycle Data Strategy
 
 Each cycle runs in four explicit phases:
 
-1. **Provision** — create all folders, points, and history items (idempotent).
-2. **Update point values** — geocode the city (cached), fetch current conditions and the forecast, write every point.
-3. **Add history samples** — append the current value of each trended point to its trend.
-4. **Update metadata** — stamp `Meta/LastUpdate`, `DataHealthy`, counters.
+1. **Provision:** create all folders, points, and history items (idempotent).
+2. **Update point values:** geocode the city (cached), fetch current conditions and the forecast, write every point.
+3. **Add history samples:** append the current value of each trended point to its trend.
+4. **Update metadata:** stamp `Meta/LastUpdate`, `DataHealthy`, counters.
 
 A re-entrancy guard prevents overlap: if the schedule re-triggers while a previous cycle is still running, the new trigger logs a message and returns immediately. A stale lock releases automatically after 30 minutes.
 
@@ -263,14 +263,14 @@ There is no backfill phase: OpenWeatherMap's free tier has no historical endpoin
 
 The `/Weather/Meta` container exposes integration health for EBO alarms:
 
-- **DataHealthy** — `False` if the last cycle failed; use this for an alarm.
-- **LastError** — the most recent error message.
-- **LastUpdate / NextUpdate** — last completed cycle and the estimated next run (the interval is clamped so a long idle gap cannot project it far into the future).
-- **CycleCount / ApiCallsTotal** — operational counters; `ApiCallsTotal` helps track free-tier budget.
+- **DataHealthy:** `False` if the last cycle failed; use this for an alarm.
+- **LastError:** the most recent error message.
+- **LastUpdate / NextUpdate:** last completed cycle and the estimated next run (the interval is clamped so a long idle gap cannot project it far into the future).
+- **CycleCount / ApiCallsTotal:** operational counters; `ApiCallsTotal` helps track free-tier budget.
 
 ## Error Handling
 
-| Condition | Behaviour |
+| Condition | Behavior |
 | --- | --- |
 | HTTP 401 (invalid/inactive key) | Reported as a configuration error; not retried. New keys can take hours to activate. |
 | HTTP 429 (rate limit) | Exponential backoff (2s, 4s, 8s), max 3 retries |
@@ -315,11 +315,11 @@ flowchart TD
 
 ## Security
 
-This extension follows the practices in [Developer Guide — Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments). See [SECURITY.md](SECURITY.md) for the full posture.
+This extension follows the practices in [Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments). See [SECURITY.md](SECURITY.md) for the full posture.
 
 Summary:
 
-- API key and EWS password are `[EncryptedString]` — stored encrypted, never logged.
+- API key and EWS password are `[EncryptedString]`, stored encrypted, never logged.
 - All public properties are validated (`[Required]`, `Validate` override; UserName ≠ Password; City required).
 - TLS 1.2 is enforced for OpenWeatherMap calls.
 - API calls are bounded (≤ 3 per cycle, geocode cached) and the processor is guarded against overlapping runs.
@@ -342,7 +342,7 @@ Table – Extension source (`SmartConnector.WeatherExtension/`)
 
 | File | Responsibility |
 | --- | --- |
-| `WeatherProcessor.cs` | Main processor — four-phase cycle, provisioning, history, observability, re-entrancy guard |
+| `WeatherProcessor.cs` | Main processor, with the four-phase cycle, provisioning, history, observability, re-entrancy guard |
 | `WeatherProcessorBase.cs` | Configuration properties, validation, unit labels, adapter lifecycle |
 | `OpenWeatherMapClient.cs` | HTTPS client (TLS 1.2, retry) for geocoding, current, and forecast |
 | `OpenWeatherMapResponseParser.cs` | Parses OpenWeatherMap JSON into typed results |
@@ -367,4 +367,4 @@ Table – Test project (`SmartConnector.WeatherExtension.Tests/`)
 - [OpenWeatherMap API overview](https://openweathermap.org/api)
 - [Current Weather Data](https://openweathermap.org/current) · [5 Day / 3 Hour Forecast](https://openweathermap.org/forecast5) · [Geocoding API](https://openweathermap.org/api/geocoding-api)
 - [OpenWeatherMap pricing](https://openweathermap.org/price)
-- [Developer Guide — Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension)
+- [Developer Guide, Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension)

@@ -62,13 +62,13 @@ Validation failures are reported as `PromptSeverity.MayNotContinue`, preventing 
 ### External Data Validation
 
 - API responses are parsed using `JavaScriptSerializer` with a 10 MB `MaxJsonLength` cap.
-- Numeric values from the API are extracted via `double.TryParse` with `InvariantCulture` — malformed values fall back to `0.0` rather than throwing.
+- Numeric values from the API are extracted via `double.TryParse` with `InvariantCulture`. Malformed values fall back to `0.0` rather than throwing.
 - Timestamps are parsed with `DateTimeStyles.AdjustToUniversal | AssumeUniversal`. Invalid timestamps default to `DateTime.MinValue` and are skipped during processing.
 - Backfill history is capped at `BackfillDays` (default 30, maximum 90) to prevent excessive API consumption, and is idempotent across restarts (the window is derived from the persisted `Meta/LastUpdate` timestamp).
 
 ## Error Handling
 
-| Condition | Behaviour |
+| Condition | Behavior |
 | --- | --- |
 | HTTP 401/403 | Reported as configuration error. No retry. API key or permissions misconfigured. |
 | HTTP 429 (rate limit) | Exponential backoff: 2s, 4s, 8s. Maximum 3 retries. |
@@ -90,21 +90,21 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 
 - `EwsServerDataAdapter` implements `IDisposable` and is cleaned up in the processor's `Dispose(bool)` override.
 - `GridStatusClient` wraps `HttpClient` in `IDisposable` with proper disposal.
-- `HttpClient` is scoped to the processor lifecycle — created in `Execute_Subclass` via `using`, disposed after each cycle.
+- `HttpClient` is scoped to the processor lifecycle, created in `Execute_Subclass` via `using`, disposed after each cycle.
 
 ## Threat Model
 
-This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide — Threat Modelling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modelling)).
+This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
 
 ### Data Flow Diagram
 
 ```mermaid
 flowchart LR
-    subgraph inet["Internet — untrusted"]
+    subgraph inet["Internet (untrusted)"]
         API["GridStatus.io API<br/>(external entity)"]
     end
-    subgraph host["Smart Connector host — trusted"]
-        subgraph svc["Smart Connector service — process boundary"]
+    subgraph host["Smart Connector host (trusted)"]
+        subgraph svc["Smart Connector service (process boundary)"]
             P["GridStatusProcessor<br/>(process)"]
         end
         DB[("EWS Server store<br/>SQL database (data store)")]
@@ -121,15 +121,15 @@ flowchart LR
 
 ### Trust Boundaries
 
-- **Internet boundary** — between the processor and the GridStatus.io API (flows 1–2). Every crossing is HTTPS/TLS 1.2 with certificate validation; the API key (sent in the `x-api-key` header) authenticates the processor.
-- **Network boundary** — between the EWS client/EBO and the EWS endpoint (flow 4). Authenticated with HTTP Digest over the configured realm.
-- **Process / machine boundary** — between the processor and the EWS data store (flows 3, 5), mediated by the Smart Connector runtime on the same host.
+- **Internet boundary:** between the processor and the GridStatus.io API (flows 1–2). Every crossing is HTTPS/TLS 1.2 with certificate validation; the API key (sent in the `x-api-key` header) authenticates the processor.
+- **Network boundary:** between the EWS client/EBO and the EWS endpoint (flow 4). Authenticated with HTTP Digest over the configured realm.
+- **Process / machine boundary:** between the processor and the EWS data store (flows 3, 5), mediated by the Smart Connector runtime on the same host.
 
 ### STRIDE Analysis
 
 | Category | Threat (element / flow) | Mitigation | Status |
 | --- | --- | --- | --- |
-| **Spoofing** | A spoofed GridStatus.io endpoint (DNS/MITM) feeds false data (2); an unauthorised EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
+| **Spoofing** | A spoofed GridStatus.io endpoint (DNS/MITM) feeds false data (2); an unauthorized EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
 | **Tampering** | API response or EWS values modified in transit (2, 4) | TLS protects integrity in transit; parsed values use fallback defaults and are bounded before persisting (3) | Mitigated |
 | **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records cycle count, rows consumed, last update, and last error to `Meta/*` | Partly mitigated |
 | **Information Disclosure** | The API key or EWS password leaks via logs, configuration export, or the network (1, 4) | `[EncryptedString]` at rest; no credential in any `Logger` call; the key is sent only over TLS in the `x-api-key` header | Mitigated |
@@ -138,4 +138,4 @@ flowchart LR
 
 ## Compliance
 
-This extension follows the security practices documented in the [Smart Connector Developer Guide — Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).
+This extension follows the security practices documented in the [Smart Connector Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).

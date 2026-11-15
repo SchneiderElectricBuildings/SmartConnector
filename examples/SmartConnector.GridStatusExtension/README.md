@@ -17,16 +17,16 @@ The extension fetches wholesale grid data from the GridStatus.io API and publish
 | **Carbon Intensity** | Grid intensity (gCO₂/kWh), clean/normal/dirty level | Carbon-aware scheduling |
 | **Trend Logs** | 14 trend logs with per-cycle sampling plus historical backfill | Historical analysis, EBO trend viewer |
 
-**Supported markets:** CAISO, ERCOT, PJM, MISO, NYISO, ISO-NE, SPP, IESO (Ontario), AESO (Alberta). Switch market by configuration only — no code change required.
+**Supported markets:** CAISO, ERCOT, PJM, MISO, NYISO, ISO-NE, SPP, IESO (Ontario), AESO (Alberta). Switch market by configuration only, with no code change required.
 
 ## Use Cases
 
-1. **Load Shifting** — Schedule flexible loads (HVAC preheating, water heating, EV charging) during cheap price hours.
-2. **Peak Shaving** — Shed non-critical loads when peak risk level is high.
-3. **Renewable Following** — Align consumption with periods of high wind/solar generation.
-4. **Carbon-Aware Scheduling** — Defer loads to periods when the grid is clean (low gCO₂/kWh).
-5. **Demand Response** — React to real-time LMP signals in the BMS control strategy.
-6. **Energy Reporting** — Provide live electricity market data and trend histories on BMS dashboards.
+1. **Load Shifting:** Schedule flexible loads (HVAC preheating, water heating, EV charging) during cheap price hours.
+2. **Peak Shaving:** Shed non-critical loads when peak risk level is high.
+3. **Renewable Following:** Align consumption with periods of high wind/solar generation.
+4. **Carbon-Aware Scheduling:** Defer loads to periods when the grid is clean (low gCO₂/kWh).
+5. **Demand Response:** React to real-time LMP signals in the BMS control strategy.
+6. **Energy Reporting:** Provide live electricity market data and trend histories on BMS dashboards.
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ The extension fetches wholesale grid data from the GridStatus.io API and publish
 | .NET Framework | 4.8 SDK | Required by all Smart Connector extensions |
 | Smart Connector | 2.6 or later | Installed locally; the service must be running |
 | GitHub PAT | `read:packages` scope | For the Smart Connector NuGet feed |
-| GridStatus.io API Key | — | Free tier available at [gridstatus.io/settings/api](https://www.gridstatus.io/settings/api) |
+| GridStatus.io API Key | n/a | Free tier available at [gridstatus.io/settings/api](https://www.gridstatus.io/settings/api) |
 
 ### Obtain a GridStatus.io API Key
 
@@ -45,7 +45,7 @@ The extension fetches wholesale grid data from the GridStatus.io API and publish
 2. Go to **Settings → API** (<https://www.gridstatus.io/settings/api>).
 3. Click **Generate API Key** and copy the key.
 
-The free tier provides 1,000,000 rows per month — sufficient for most single-market deployments.
+The free tier provides 1,000,000 rows per month, sufficient for most single-market deployments.
 
 > **Security:** The API key is stored encrypted in the Smart Connector database via the `[EncryptedString]` attribute. The extension never writes it to a log. Portal users can display it, so grant Portal access only to people trusted with it.
 
@@ -85,7 +85,7 @@ The free tier provides 1,000,000 rows per month — sufficient for most single-m
 
 ## Portal Configuration
 
-### Step 1 — Configure the Processor
+### Step 1. Configure the Processor
 
 1. Open the Smart Connector Portal (`http://localhost:8082`).
 2. Authenticate with your portal credentials.
@@ -102,7 +102,7 @@ The free tier provides 1,000,000 rows per month — sufficient for most single-m
    | **EwsAddress** | `http://localhost:5300/GridStatus` | EWS endpoint address |
    | **UserName** | *(choose a username)* | EWS server authentication |
    | **Password** | *(choose a strong password)* | Stored encrypted |
-   | **Market** | `CAISO` | Dropdown — select the ISO/RTO market. See [Supported Markets](#supported-markets) |
+   | **Market** | `CAISO` | Dropdown. Select the ISO/RTO market. See [Supported Markets](#supported-markets) |
    | **ApiKey** | *(your GridStatus.io API key)* | Stored encrypted |
    | **PriceLocation** | *(leave empty for default)* | Optional pricing node override. Each market has a sensible default trading hub (e.g., `TH_NP15_GEN-APND` for CAISO). Only set this to target a specific node |
    | **RowLimit** | `100` | Max rows per API request (conserves budget) |
@@ -115,7 +115,7 @@ The free tier provides 1,000,000 rows per month — sufficient for most single-m
 
 8. Click **Save** → **Validate**.
 
-### Step 2 — Create a Schedule
+### Step 2. Create a Schedule
 
 1. Navigate to **Setup → Configuration Schedules**.
 2. Click **Add New**.
@@ -125,19 +125,19 @@ The free tier provides 1,000,000 rows per month — sufficient for most single-m
 6. Enter the cron expression: `*/5 * * * *`.
 7. Click **Save**.
 
-### Step 3 — Assign the Schedule and Start
+### Step 3. Assign the Schedule and Start
 
-To ensure the extension actually runs on the schedule, you must enable **Runs On Schedule** on the processor's **Control** sub-tab — creating the schedule in Step 2 alone is not enough.
+To ensure the extension actually runs on the schedule, you must enable **Runs On Schedule** on the processor's **Control** sub-tab. Creating the schedule in Step 2 alone is not enough.
 
 1. Navigate back to **Configurations → Processor** and select the Grid Status Processor.
 2. Click the **Control** sub-tab.
-3. Set **Runs On Schedule** to `True`. *(Required — without this the processor will not run on the schedule.)*
+3. Set **Runs On Schedule** to `True`. *(Required. Without this the processor will not run on the schedule.)*
 4. Select the schedule created in Step 2.
 5. Click **Save** → **Start**.
 
 On the first run, the processor creates the EWS Server (if it does not already exist), provisions the data hierarchy with trend logs, backfills trend history (see [Trend Logs](#trend-logs)), and starts fetching data. Subsequent runs fetch and update values, with automatic gap backfill on reconnection.
 
-### Step 4 — Verify
+### Step 4. Verify
 
 1. Wait for the first scheduled execution (or click **Start** to run immediately).
 2. Navigate to **EWS Servers** → click the edit icon for `Grid Status CAISO` (or your configured market).
@@ -245,27 +245,27 @@ The Standard Energy Market Interface aligns EWS points with [OpenADR 3.0](https:
 | Price/CurrentPrice | `ELECTRICITY_PRICE` | `PRICE` | `qudt:USD-PER-MegaW-HR` | Day-ahead LMP for current hour |
 | Price/NextHour | `ELECTRICITY_PRICE` | `PRICE` | `qudt:USD-PER-MegaW-HR` | Day-ahead LMP for next hour |
 | Price/RealTimeLMP | `ELECTRICITY_PRICE` | `PRICE` | `qudt:USD-PER-MegaW-HR` | Real-time locational marginal price |
-| Price/Level | `SIMPLE` | `SIMPLE` | — | 0=cheap, 1=normal, 2=expensive (OpenADR SimpleLevel) |
-| Price/PriceCategory | — | — | — | Human-readable label for Level |
-| Price/NegativeActive | — | — | — | True when real-time price < 0 |
+| Price/Level | `SIMPLE` | `SIMPLE` | n/a | 0=cheap, 1=normal, 2=expensive (OpenADR SimpleLevel) |
+| Price/PriceCategory | n/a | n/a | n/a | Human-readable label for Level |
+| Price/NegativeActive | n/a | n/a | n/a | True when real-time price < 0 |
 | Price/CheapThreshold | `ELECTRICITY_PRICE` | `PRICE` | `qudt:USD-PER-MegaW-HR` | Computed percentile boundary |
 | Price/ExpensiveThreshold | `ELECTRICITY_PRICE` | `PRICE` | `qudt:USD-PER-MegaW-HR` | Computed percentile boundary |
 | Price/Hourly/Hour00..23 | `ELECTRICITY_PRICE` | `PRICE` | `qudt:USD-PER-MegaW-HR` | Full 24-hour price curve |
-| LoadShifting/IsCurrentlyCheap | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | — | Boolean DR trigger |
-| LoadShifting/RenewablePercent | — | — | `qudt:PERCENT` | Renewable generation share |
+| LoadShifting/IsCurrentlyCheap | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | n/a | Boolean DR trigger |
+| LoadShifting/RenewablePercent | n/a | n/a | `qudt:PERCENT` | Renewable generation share |
 | Load/Current | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | `qudt:MegaW` | Actual system load |
 | Load/ForecastPeakToday | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | `qudt:MegaW` | Forecast peak demand |
-| Carbon/GridIntensity | `GHG` | `GHG` | — | gCO₂/kWh (no standard QUDT URI) |
-| Carbon/Level | `SIMPLE` | `SIMPLE` | — | 0=clean, 1=normal, 2=dirty |
-| FuelMix/Solar | — | — | `qudt:MegaW` | Solar generation |
-| FuelMix/Wind | — | — | `qudt:MegaW` | Wind generation |
-| FuelMix/Gas | — | — | `qudt:MegaW` | Gas generation |
+| Carbon/GridIntensity | `GHG` | `GHG` | n/a | gCO₂/kWh (no standard QUDT URI) |
+| Carbon/Level | `SIMPLE` | `SIMPLE` | n/a | 0=clean, 1=normal, 2=dirty |
+| FuelMix/Solar | n/a | n/a | `qudt:MegaW` | Solar generation |
+| FuelMix/Wind | n/a | n/a | `qudt:MegaW` | Wind generation |
+| FuelMix/Gas | n/a | n/a | `qudt:MegaW` | Gas generation |
 
 **QUDT unit notes:**
 
-- `qudt:USD-PER-MegaW-HR` is a composed unit — QUDT defines `qudt:MegaW-HR` and currency units separately. The composite follows QUDT's unit composition pattern.
+- `qudt:USD-PER-MegaW-HR` is a composed unit. QUDT defines `qudt:MegaW-HR` and currency units separately. The composite follows QUDT's unit composition pattern.
 - `gCO₂/kWh` has no standard QUDT URI. Carbon intensity is reported as a raw numeric value.
-- Full QUDT unit catalogue: <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
+- Full QUDT unit catalog: <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
 
 **Brick Schema note:** Brick Schema defines building-side equipment and point classes (`brick:Electrical_Meter`, `brick:Power_Sensor`) but does not model grid-market signals. The OpenADR mapping applies at the SmartConnector extension level; Brick applies at the EBO consumption side when mapping EWS points to equipment models.
 
@@ -294,18 +294,18 @@ The extension provisions 14 trend logs that capture historical data for timeline
 
 Trend logs are filled two ways:
 
-1. **Per-cycle sample.** Every cycle, after updating the point values, the processor writes the current value of each trended point as a history record at the cycle timestamp (Phase 3 below), so the trends grow on every run rather than only when a value happens to change. The EWS Server already auto-samples a trend whenever the linked value *changes*, so the processor skips its manual write for any point the server has already sampled this cycle — this avoids a duplicate record with the same value and timestamp.
+1. **Per-cycle sample.** Every cycle, after updating the point values, the processor writes the current value of each trended point as a history record at the cycle timestamp (Phase 3 below), so the trends grow on every run rather than only when a value happens to change. The EWS Server already auto-samples a trend whenever the linked value *changes*, so the processor skips its manual write for any point the server has already sampled this cycle, which avoids a duplicate record with the same value and timestamp.
 2. **Historical backfill.** On first run, the processor backfills the price, load, and fuel-mix/carbon trends with up to `BackfillDays` days (default 30) of hourly history fetched from GridStatus.io, written at their original timestamps via `AddHistoryRecordsManually`. After a reconnection gap of more than about an hour, only the missed window is backfilled. The window is derived from the persisted `Meta/LastUpdate` timestamp, so a service restart does not re-backfill data that already exists. Set `BackfillDays` to `0` to disable backfill.
 
 ### Cycle Data Strategy
 
 Each cycle runs in five explicit phases so the long-running backfill always happens last, after live data and metadata are already committed:
 
-1. **Provision** — create all folders, points, and history items (idempotent).
-2. **Update point values** — fetch prices, load, and fuel mix; write every point.
-3. **Add history samples** — append the current value of each point to its trend.
-4. **Update metadata** — stamp `Meta/LastUpdate`, `DataHealthy`, `CycleCount`, and the other observability points.
-5. **Backfill** — seed/repair historical trend data (may take minutes).
+1. **Provision:** create all folders, points, and history items (idempotent).
+2. **Update point values:** fetch prices, load, and fuel mix; write every point.
+3. **Add history samples:** append the current value of each point to its trend.
+4. **Update metadata:** stamp `Meta/LastUpdate`, `DataHealthy`, `CycleCount`, and the other observability points.
+5. **Backfill:** seed/repair historical trend data (may take minutes).
 
 Because backfill can exceed a short schedule interval, a re-entrancy guard prevents overlap: if the schedule re-triggers while a previous cycle is still running (typically inside a backfill), the new trigger logs a message and returns immediately. A stale lock is released automatically after 30 minutes so a crashed run cannot block the processor permanently.
 
@@ -360,13 +360,13 @@ curl -X GET "http://YOUR_HOST:YOUR_PORT/TrendSamples?trendId=TREND_ID&sampleOnOr
   -H "Accept: application/json"
 ```
 
-> **Note:** The `trendId` must include the `03` DataType prefix (e.g., `03/Grid/CAISO/Price/RealTimeLMPHistory`). Double URL encode the ID for REST API calls. See the [RESTful EWS Gateway Guide](../../docs/developer-guide/smartconnector-restful-ews-gateway.md#10-api-reference--trends-and-trend-samples) for the full Trend and TrendSample API reference.
+> **Note:** The `trendId` must include the `03` DataType prefix (e.g., `03/Grid/CAISO/Price/RealTimeLMPHistory`). Double URL encode the ID for REST API calls. See the [RESTful EWS Gateway Guide](../../docs/developer-guide/smartconnector-restful-ews-gateway.md#10-api-reference-trends-and-trend-samples) for the full Trend and TrendSample API reference.
 
 ## Consuming from EcoStruxure™ Building Operation
 
 Once the EWS Server is running with data, provision an EWS Interface in EBO WorkStation and enable trend log polling.
 
-### Step 1 — Create the EWS Interface
+### Step 1. Create the EWS Interface
 
 1. In WorkStation, right-click the top server and select **Create New Object**.
 2. Select **Interface**, then **Web Service**, then **EcoStruxure Web Service**.
@@ -380,14 +380,14 @@ Once the EWS Server is running with data, provision an EWS Interface in EBO Work
    - **Password:** The password configured in the processor.
 5. Click **Create**.
 
-### Step 2 — Host the EWS Objects
+### Step 2. Host the EWS Objects
 
 1. Navigate to your top server → **System** → **Hardware** → **EcoStruxure Web Services**.
 2. Expand the object with the same name as the EWS Interface you created.
 3. Right-click the EWS Container Item named **Grid Status** and select **Host EWS Objects...**.
 4. Select the EWS Interface you created in Step 1.
 
-### Step 3 — Enable Trend Log Polling
+### Step 3. Enable Trend Log Polling
 
 The trend log objects provisioned by the processor require History Polling to be enabled manually in EBO.
 
@@ -395,7 +395,7 @@ The trend log objects provisioned by the processor require History Polling to be
 2. Search for all History Items (trend log objects).
 3. For each trend log, open its properties and set **History Polling** to **Enabled**.
 
-### Step 4 — Map Values to Control Strategies
+### Step 4. Map Values to Control Strategies
 
 Browse the value tree under the EWS Interface and map values to your control strategy:
 
@@ -481,7 +481,7 @@ The root `/Grid/Meta/` container provides health signals visible to all EWS cons
 
 ## Error Handling
 
-| Condition | Behaviour |
+| Condition | Behavior |
 | --- | --- |
 | Network failure | Keeps last good values, sets `DataHealthy` to `false`, logs error |
 | HTTP 401/403 | Reports as configuration error (invalid API key). Does not retry |
@@ -536,9 +536,9 @@ flowchart TD
 
 ## Security
 
-This extension follows all security practices from the [Developer Guide — Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments):
+This extension follows all security practices from the [Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments):
 
-- API key and EWS password are marked with `[EncryptedString]` — stored encrypted, never logged.
+- API key and EWS password are marked with `[EncryptedString]`, stored encrypted, never logged.
 - All public properties have `[Required]`, `[Range]`, or `[StringLength]` validation.
 - No credentials appear in any `Logger.Log*` call.
 - `EwsServerDataAdapter` is wrapped in a `Dispose` pattern.
@@ -579,7 +579,7 @@ Table – Extension source (`SmartConnector.GridStatusExtension/`)
 
 | File | Responsibility |
 | --- | --- |
-| `GridStatusProcessor.cs` | Main processor — five-phase cycle, provisioning, history, backfill, observability, re-entrancy guard |
+| `GridStatusProcessor.cs` | Main processor, with the five-phase cycle, provisioning, history, backfill, observability, re-entrancy guard |
 | `GridStatusProcessorBase.cs` | Configuration properties, semantic validation, `EwsServerDataAdapter` lifecycle |
 | `GridStatusClient.cs` | REST API client with retry/backoff and TLS 1.2 |
 | `GridStatusResponseParser.cs` | Parses GridStatus.io JSON into typed `DataRow`s |

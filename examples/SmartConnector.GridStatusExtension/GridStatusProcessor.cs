@@ -138,7 +138,7 @@ namespace SmartConnector.GridStatusExtension
                 if (IsCancellationRequested) return prompts;
 
                 // Capture the backfill plan now, before Phase 4 stamps
-                // Meta/LastUpdate — the decision must be based on the previous
+                // Meta/LastUpdate. The decision must be based on the previous
                 // cycle's timestamp, not this one's.
                 var plan = BackfillPlanner.Create(
                     ReadIsoLastUpdate(adapter, structure), now, BackfillDays);
@@ -449,7 +449,7 @@ namespace SmartConnector.GridStatusExtension
 
         /// <summary>
         /// Configures server parameters and supported methods. GetHistory and
-        /// GetHistoricalDataAggregation must be set to true — without these
+        /// GetHistoricalDataAggregation must be set to true. Without these
         /// the EWS server disables trend logging.
         /// </summary>
         private static void ConfigureServer(EwsServerDataAdapter adapter)
@@ -698,7 +698,7 @@ namespace SmartConnector.GridStatusExtension
             EnsureValue(adapter, structure.MetaTimeZone, "TimeZone",
                 EwsValueTypeEnum.String, isoMeta);
 
-            // Trend logs — linked to the value items created above
+            // Trend logs, linked to the value items created above
             Logger.LogDebug(LogCategory.Processor, "Provision: creating trend logs.");
             foreach (var trend in structure.TrendDefinitions)
             {

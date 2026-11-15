@@ -2,7 +2,7 @@
 
 A minimal, runnable Smart Connector extension that **creates its own EWS Server** on the first run and writes the current UTC timestamp to a value on it every execution. No manual EWS Server setup is required.
 
-This is the same code built in the [Developer Guide — Quick Start](../../docs/developer-guide/smartconnector-developers-guide.md#3-quick-start), packaged as a buildable project. It is the smallest complete example of the self-provisioning processor pattern that the Weather, Grid Status, and ENTSO-E extensions apply at scale.
+This is the same code built in the [Developer Guide, Quick Start](../../docs/developer-guide/smartconnector-developers-guide.md#3-quick-start), packaged as a buildable project. It is the smallest complete example of the self-provisioning processor pattern that the Weather, Grid Status, and ENTSO-E extensions apply at scale.
 
 ## What This Extension Does
 
@@ -56,7 +56,7 @@ This is the same code built in the [Developer Guide — Quick Start](../../docs/
 
 ## Portal Configuration
 
-### Step 1 — Configure the Processor
+### Step 1. Configure the Processor
 
 1. Open the Smart Connector Portal (`http://localhost:8082`).
 2. Authenticate with your portal credentials.
@@ -76,7 +76,7 @@ This is the same code built in the [Developer Guide — Quick Start](../../docs/
 
 8. Click **Save** → **Validate**.
 
-### Step 2 — Create a Schedule
+### Step 2. Create a Schedule
 
 1. Navigate to **Setup → Configuration Schedules**.
 2. Click **Add New**.
@@ -86,17 +86,17 @@ This is the same code built in the [Developer Guide — Quick Start](../../docs/
 6. Enter the cron expression: `* * * * *`.
 7. Click **Save**.
 
-### Step 3 — Assign the Schedule and Start
+### Step 3. Assign the Schedule and Start
 
 1. Navigate back to **Configurations → Processor** and select the Hello EWS Processor.
 2. Click the **Control** sub-tab.
-3. Set **Runs On Schedule** to `True`. *(Required — without this the processor will not run on the schedule.)*
+3. Set **Runs On Schedule** to `True`. *(Required. Without this the processor will not run on the schedule.)*
 4. Select the schedule created in Step 2.
 5. Click **Save** → **Start**.
 
 On the first run, the processor creates the EWS Server (if it does not already exist) and provisions the `/Hello/LastSeen` value.
 
-### Step 4 — Verify
+### Step 4. Verify
 
 1. Wait for the first scheduled execution (or click **Start** to run immediately).
 2. Navigate to **EWS Servers** → click the edit icon for `Hello EWS Server`.
@@ -108,7 +108,7 @@ The processor provisions a single folder with one value under it.
 
 ```mermaid
 flowchart LR
-    Root["/Hello"] --> LastSeen["LastSeen<br/>(String — current UTC timestamp, ISO 8601)"]
+    Root["/Hello"] --> LastSeen["LastSeen<br/>(String (current UTC timestamp, ISO 8601))"]
 ```
 
 Table – /Hello
@@ -128,7 +128,7 @@ The companion [`QuickStart.HelloEws.Tests`](../QuickStart.HelloEws.Tests) projec
 
 ### Unit Tests (no Smart Connector required)
 
-The validation tests instantiate the processor and check its data-annotation attributes — they run without the Smart Connector runtime:
+The validation tests instantiate the processor and check its data-annotation attributes. They run without the Smart Connector runtime:
 
 ```powershell
 dotnet test --filter "TestCategory!=Integration"
@@ -176,7 +176,7 @@ Table – Extension source (`QuickStart.HelloEws/`)
 
 | File | Responsibility |
 | --- | --- |
-| `HelloEwsProcessor.cs` | The complete processor — self-provisioning, idempotent `Ensure*` helpers, timestamp write, and `Dispose` |
+| `HelloEwsProcessor.cs` | The complete processor, with self-provisioning, idempotent `Ensure*` helpers, timestamp write, and `Dispose` |
 | `nuget.config.template` | NuGet feed template (no credentials committed) |
 | `QuickStart.HelloEws.csproj` | SDK-style project targeting `net48` |
 | `README.md` / `SECURITY.md` | Usage documentation and security posture |
@@ -189,5 +189,5 @@ Table – Test project (`QuickStart.HelloEws.Tests/`)
 
 ## References
 
-- [Developer Guide — Quick Start](../../docs/developer-guide/smartconnector-developers-guide.md#3-quick-start)
-- [Developer Guide — Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension)
+- [Developer Guide, Quick Start](../../docs/developer-guide/smartconnector-developers-guide.md#3-quick-start)
+- [Developer Guide, Develop an Extension](../../docs/developer-guide/smartconnector-developers-guide.md#7-develop-an-extension)

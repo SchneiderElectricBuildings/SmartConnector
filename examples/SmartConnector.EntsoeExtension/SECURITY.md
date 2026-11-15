@@ -54,18 +54,18 @@ The following cross-property constraints are enforced:
 
 Validation failures are reported as `ValidationResult` errors, preventing the processor from executing.
 
-The country is chosen from a fixed `SupportedCountry` enumeration rather than free-text input, so an unrecognised or malformed country value cannot be supplied through the Portal.
+The country is chosen from a fixed `SupportedCountry` enumeration rather than free-text input, so an unrecognized or malformed country value cannot be supplied through the Portal.
 
 ### External Data Validation
 
 - API responses are parsed using `System.Xml.Linq` with namespace-aware element selection.
 - ENTSO-E error responses (`Acknowledgement_MarketDocument`) are detected and reported without crashing.
-- Numeric values from the API are extracted via `double.TryParse` with `InvariantCulture` — malformed values are skipped rather than throwing.
+- Numeric values from the API are extracted via `double.TryParse` with `InvariantCulture`. Malformed values are skipped rather than throwing.
 - Resolution strings (`PT15M`, `PT30M`, `PT60M`, `P1D`) are validated against known formats.
 
 ## Error Handling
 
-| Condition | Behaviour |
+| Condition | Behavior |
 | --- | --- |
 | HTTP 401/403 | Reported as configuration error. No retry. API token misconfigured. |
 | Network timeout | `HttpWebRequest.Timeout` = 30s. Exception caught and logged. |
@@ -91,17 +91,17 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 
 ## Threat Model
 
-This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide — Threat Modelling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modelling)).
+This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
 
 ### Data Flow Diagram
 
 ```mermaid
 flowchart LR
-    subgraph inet["Internet — untrusted"]
+    subgraph inet["Internet (untrusted)"]
         API["ENTSO-E Transparency Platform<br/>(external entity)"]
     end
-    subgraph host["Smart Connector host — trusted"]
-        subgraph svc["Smart Connector service — process boundary"]
+    subgraph host["Smart Connector host (trusted)"]
+        subgraph svc["Smart Connector service (process boundary)"]
             P["EntsoeProcessor<br/>(process)"]
         end
         DB[("EWS Server store<br/>SQL database (data store)")]
@@ -118,15 +118,15 @@ flowchart LR
 
 ### Trust Boundaries
 
-- **Internet boundary** — between the processor and the ENTSO-E API (flows 1–2). Every crossing is HTTPS/TLS 1.2 with certificate validation; the API security token authenticates the processor to ENTSO-E.
-- **Network boundary** — between the EWS client/EBO and the EWS endpoint (flow 4). Authenticated with HTTP Digest over the configured realm.
-- **Process / machine boundary** — between the processor and the EWS data store (flows 3, 5), mediated by the Smart Connector runtime on the same host.
+- **Internet boundary:** between the processor and the ENTSO-E API (flows 1–2). Every crossing is HTTPS/TLS 1.2 with certificate validation; the API security token authenticates the processor to ENTSO-E.
+- **Network boundary:** between the EWS client/EBO and the EWS endpoint (flow 4). Authenticated with HTTP Digest over the configured realm.
+- **Process / machine boundary:** between the processor and the EWS data store (flows 3, 5), mediated by the Smart Connector runtime on the same host.
 
 ### STRIDE Analysis
 
 | Category | Threat (element / flow) | Mitigation | Status |
 | --- | --- | --- | --- |
-| **Spoofing** | A spoofed ENTSO-E endpoint (DNS/MITM) feeds false data (2); an unauthorised EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
+| **Spoofing** | A spoofed ENTSO-E endpoint (DNS/MITM) feeds false data (2); an unauthorized EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
 | **Tampering** | API response or EWS values modified in transit (2, 4) | TLS protects integrity in transit; parsed values are validated and bounded before persisting (3) | Mitigated |
 | **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records cycle count, last update, and last error to `Meta/*` | Partly mitigated |
 | **Information Disclosure** | The API security token or EWS password leaks via logs, configuration export, or the network (1, 4) | `[EncryptedString]` at rest; no credential in any `Logger` call; the token is sent only over TLS inside the client | Mitigated |
@@ -135,4 +135,4 @@ flowchart LR
 
 ## Compliance
 
-This extension follows the security practices documented in the [Smart Connector Developer Guide — Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).
+This extension follows the security practices documented in the [Smart Connector Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).

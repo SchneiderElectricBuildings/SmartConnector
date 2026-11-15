@@ -156,7 +156,7 @@ namespace SmartConnector.GridStatusExtension
                     }
                     catch (Exception ex)
                     {
-                        // Server does not exist yet — return null so the
+                        // Server does not exist yet, so return null so the
                         // processor can fall through to ConnectNew.
                         Logger.LogDebug(LogCategory.Processor,
                             $"ConnectExisting failed: {ex.GetType().Name}: {ex.Message}");

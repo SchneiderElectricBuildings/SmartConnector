@@ -154,7 +154,7 @@ namespace SmartConnector.EntsoeExtension
                         adapter, zone.Code, zone.Area, zone.Structure);
 
                     // Capture the backfill plan now, before Phase 4 stamps
-                    // Meta/LastUpdate — the decision must be based on the
+                    // Meta/LastUpdate. The decision must be based on the
                     // previous cycle's timestamp, not this one's.
                     zone.Plan = BackfillPlanner.Create(
                         ReadZoneLastUpdate(adapter, zone.Structure),
@@ -590,7 +590,7 @@ namespace SmartConnector.EntsoeExtension
             EnsureValue(adapter, structure.LoadPeakRiskLevel, "PeakRiskLevel",
                 EwsValueTypeEnum.Long, loadFolder);
 
-            // Generation container — Wind and Solar as separate items
+            // Generation container, with Wind and Solar as separate items
             Logger.LogDebug(LogCategory.Processor, "Provision: creating Generation items.");
             var generationFolder = EnsureFolder(adapter,
                 structure.Generation, "Generation", zoneRoot);
@@ -1159,7 +1159,7 @@ namespace SmartConnector.EntsoeExtension
             DateTime periodEnd,
             List<Prompt> prompts)
         {
-            // Current (actual) load — latest data point
+            // Current (actual) load, the latest data point
             double currentLoad = 0;
             try
             {
@@ -1197,7 +1197,7 @@ namespace SmartConnector.EntsoeExtension
 
             if (IsCancellationRequested) return;
 
-            // Load forecast — derive today's peak, peak hour, and risk level
+            // Load forecast. Derive today's peak, peak hour, and risk level
             try
             {
                 string xml = apiClient.QueryLoadForecast(

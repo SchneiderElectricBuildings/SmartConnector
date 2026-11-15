@@ -7,7 +7,7 @@
 <!-- Author: Karim Hussain -->
 <!-- Audience: Extension developers upgrading existing extensions to Smart Connector v2.6 -->
 
-This guide covers the changes you need to make when upgrading an existing Smart Connector extension to v2.6. It is organised by the action you need to take — not by internal version history.
+This guide covers the changes you need to make when upgrading an existing Smart Connector extension to v2.6. It is organized by the action you need to take, not by internal version history.
 
 If you are starting a new extension from scratch, skip this guide and go straight to the [Quick Start](developer-guide/smartconnector-developers-guide.md#3-quick-start).
 
@@ -39,7 +39,7 @@ Or, in SDK-style projects:
 3. Install .NET Framework 4.8 Developer Pack if prompted.
 4. Rebuild and resolve any compiler warnings introduced by the new target.
 
-> **Note:** .NET Framework 4.8 is backward-compatible with 4.5/4.7.2 APIs. Recompilation is typically sufficient — no code changes are needed unless you relied on APIs that were deprecated or removed between framework versions.
+> **Note:** .NET Framework 4.8 is backward-compatible with 4.5/4.7.2 APIs. Recompilation is typically sufficient. No code changes are needed unless you relied on APIs that were deprecated or removed between framework versions.
 
 ---
 
@@ -57,7 +57,7 @@ dotnet nuget remove source SmartConnector
 
 ### 2.2 Add the new source
 
-**Option A — Encrypted credential store (recommended for developer machines):**
+**Option A, encrypted credential store (recommended for developer machines):**
 
 ```powershell
 dotnet nuget add source "https://nuget.pkg.github.com/SchneiderElectricBuildings/index.json" `
@@ -66,7 +66,7 @@ dotnet nuget add source "https://nuget.pkg.github.com/SchneiderElectricBuildings
   --password YOUR_GITHUB_PAT
 ```
 
-**Option B — Environment-variable substitution (recommended for CI/CD):**
+**Option B, environment-variable substitution (recommended for CI/CD):**
 
 Create a `nuget.config` that references an environment variable:
 
@@ -89,7 +89,7 @@ Create a `nuget.config` that references an environment variable:
 
 Set `GITHUB_PACKAGES_PAT` in your CI/CD secrets vault.
 
-> **Security:** The PAT requires only the `read:packages` scope. Set an expiry. Never commit a PAT in plain text. See the [Developer Guide — NuGet Personal Access Tokens](developer-guide/smartconnector-developers-guide.md#524-nuget-personal-access-tokens) for full guidance.
+> **Security:** The PAT requires only the `read:packages` scope. Set an expiry. Never commit a PAT in plain text. See the [Developer Guide, NuGet Personal Access Tokens](developer-guide/smartconnector-developers-guide.md#524-nuget-personal-access-tokens) for full guidance.
 
 ### 2.3 Restore and verify
 
@@ -107,7 +107,7 @@ All list endpoints in the RESTful EWS Gateway now enforce a maximum `take` value
 
 **Impact:** If your REST client requests `take=10000`, the response will silently cap at 5,000 items. Update your client code to paginate if you need more than 5,000 results.
 
-See [EWS Gateway Guide — Filtering, Sorting, and Paging](developer-guide/smartconnector-restful-ews-gateway.md#66-filtering-sorting-and-paging) for pagination patterns.
+See [EWS Gateway Guide, Filtering, Sorting, and Paging](developer-guide/smartconnector-restful-ews-gateway.md#66-filtering-sorting-and-paging) for pagination patterns.
 
 ---
 
@@ -115,9 +115,9 @@ See [EWS Gateway Guide — Filtering, Sorting, and Paging](developer-guide/smart
 
 All retrieval endpoints now accept an optional `includeMetadata` boolean query parameter (default: `false`).
 
-**Impact on REST clients:** No breaking change — existing calls continue to work. Pass `?includeMetadata=true` to receive semantic metadata in responses.
+**Impact on REST clients:** No breaking change. Existing calls continue to work. Pass `?includeMetadata=true` to receive semantic metadata in responses.
 
-**Impact on custom `IEwsRestProvider` implementations:** The interface method signatures have changed. If you implement `IEwsRestProvider` directly (not through the base classes), you must add the `includeMetadata` parameter to your retrieval method signatures — for example:
+**Impact on custom `IEwsRestProvider` implementations:** The interface method signatures have changed. If you implement `IEwsRestProvider` directly (not through the base classes), you must add the `includeMetadata` parameter to your retrieval method signatures, for example:
 
 ```csharp
 // Before
@@ -129,7 +129,7 @@ ValueModel RetrieveValue(BaseApiController controller, string id, bool includeMe
 
 The same applies to the other single-item retrieval methods (`RetrieveContainer`, `RetrieveTrend`, `RetrieveChildrenOfContainer`, and so on).
 
-See [Developer Guide — Metadata API](developer-guide/smartconnector-developers-guide.md#1113-metadata-api).
+See [Developer Guide, Metadata API](developer-guide/smartconnector-developers-guide.md#1113-metadata-api).
 
 ---
 
@@ -137,7 +137,7 @@ See [Developer Guide — Metadata API](developer-guide/smartconnector-developers
 
 v2.6 introduces a bulk update pattern for `EwsServerDataAdapter` that delivers up to 10× faster writes.
 
-**Action required:** No — existing code continues to work. But if your Processor updates many values per execution cycle, consider adopting the pattern:
+**Action required:** No. Existing code continues to work. But if your Processor updates many values per execution cycle, consider adopting the pattern:
 
 ```csharp
 using (var adapter = EwsServerDataAdapter.ConnectExisting(ServerName, UserName, Password))
@@ -154,7 +154,7 @@ using (var adapter = EwsServerDataAdapter.ConnectExisting(ServerName, UserName, 
 }
 ```
 
-See [Developer Guide — EwsServerDataAdapter](developer-guide/smartconnector-developers-guide.md#114-ewsserverdataadapter) for details.
+See [Developer Guide, EwsServerDataAdapter](developer-guide/smartconnector-developers-guide.md#114-ewsserverdataadapter) for details.
 
 ---
 
@@ -163,10 +163,10 @@ See [Developer Guide — EwsServerDataAdapter](developer-guide/smartconnector-de
 SmartConnector 2.5.6 introduced the following security settings, and 2.6 keeps them. They affect the Smart Connector runtime, not your extension code, but your users and administrators should know them.
 
 | Setting | Default | Description |
-|---------|---------|-------------|
+| --- | --- | --- |
 | Account lockout | 3 failed attempts → 10 min lockout | Slows password guessing at Portal sign-in. Protect REST endpoints with a throttling policy and an IP allow list |
 | Password complexity | Minimum 6 characters; uppercase, lowercase, digit, and special character required | Applies to Portal user accounts. EWS Server user passwords follow their own fixed rule |
-| Authentication timing | Randomised delay on failed authentication | Prevents timing-based username enumeration |
+| Authentication timing | Randomized delay on failed authentication | Prevents timing-based username enumeration |
 
 Adjust them in the Portal under **Settings > Service Settings**. See [Developer Guide, Security Configuration](developer-guide/smartconnector-developers-guide.md#1115-security-configuration).
 
@@ -190,14 +190,14 @@ Use this checklist to confirm your extension is ready for v2.6:
 ## 8 Compatibility Matrix
 
 | Smart Connector Version | .NET Framework |
-|-------------------------|----------------|
+| --- | --- |
 | v2.3.x | 4.5 |
 | v2.4.x | 4.5 |
 | v2.5.x (early) | 4.7.2 |
 | v2.5.x (late) | 4.8 |
 | v2.6.x | 4.8 |
 
-> **Note:** All Smart Connector SDK packages are now published exclusively to GitHub Packages on the `SchneiderElectricBuildings` organisation (<https://github.com/orgs/SchneiderElectricBuildings/packages>). The former MyGet feed has been retired, so every supported version is restored from GitHub Packages regardless of the source it originally shipped from.
+> **Note:** All Smart Connector SDK packages are now published exclusively to GitHub Packages on the `SchneiderElectricBuildings` organization (<https://github.com/orgs/SchneiderElectricBuildings/packages>). The former MyGet feed has been retired, so every supported version is restored from GitHub Packages regardless of the source it originally shipped from.
 
 ---
 

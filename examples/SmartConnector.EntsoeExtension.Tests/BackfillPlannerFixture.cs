@@ -61,7 +61,7 @@ namespace SmartConnector.EntsoeExtension.Tests
         [Test]
         public void Create_SmallGap_DoesNotBackfill()
         {
-            // 15-minute gap — well under the threshold.
+            // 15-minute gap, well under the threshold.
             var lastUpdate = Now.AddMinutes(-15);
             var plan = BackfillPlanner.Create(lastUpdate, Now, 30);
             Assert.That(plan.ShouldBackfill, Is.False);
@@ -70,7 +70,7 @@ namespace SmartConnector.EntsoeExtension.Tests
         [Test]
         public void Create_GapAboveThreshold_PlansGapBackfill()
         {
-            // 6-hour gap — backfill only the missed window.
+            // 6-hour gap, so backfill only the missed window.
             var lastUpdate = Now.AddHours(-6);
             var plan = BackfillPlanner.Create(lastUpdate, Now, 30);
             Assert.That(plan.ShouldBackfill, Is.True);
