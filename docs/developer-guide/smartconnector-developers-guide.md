@@ -216,9 +216,14 @@ namespace Quickstart.HelloEws
         public string Realm { get; set; }
 
         [Required]
-        [DefaultValue("http://localhost:5300/HelloEws")]
-        [Tooltip("HTTP endpoint address for the EWS Server.")]
+        [DefaultValue("https://localhost:5300/HelloEws")]
+        [Tooltip("HTTPS endpoint address for the EWS Server. Bind a certificate "
+            + "to the port before the first run.")]
         public string EwsAddress { get; set; }
+
+        [DefaultValue(false)]
+        [Tooltip("Permits an http:// EWS address. For development only.")]
+        public bool AllowUnencryptedEwsForDevelopment { get; set; }
 
         [Required]
         [Tooltip("Username for the EWS Server.")]
@@ -231,11 +236,54 @@ namespace Quickstart.HelloEws
 
         private EwsServerDataAdapter _adapter;
 
+        // The EWS address must be encrypted, unless the development property is on.
+        public override IEnumerable<ValidationResult> Validate(
+            ValidationContext validationContext)
+        {
+            foreach (var result in base.Validate(validationContext))
+                yield return result;
+
+            var addressProblem = EwsServerSecurity.ValidateAddress(
+                EwsAddress, AllowUnencryptedEwsForDevelopment);
+            if (addressProblem != null)
+                yield return new ValidationResult(addressProblem);
+        }
+
         protected override IEnumerable<Prompt> Execute_Subclass()
         {
             var prompts = new List<Prompt>();
 
             var adapter = ConnectOrCreateServer();
+
+            // Apply the security policy on every run, so a server that has
+            // drifted from it is brought back before any data is written.
+            var applied = EwsServerSecurity.Apply(adapter);
+            if (applied.Count > 0)
+            {
+                Logger.LogInfo(LogCategory.Processor,
+                    "EWS Server security settings applied ("
+                    + string.Join(", ", applied) + ").");
+            }
+
+            if (AllowUnencryptedEwsForDevelopment)
+            {
+                Logger.LogInfo(LogCategory.Processor,
+                    "AllowUnencryptedEwsForDevelopment is on. Turn it off outside development.");
+            }
+
+            // A server keeps the address it was created with, so check the
+            // server itself, not only the configured EwsAddress.
+            var serverAddressProblem = EwsServerSecurity.ValidateServerAddress(
+                adapter.Server.Address, AllowUnencryptedEwsForDevelopment);
+            if (serverAddressProblem != null)
+            {
+                prompts.Add(new Prompt
+                {
+                    Message = serverAddressProblem,
+                    Severity = PromptSeverity.MayNotContinue
+                });
+                return prompts;
+            }
 
             // Provision the structure. Ensure* helpers are idempotent: they
             // create the folder/value on the first run and return the existing
@@ -274,7 +322,7 @@ namespace Quickstart.HelloEws
 
             // First run. Create the server, then reconnect with a clean context.
             using (EwsServerDataAdapter.ConnectNew(
-                name: ServerName, address: EwsAddress, realm: Realm,
+                name: ServerName, address: EwsAddress.Trim(), realm: Realm,
                 username: UserName, password: Password, autoStart: true))
             {
             }
@@ -296,9 +344,20 @@ namespace Quickstart.HelloEws
             EwsValueTypeEnum type, EwsContainerItem parent)
         {
             var existing = adapter.ValueItems.FirstOrDefault(v => v.AlternateId == altId);
-            return existing ?? adapter.AddValueItem(
+            if (existing != null)
+            {
+                // A value item created by an earlier version may still be writeable.
+                if (existing.Writeable != EwsValueWriteableEnum.ReadOnly)
+                {
+                    adapter.ModifyValueItemWriteable(
+                        existing, EwsValueWriteableEnum.ReadOnly);
+                }
+                return existing;
+            }
+
+            return adapter.AddValueItem(
                 altId, name, name, type,
-                EwsValueWriteableEnum.Writeable, EwsValueForceableEnum.NotForceable,
+                EwsValueWriteableEnum.ReadOnly, EwsValueForceableEnum.NotForceable,
                 EwsValueStateEnum.Uncertain, null, parent);
         }
 
@@ -317,6 +376,8 @@ namespace Quickstart.HelloEws
 
 > **Why these APIs?** `Processor` is the base class for all custom processors ([Section 7.5](#75-the-base-class-configuration-and-validation)). `EwsServerDataAdapter.ConnectNew` creates the EWS Server and starts its HTTP listener; disposing it and calling `ConnectExisting` returns a clean adapter ([Section 11.4](#114-ewsserverdataadapter)). The idempotent `EnsureFolder` / `EnsureValue` helpers provision the structure so the same code runs safely on every cycle. This is the recommended pattern ([Section 7.8](#78-recommended-patterns-for-production-extensions)). `ModifyValueItemValue` updates a single value, and `EwsValueStateEnum.Good` is the quality flag ([Section 11.4](#114-ewsserverdataadapter)). `EncryptedString` ensures the password is encrypted in the database ([Section 5.2](#52-credential-handling)).
 
+> **The security policy.** `EwsServerSecurity` is a second file in the project. Copy [`EwsServerSecurity.cs`](../../examples/QuickStart.HelloEws/EwsServerSecurity.cs) from the sample and add it next to `Class1.cs`. It keeps EWS clients read-only, offers SHA-256 Digest authentication, and requires an `https://` address unless `AllowUnencryptedEwsForDevelopment` is on. [Section 7.6.6](#766-connecting-to-or-creating-the-ews-server) explains it.
+
 ### 3.5 Build, Deploy, Configure (5 minutes)
 
 1. Set the build configuration to **Release**, then **Build → Build Solution**. Confirm the project compiles with zero errors.
@@ -325,7 +386,7 @@ namespace Quickstart.HelloEws
 4. **Start (or restart) the Smart Connector service.**
 5. Open the Smart Connector Portal in a browser.
 6. Create a schedule (Portal → **Setup → Configuration Schedules → Add New**). Set it to run every minute.
-7. Create a Processor Configuration (Portal → **Processors → Add**), select `Quickstart.HelloEws.HelloEwsProcessor`, fill in `UserName` and `Password` (the `ServerName`, `Realm`, and `EwsAddress` already have working defaults), and assign the schedule you created in step 6.
+7. Create a Processor Configuration (Portal → **Processors → Add**), select `Quickstart.HelloEws.HelloEwsProcessor`, fill in `UserName` and `Password` (`ServerName` and `Realm` already have working defaults), and assign the schedule you created in step 6. For this quick start, set `EwsAddress` to `http://localhost:5300/HelloEws` and turn on `AllowUnencryptedEwsForDevelopment`. For any other use, keep the `https://` address and bind a certificate to the port first ([Section 11.21](#1121-hardening-the-smart-connector-host)).
 8. Wait one minute. The processor creates an EWS Server named **Hello EWS Server** with a `/Hello/LastSeen` value. Open **EWS Servers** in the Portal, select that server, and refresh. The value shows the current UTC timestamp. You never created the server or the value by hand.
 
 ### 3.6 You Did It! Now What?
@@ -1141,7 +1202,7 @@ You can author your own validation attribute by subclassing `ValidationAttribute
 
 ##### 7.5.4.2 Semantic Validation
 
-Semantic validation is contextual. It needs meaning beyond a single attribute. It is based on the .NET `IValidatableObject` interface. Because `Processor` implements that interface, you can override `Validate` to add contextual checks. The Weather Extension enforces two rules. The EWS user name and password must differ (a common security best practice), and the city must not be blank.
+Semantic validation is contextual. It needs meaning beyond a single attribute. It is based on the .NET `IValidatableObject` interface. Because `Processor` implements that interface, you can override `Validate` to add contextual checks. The Weather Extension enforces two rules in its base class, and a third in `WeatherProcessor` that requires an `https://` address ([Section 7.6.6](#766-connecting-to-or-creating-the-ews-server)). In the base class, the EWS user name and password must differ (a common security best practice), and the city must not be blank.
 
 ```csharp
 public override IEnumerable<ValidationResult> Validate(
@@ -1307,11 +1368,16 @@ public class WeatherProcessor : WeatherProcessorBase
     public string Realm { get; set; }
 
     [Required]
-    [DefaultValue("http://localhost:5300/WeatherService")]
-    [Tooltip("HTTP endpoint address for the EWS Server.")]
+    [DefaultValue("https://localhost:5300/WeatherService")]
+    [Tooltip("HTTPS endpoint address for the EWS Server. Bind a certificate "
+        + "to the port before the first run.")]
     public string EwsAddress { get; set; }
 
-    // Execute_Subclass and its helpers follow.
+    [DefaultValue(false)]
+    [Tooltip("Permits an http:// EWS address. For development only.")]
+    public bool AllowUnencryptedEwsForDevelopment { get; set; }
+
+    // Validate, Execute_Subclass and their helpers follow.
 }
 ```
 
@@ -1489,6 +1555,9 @@ protected override IEnumerable<Prompt> Execute_Subclass()
             return prompts;
         }
 
+        // Apply the security policy and check the server address here.
+        // Section 7.6.6 shows this step.
+
         var now = DateTime.UtcNow;
 
         EnsureProvisioned(adapter);                       // Phase 1
@@ -1564,7 +1633,7 @@ private EwsServerDataAdapter ConnectOrCreateServer()
     {
         // Create and start the server, then dispose this throwaway adapter.
         using (EwsServerDataAdapter.ConnectNew(
-            name: ServerName, address: EwsAddress, realm: Realm,
+            name: ServerName, address: EwsAddress.Trim(), realm: Realm,
             username: UserName, password: Password, autoStart: true))
         {
         }
@@ -1585,30 +1654,91 @@ private EwsServerDataAdapter ConnectOrCreateServer()
 
 > **Note:** Because the base-class getter already attempted `ConnectExisting`, calling `ConnectNew` here is the first-run path. The `DbUpdateException` filter is a belt-and-braces guard for the rare case where the server row exists but the listener did not start. See [Recommended Patterns for Production Extensions](#78-recommended-patterns-for-production-extensions) for the general lifecycle rule, and [Section 11.4 EwsServerDataAdapter](#114-ewsserverdataadapter) for the factory signatures.
 
-Immediately after connecting, `ConfigureServer` sets the server options. Enabling `GetHistory` and `GetHistoricalDataAggregation` is what allows EWS clients to read the trend logs:
+Immediately after connecting, `ConfigureServer` sets the operational options:
 
 ```csharp
 private static void ConfigureServer(EwsServerDataAdapter adapter)
 {
     adapter.ModifyServerIsAutoStart(true);
-    adapter.ModifyServerAllowCookies(true);
     adapter.ModifyServerPageSize(1000);
-    adapter.ModifyServerSupportedMethods(new EwsServerMethods
-    {
-        GetContainerItems = true, GetItems = true, GetValues = true, SetValues = true,
-        GetHistory = true, GetHistoricalDataAggregation = true,
-        GetHierarchicalInformation = true, GetNotification = true, GetEnums = true,
-        GetWebServiceInformation = true,
-        // Advertise the alarm operations even though this extension has no alarms.
-        GetAlarmEvents = true, GetAlarmEventTypes = true, GetAlarmHistory = true,
-        GetUpdatedAlarmEvents = true, AcknowledgeAlarmEvents = true,
-        Subscribe = true, Unsubscribe = true,
-        Renew = true, ForceValues = false, UnforceValues = false
-    });
 }
 ```
 
-> **Advertise alarm operations even with no alarms.** EWS clients such as EcoStruxure Building Operation poll for alarms. If the server does not advertise the alarm operations, that poll fails with an `OPERATION_NOT_SUPPORTED` fault, which EBO logs as a recurring "CWS Alarm Poll failed" system alarm. Enabling `GetAlarmEvents` (and the related alarm operations) makes the server return an empty alarm list instead, so the poll succeeds quietly. The supported-method set is stored when the server is created, so changing it later requires the server to be recreated.
+The security settings live in one class, `EwsServerSecurity`. `Execute_Subclass` applies them on every cycle, as soon as it has an adapter and before it writes any data:
+
+```csharp
+var applied = EwsServerSecurity.Apply(adapter);
+if (applied.Count > 0)
+{
+    Logger.LogInfo(LogCategory.Processor,
+        "EWS Server security settings applied ("
+        + string.Join(", ", applied) + ").");
+}
+
+if (AllowUnencryptedEwsForDevelopment)
+{
+    Logger.LogInfo(LogCategory.Processor,
+        "AllowUnencryptedEwsForDevelopment is on. Turn it off outside development.");
+}
+
+// A server keeps the address it was created with, so check the
+// server itself, not only the configured EwsAddress.
+var serverAddressProblem = EwsServerSecurity.ValidateServerAddress(
+    adapter.Server.Address, AllowUnencryptedEwsForDevelopment);
+if (serverAddressProblem != null)
+{
+    prompts.Add(new Prompt
+    {
+        Message = serverAddressProblem,
+        Severity = PromptSeverity.MayNotContinue
+    });
+    return prompts;
+}
+```
+
+`Apply` compares the server with the policy and writes only the settings that differ, so a server that already matches is left untouched and a server that has drifted is brought back:
+
+```csharp
+public static IReadOnlyList<string> Apply(EwsServerDataAdapter adapter)
+{
+    var server = adapter.Server;
+    var pending = PendingChanges(
+        server.AllowCookies,
+        server.SupportedHashingAlgorithms,
+        server.SupportedMethods);
+
+    if (pending.Contains(CookiesSetting))
+        adapter.ModifyServerAllowCookies(false);
+    if (pending.Contains(AlgorithmsSetting))
+        adapter.ModifyServerSupportedHashAlgorithms(RequiredAlgorithms());
+    if (pending.Contains(MethodsSetting))
+        adapter.ModifyServerSupportedMethods(ReadOnlyMethods());
+
+    return pending;
+}
+```
+
+The policy has five parts. The complete class is in [`EwsServerSecurity.cs`](../../examples/SmartConnector.WeatherExtension/EwsServerSecurity.cs).
+
+| Setting | Policy | Reason |
+| --- | --- | --- |
+| Client operations | Read, history, subscription, and alarm operations. `SetValues`, `ForceValues`, and `UnforceValues` are off | The extension only publishes data. The processor writes through the data adapter, not through these operations |
+| Digest algorithms | SHA-256 | Clients authenticate with a strong hash |
+| Cookies | Off | Every request authenticates with Digest |
+| Address | Starts with `https://`. `Validate` checks the configured `EwsAddress`, and every cycle checks the address the server listens on | The data is encrypted in transit. `AllowUnencryptedEwsForDevelopment` permits `http://` during development |
+| Value items | Read-only. New items are created `ReadOnly`, and an item the processor provisions that an earlier version created writeable is changed on the next cycle | A second layer under the client operations |
+
+`GetHistory` and `GetHistoricalDataAggregation` stay on, because they are what allows EWS clients to read the trend logs.
+
+The policy covers the client operations, the Digest algorithms, cookies, the address, and the value items. An administrator manages the realm, the EWS users, and the certificate bound to the port, in the Portal and in Windows.
+
+Three points about timing:
+
+- The processor applies the policy in the same run that creates the server, right after `ConnectNew` returns.
+- When the address check stops a cycle, the processor writes no new data. The server keeps serving the values it already holds on its current address until an administrator moves it to `https://` ([Section 11.21](#1121-hardening-the-smart-connector-host)).
+- While `AllowUnencryptedEwsForDevelopment` is on, the processor logs a reminder on every cycle.
+
+> **Advertise alarm operations even with no alarms.** EWS clients such as EcoStruxure Building Operation poll for alarms. If the server does not advertise the alarm operations, that poll fails with an `OPERATION_NOT_SUPPORTED` fault, which EBO logs as a recurring "CWS Alarm Poll failed" system alarm. Enabling `GetAlarmEvents` (and the related alarm operations) makes the server return an empty alarm list instead, so the poll succeeds quietly.
 
 #### 7.6.7 Phase 1. Idempotent Provisioning
 
@@ -1628,9 +1758,20 @@ private static EwsValueItem EnsureValue(
     EwsValueTypeEnum type, EwsContainerItem parent, string unit = null)
 {
     var existing = adapter.ValueItems.FirstOrDefault(v => v.AlternateId == altId);
-    return existing ?? adapter.AddValueItem(
+    if (existing != null)
+    {
+        // A value item created by an earlier version may still be writeable.
+        if (existing.Writeable != EwsValueWriteableEnum.ReadOnly)
+        {
+            adapter.ModifyValueItemWriteable(
+                existing, EwsValueWriteableEnum.ReadOnly);
+        }
+        return existing;
+    }
+
+    return adapter.AddValueItem(
         altId, name, name, type,
-        EwsValueWriteableEnum.Writeable, EwsValueForceableEnum.NotForceable,
+        EwsValueWriteableEnum.ReadOnly, EwsValueForceableEnum.NotForceable,
         EwsValueStateEnum.Uncertain, unit, parent);
 }
 
@@ -1983,7 +2124,7 @@ public WeatherProcessor CreateTestableProcessor()
     {
         ServerName = "Test Weather Service",
         Realm = "TestRealm",
-        EwsAddress = "http://localhost:5300/TestWeatherService",
+        EwsAddress = "https://localhost:5300/TestWeatherService",
         UserName = "YOUR_USERNAME",
         Password = "YOUR_PASSWORD",
         ApiKey = "YOUR_OPENWEATHERMAP_KEY",
@@ -2078,7 +2219,7 @@ public class ProcessorFixture : SmartConnectorTestFixtureBase,
         {
             ServerName = "Test Hello EWS Server",
             Realm = "TestRealm",
-            EwsAddress = "http://localhost:5300/TestHelloEws",
+            EwsAddress = "https://localhost:5300/TestHelloEws",
             UserName = "YOUR_USERNAME",
             Password = "YOUR_PASSWORD"
         };
@@ -2143,7 +2284,8 @@ To confirm the Extension works, create a Processor Configuration for the `Weathe
    | --- | --- | --- |
    | ServerName | `Weather Service` | EWS Server name (created on first run) |
    | Realm | `SmartConnectorRealm` | HTTP Digest realm |
-   | EwsAddress | `http://localhost:5300/WeatherService` | EWS endpoint address |
+   | EwsAddress | `https://localhost:5300/WeatherService` | EWS endpoint address. Bind a certificate to the port first ([Section 11.21](#1121-hardening-the-smart-connector-host)) |
+   | AllowUnencryptedEwsForDevelopment | `False` | Permits an `http://` address. For development only |
    | UserName | *(choose one)* | EWS Server user |
    | Password | *(choose a strong one)* | Stored encrypted |
    | ApiKey | *(your OpenWeatherMap key)* | Stored encrypted |
@@ -2452,7 +2594,7 @@ EwsServerDataAdapter adapter = EwsServerDataAdapter.ConnectExisting(
 // Create a new EWS Server
 EwsServerDataAdapter adapter = EwsServerDataAdapter.ConnectNew(
     name: "My New Server",
-    address: "http://localhost:5300/MyService",
+    address: "https://localhost:5300/MyService",
     realm: "MyRealm",
     username: "YOUR_USERNAME",
     password: "YOUR_PASSWORD",
@@ -3329,6 +3471,6 @@ To select the algorithms, edit the server on the **EWS Servers** tab of the Port
 
 An EWS Server can also accept a cookie in place of a Digest exchange. When cookies are on, each signed-in response sets a `CSPCID` cookie that works once, expires after five minutes, and is tied to the address of the client. A request that carries a valid cookie is accepted without a Digest exchange.
 
-`ConnectNew` leaves cookies off. A call to `ModifyServerAllowCookies(true)` turns them on, as the walkthrough in [Section 7.6](#76-the-processor-a-phased-execution-cycle) and the Weather, ENTSO-E, and GridStatus examples do. Leave the call out of your own extension where every request must authenticate with Digest.
+`ConnectNew` leaves cookies off, and the examples keep them off on every cycle through their `EwsServerSecurity` class ([Section 7.6.6](#766-connecting-to-or-creating-the-ews-server)). The same class sets SHA-256 from code with `ModifyServerSupportedHashAlgorithms`. Leave `ModifyServerAllowCookies(true)` out of your own extension where every request must authenticate with Digest.
 
 *© 2017–2026 Schneider Electric. All rights reserved.*

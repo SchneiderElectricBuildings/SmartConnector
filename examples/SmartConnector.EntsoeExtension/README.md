@@ -91,6 +91,21 @@ Obtaining a security token is a multi-step process that involves registration, e
    Start-Service SmartConnectorService
    ```
 
+## Prepare HTTPS
+
+The processor requires an `https://` address for its EWS Server. Bind a certificate to the port before the first run.
+
+```text
+netsh http add sslcert ipport=0.0.0.0:5300 certhash=<certificate-thumbprint> appid={<application-guid>}
+```
+
+To try the extension without a certificate, set **EwsAddress** to an `http://` address and turn on **AllowUnencryptedEwsForDevelopment**. Use that for development only. The processor logs a reminder on every run while the property is on.
+
+### Upgrading an Existing Installation
+
+- Move the EWS Server to an `https://` address as [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host) describes, and set **EwsAddress** to the same value. The configuration does not validate with an `http://` address unless **AllowUnencryptedEwsForDevelopment** is on. Until the server is moved, the processor writes no new data, and the server keeps serving the values it already holds on its `http://` address.
+- Confirm that each EWS client supports SHA-256 Digest. On its next run, the processor sets the EWS Server to SHA-256 Digest without cookies and to read-only client operations, and changes the value items it provisions to read-only.
+
 ## Portal Configuration
 
 ### Step 1. Configure the Processor
@@ -107,7 +122,8 @@ Obtaining a security token is a multi-step process that involves registration, e
    | --- | --- | --- |
    | **ServerName** | `ENTSOE Energy Data` | Name of the EWS Server (created automatically) |
    | **Realm** | `SmartConnectorRealm` | HTTP authentication realm |
-   | **EwsAddress** | `http://localhost:5300/EntsoeEnergyData` | EWS endpoint address |
+   | **EwsAddress** | `https://localhost:5300/EntsoeEnergyData` | EWS endpoint address. See [Prepare HTTPS](#prepare-https) |
+   | **AllowUnencryptedEwsForDevelopment** | `False` | Permits an `http://` address. For development only |
    | **UserName** | *(choose a username)* | EWS server authentication |
    | **Password** | *(choose a strong password)* | Stored encrypted |
    | **Country** | `Netherlands` | Select from the drop-down. Multi-zone countries (e.g. Sweden, Norway) include all zones automatically. See [Supported Countries](#supported-countries) |
@@ -371,7 +387,7 @@ curl -X GET "http://YOUR_HOST:YOUR_PORT/TrendSamples?trendId=TREND_ID&sampleOnOr
 Once the EWS Server is running with data, configure an EWS client connection in EBO:
 
 1. In WorkStation, add a new EWS Data Source.
-2. Set the EWS Server address to the value configured in `EwsAddress` (e.g., `http://<smart-connector-host>:5300/EntsoeEnergyData`).
+2. Set the EWS Server address to the value configured in `EwsAddress` (e.g., `https://<smart-connector-host>:5300/EntsoeEnergyData`).
 3. Enter the EWS server credentials.
 4. Browse the value tree to find the ENTSO-E data points.
 5. Map values to your control strategy:
@@ -477,6 +493,7 @@ This extension follows all security practices from the [Developer Guide, Securit
 Summary:
 
 - API token and EWS password are marked with `[EncryptedString]`, stored encrypted, never logged.
+- The EWS Server is read-only for EWS clients, offers SHA-256 Digest authentication without cookies, and requires an `https://` address. The processor applies these settings on every cycle (`EwsServerSecurity.cs`).
 - All public properties have `[Required]`, `[Range]`, or `[StringLength]` validation.
 - No credentials appear in any `Logger.Log*` call.
 - `EwsServerDataAdapter` is wrapped in a `Dispose` pattern with `ConnectNew → Dispose → ConnectExisting` lifecycle.
@@ -485,12 +502,13 @@ Summary:
 
 ## What This Demonstrates
 
+- A security policy for the EWS Server that the processor applies on every cycle (`EwsServerSecurity.cs`)
 - Standard Energy Market Interface aligned with GridStatus extension (same paths, types, semantics)
 - **OpenADR 3.0 signal semantics:** Price → `EventType.Price`, Level → `EventType.Simple`
 - Single `Processor` combining setup and scheduled updates (eliminates configuration mismatch)
 - Country drop-down (enum) that auto-expands multi-zone countries into per-zone EWS subtrees (`/ENTSOE/Countries/{Country}/{Zone}/...`)
 - `ConnectNew → Dispose → ConnectExisting` lifecycle for EWS server management (avoids duplicate-key errors)
-- `ConfigureServer` with `GetHistory = true` for trend log support via EWS REST API
+- `EwsServerSecurity` with `GetHistory = true` for trend log support via EWS REST API
 - Idempotent provisioning with `EnsureFolder`, `EnsureValue`, `EnsureHistoryItem` helpers
 - Five-phase cycle (provision → values → history → metadata → backfill) that defers the long-running backfill to the end
 - Static re-entrancy guard that skips overlapping triggers when a backfill outlasts the schedule interval
@@ -515,6 +533,7 @@ Table – Extension source (`SmartConnector.EntsoeExtension/`)
 | --- | --- |
 | `EntsoeProcessor.cs` | Main processor, with the five-phase cycle, provisioning, history, backfill, observability, re-entrancy guard |
 | `EntsoeProcessorBase.cs` | Configuration properties, semantic validation, `EwsServerDataAdapter` lifecycle |
+| `EwsServerSecurity.cs` | Security policy for the EWS Server, with read-only client operations, SHA-256 Digest, the address rule, and drift correction |
 | `EntsoeApiClient.cs` | Synchronous HTTPS client for the ENTSO-E REST API (TLS 1.2, URL building, timeout) |
 | `EntsoeResponseParser.cs` | Parses ENTSO-E XML into typed time series; PsrType-aware (wind/solar) |
 | `AreaMapping.cs` | `SupportedCountry` enum and country → zone / EIC code / timezone mapping |
@@ -531,6 +550,7 @@ Table – Test project (`SmartConnector.EntsoeExtension.Tests/`)
 | File | Coverage |
 | --- | --- |
 | `ProcessorFixture.cs` | Validation, area-mapping, and `[Explicit]` integration tests |
+| `EwsServerSecurityFixture.cs` | Client operations, Digest algorithms, the address rule, and drift detection |
 | `EwsStructureFixture.cs` | EWS path generation and trend definitions |
 | `BackfillPlannerFixture.cs` | Backfill window, point filtering, hourly resampling |
 | `LoadAnalyzerFixture.cs` | Forecast peak and peak-risk-level logic |

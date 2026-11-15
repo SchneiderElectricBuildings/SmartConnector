@@ -26,9 +26,28 @@ namespace SmartConnector.EntsoeExtension
         public string Realm { get; set; }
 
         [Required]
-        [DefaultValue("http://localhost:5300/EntsoeEnergyData")]
-        [Tooltip("HTTP endpoint address for the EWS Server.")]
+        [DefaultValue("https://localhost:5300/EntsoeEnergyData")]
+        [Tooltip("HTTPS endpoint address for the EWS Server. Bind a certificate "
+            + "to the port before the first run.")]
         public string EwsAddress { get; set; }
+
+        [DefaultValue(false)]
+        [Tooltip("Permits an http:// EWS address. For development only.")]
+        public bool AllowUnencryptedEwsForDevelopment { get; set; }
+
+        // ── Validation ─────────────────────────────────────────────────
+
+        public override IEnumerable<ValidationResult> Validate(
+            ValidationContext validationContext)
+        {
+            foreach (var result in base.Validate(validationContext))
+                yield return result;
+
+            var addressProblem = EwsServerSecurity.ValidateAddress(
+                EwsAddress, AllowUnencryptedEwsForDevelopment);
+            if (addressProblem != null)
+                yield return new ValidationResult(addressProblem);
+        }
 
         // ── Feature Flags ──────────────────────────────────────────────
 
@@ -133,6 +152,36 @@ namespace SmartConnector.EntsoeExtension
                     prompts.Add(new Prompt
                     {
                         Message = "Failed to connect to or create the EWS Server.",
+                        Severity = PromptSeverity.MayNotContinue
+                    });
+                    return prompts;
+                }
+
+                // Apply the security policy on every cycle, so a server that
+                // has drifted from it is brought back before any data is written.
+                var applied = EwsServerSecurity.Apply(adapter);
+                if (applied.Count > 0)
+                {
+                    Logger.LogInfo(LogCategory.Processor,
+                        "EWS Server security settings applied ("
+                        + string.Join(", ", applied) + ").");
+                }
+
+                if (AllowUnencryptedEwsForDevelopment)
+                {
+                    Logger.LogInfo(LogCategory.Processor,
+                        "AllowUnencryptedEwsForDevelopment is on. Turn it off outside development.");
+                }
+
+                // A server keeps the address it was created with, so check the
+                // server itself, not only the configured EwsAddress.
+                var serverAddressProblem = EwsServerSecurity.ValidateServerAddress(
+                    adapter.Server.Address, AllowUnencryptedEwsForDevelopment);
+                if (serverAddressProblem != null)
+                {
+                    prompts.Add(new Prompt
+                    {
+                        Message = serverAddressProblem,
                         Severity = PromptSeverity.MayNotContinue
                     });
                     return prompts;
@@ -277,7 +326,7 @@ namespace SmartConnector.EntsoeExtension
             {
                 using (EwsServerDataAdapter.ConnectNew(
                     name: ServerName,
-                    address: EwsAddress,
+                    address: EwsAddress.Trim(),
                     realm: Realm,
                     username: UserName,
                     password: Password,
@@ -326,34 +375,13 @@ namespace SmartConnector.EntsoeExtension
             return _dataAdapter;
         }
 
+        // Operational settings only. The security settings (client
+        // operations, Digest algorithms, cookies) belong to EwsServerSecurity,
+        // which the processor applies on every cycle.
         private static void ConfigureServer(EwsServerDataAdapter adapter)
         {
             adapter.ModifyServerIsAutoStart(true);
-            adapter.ModifyServerAllowCookies(true);
             adapter.ModifyServerPageSize(1000);
-            adapter.ModifyServerSupportedMethods(new EwsServerMethods
-            {
-                GetContainerItems = true,
-                GetItems = true,
-                GetValues = true,
-                SetValues = true,
-                GetHistory = true,
-                GetHistoricalDataAggregation = true,
-                GetHierarchicalInformation = true,
-                GetNotification = true,
-                GetEnums = true,
-                GetWebServiceInformation = true,
-                GetAlarmEvents = true,
-                GetAlarmEventTypes = true,
-                GetAlarmHistory = true,
-                GetUpdatedAlarmEvents = true,
-                AcknowledgeAlarmEvents = true,
-                Subscribe = true,
-                Unsubscribe = true,
-                Renew = true,
-                ForceValues = false,
-                UnforceValues = false
-            });
         }
 
         // ── Provisioning Helpers ───────────────────────────────────────
@@ -381,11 +409,20 @@ namespace SmartConnector.EntsoeExtension
         {
             var existing = adapter.ValueItems
                 .FirstOrDefault(v => v.AlternateId == altId);
-            if (existing != null) return existing;
+            if (existing != null)
+            {
+                // A value item created by an earlier version may still be writeable.
+                if (existing.Writeable != EwsValueWriteableEnum.ReadOnly)
+                {
+                    adapter.ModifyValueItemWriteable(
+                        existing, EwsValueWriteableEnum.ReadOnly);
+                }
+                return existing;
+            }
 
             return adapter.AddValueItem(
                 altId, name, name, type,
-                EwsValueWriteableEnum.Writeable,
+                EwsValueWriteableEnum.ReadOnly,
                 EwsValueForceableEnum.NotForceable,
                 EwsValueStateEnum.Uncertain,
                 unit, parent);

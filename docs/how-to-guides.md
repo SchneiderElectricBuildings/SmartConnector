@@ -327,10 +327,10 @@ using (var adapter = EwsServerDataAdapter.ConnectNew(
 
     // Add value items under the container.
     adapter.AddValueItem("/Weather/Temperature", "Temperature", "Temperature",
-        EwsValueTypeEnum.Double, EwsValueWriteableEnum.Writeable,
+        EwsValueTypeEnum.Double, EwsValueWriteableEnum.ReadOnly,
         EwsValueForceableEnum.NotForceable, EwsValueStateEnum.Uncertain, "°C", weather);
     adapter.AddValueItem("/Weather/Humidity", "Humidity", "Humidity",
-        EwsValueTypeEnum.Double, EwsValueWriteableEnum.Writeable,
+        EwsValueTypeEnum.Double, EwsValueWriteableEnum.ReadOnly,
         EwsValueForceableEnum.NotForceable, EwsValueStateEnum.Uncertain, "%", weather);
 }
 ```
@@ -402,7 +402,7 @@ adapter.ModifyServerSupportedMethods(new EwsServerMethods
 
 ```csharp
 var value = adapter.AddValueItem("/Weather/Temperature", "Temperature", "Temperature",
-    EwsValueTypeEnum.Double, EwsValueWriteableEnum.Writeable,
+    EwsValueTypeEnum.Double, EwsValueWriteableEnum.ReadOnly,
     EwsValueForceableEnum.NotForceable, EwsValueStateEnum.Uncertain, "°C", parent);
 
 adapter.AddHistoryItem("/Weather/TemperatureHistory", "Temperature History",

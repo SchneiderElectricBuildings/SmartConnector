@@ -83,6 +83,21 @@ The free tier provides 1,000,000 rows per month, sufficient for most single-mark
    Start-Service SmartConnectorService
    ```
 
+## Prepare HTTPS
+
+The processor requires an `https://` address for its EWS Server. Bind a certificate to the port before the first run.
+
+```text
+netsh http add sslcert ipport=0.0.0.0:5300 certhash=<certificate-thumbprint> appid={<application-guid>}
+```
+
+To try the extension without a certificate, set **EwsAddress** to an `http://` address and turn on **AllowUnencryptedEwsForDevelopment**. Use that for development only. The processor logs a reminder on every run while the property is on.
+
+### Upgrading an Existing Installation
+
+- Move the EWS Server to an `https://` address as [Hardening the Smart Connector Host](../../docs/developer-guide/smartconnector-developers-guide.md#1121-hardening-the-smart-connector-host) describes, and set **EwsAddress** to the same value. The configuration does not validate with an `http://` address unless **AllowUnencryptedEwsForDevelopment** is on. Until the server is moved, the processor writes no new data, and the server keeps serving the values it already holds on its `http://` address.
+- Confirm that each EWS client supports SHA-256 Digest. On its next run, the processor sets the EWS Server to SHA-256 Digest without cookies and to read-only client operations, and changes the value items it provisions to read-only.
+
 ## Portal Configuration
 
 ### Step 1. Configure the Processor
@@ -99,7 +114,8 @@ The free tier provides 1,000,000 rows per month, sufficient for most single-mark
    | --- | --- | --- |
    | **ServerName** | `Grid Status` | Base name of the EWS Server. The market code is appended automatically (e.g., `Grid Status CAISO`) to avoid name collisions when multiple markets are configured on the same Smart Connector |
    | **Realm** | `SmartConnectorRealm` | HTTP authentication realm |
-   | **EwsAddress** | `http://localhost:5300/GridStatus` | EWS endpoint address |
+   | **EwsAddress** | `https://localhost:5300/GridStatus` | EWS endpoint address. See [Prepare HTTPS](#prepare-https) |
+   | **AllowUnencryptedEwsForDevelopment** | `False` | Permits an `http://` address. For development only |
    | **UserName** | *(choose a username)* | EWS server authentication |
    | **Password** | *(choose a strong password)* | Stored encrypted |
    | **Market** | `CAISO` | Dropdown. Select the ISO/RTO market. See [Supported Markets](#supported-markets) |
@@ -539,6 +555,7 @@ flowchart TD
 This extension follows all security practices from the [Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments):
 
 - API key and EWS password are marked with `[EncryptedString]`, stored encrypted, never logged.
+- The EWS Server is read-only for EWS clients, offers SHA-256 Digest authentication without cookies, and requires an `https://` address. The processor applies these settings on every cycle (`EwsServerSecurity.cs`).
 - All public properties have `[Required]`, `[Range]`, or `[StringLength]` validation.
 - No credentials appear in any `Logger.Log*` call.
 - `EwsServerDataAdapter` is wrapped in a `Dispose` pattern.
@@ -549,6 +566,7 @@ For a detailed security analysis including threat model, credential management, 
 
 ## What This Demonstrates
 
+- A security policy for the EWS Server that the processor applies on every cycle (`EwsServerSecurity.cs`)
 - Standard Energy Market Interface aligned with Entsoe extension (same paths, types, semantics)
 - **OpenADR 3.0 signal semantics:** Price → `EventType.Price`, Level → `EventType.Simple`, Carbon → `EventType.GHG`
 - Single `Processor` combining setup and scheduled updates (eliminates configuration mismatch)
@@ -581,6 +599,7 @@ Table – Extension source (`SmartConnector.GridStatusExtension/`)
 | --- | --- |
 | `GridStatusProcessor.cs` | Main processor, with the five-phase cycle, provisioning, history, backfill, observability, re-entrancy guard |
 | `GridStatusProcessorBase.cs` | Configuration properties, semantic validation, `EwsServerDataAdapter` lifecycle |
+| `EwsServerSecurity.cs` | Security policy for the EWS Server, with read-only client operations, SHA-256 Digest, the address rule, and drift correction |
 | `GridStatusClient.cs` | REST API client with retry/backoff and TLS 1.2 |
 | `GridStatusResponseParser.cs` | Parses GridStatus.io JSON into typed `DataRow`s |
 | `SignalDerivation.cs` | Pure derivation functions (price level, peak risk, carbon) |
@@ -601,6 +620,7 @@ Table – Test project (`SmartConnector.GridStatusExtension.Tests/`)
 | `BackfillPlannerFixture.cs` | Backfill window decision and row filtering |
 | `NextUpdateFixture.cs` | `NextUpdate` interval clamping |
 | `ProcessorFixture.cs` | Validation, market checks, and `[Explicit]` integration tests |
+| `EwsServerSecurityFixture.cs` | Client operations, Digest algorithms, the address rule, and drift detection |
 
 ## References
 

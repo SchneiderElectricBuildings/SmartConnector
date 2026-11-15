@@ -1,3 +1,7 @@
+using Mongoose.Common;
+using Mongoose.Ews.Server.Data;
+using Ews.Common;
+using System.Linq;
 // ---------------------------------------------------------------------------
 // Processor Test Fixture
 //
@@ -17,6 +21,10 @@ namespace SmartConnector.GridStatusExtension.Tests
     {
         protected override void FixtureOneTimeSetup_Base()
         {
+            // The Execute tests need the Smart Connector container. It is started
+            // by name, so this project builds without a reference to the service.
+            System.Type.GetType("Mongoose.Service.Mongoose, Mongoose.Service")
+                ?.GetMethod("InitIoC")?.Invoke(null, null);
         }
 
         public GridStatusProcessor CreateTestableProcessor()
@@ -25,7 +33,7 @@ namespace SmartConnector.GridStatusExtension.Tests
             {
                 ServerName = "Test Grid Status",
                 Realm = "TestRealm",
-                EwsAddress = "http://localhost:5300/TestGridStatus",
+                EwsAddress = "https://localhost:5300/TestGridStatus",
                 UserName = "YOUR_USERNAME",
                 Password = "YOUR_PASSWORD",
                 Market = SupportedMarket.CAISO,
@@ -64,6 +72,27 @@ namespace SmartConnector.GridStatusExtension.Tests
             processor.Password = "SameValue";
             var results = this.ValidateProcessor(processor);
             Assert.That(results, Is.Not.Empty);
+        }
+
+        [Test]
+        public void ValidateTest_HttpAddress_Fails()
+        {
+            var processor = CreateTestableProcessor();
+            processor.EwsAddress = "http://localhost:5300/TestGridStatus";
+            var results = this.ValidateProcessor(processor);
+            Assert.That(
+                results.Any(r => r.Message.Contains("AllowUnencryptedEwsForDevelopment")),
+                Is.True);
+        }
+
+        [Test]
+        public void ValidateTest_HttpAddressWithDevelopmentOptOut_Succeeds()
+        {
+            var processor = CreateTestableProcessor();
+            processor.EwsAddress = "http://localhost:5300/TestGridStatus";
+            processor.AllowUnencryptedEwsForDevelopment = true;
+            var results = this.ValidateProcessor(processor);
+            Assert.That(results, Is.Empty);
         }
 
         [Test]
@@ -145,6 +174,59 @@ namespace SmartConnector.GridStatusExtension.Tests
         public void CancelTest()
         {
             this.RunCancelTest();
+        }
+
+        // After a run, the server must be on the security policy and every
+        // value item must be read-only for EWS clients.
+        [Test, Explicit("Requires SmartConnector runtime (StructureMap)")]
+        [Category("Integration")]
+        public void ExecuteTest_LeavesTheServerOnTheSecurityPolicy()
+        {
+            this.RunExecuteTest();
+
+            var processor = CreateTestableProcessor();
+            using (var adapter = EwsServerDataAdapter.ConnectExisting(
+                $"{processor.ServerName} {processor.Market}", processor.UserName, processor.Password))
+            {
+                Assert.That(adapter.Server.AllowCookies, Is.False);
+                Assert.That(adapter.Server.SupportedHashingAlgorithms.Sha256, Is.True);
+                Assert.That(adapter.Server.SupportedHashingAlgorithms.Md5, Is.False);
+                Assert.That(adapter.Server.SupportedMethods.SetValues, Is.False);
+                Assert.That(adapter.Server.SupportedMethods.ForceValues, Is.False);
+                Assert.That(adapter.Server.SupportedMethods.UnforceValues, Is.False);
+                Assert.That(
+                    EwsServerSecurity.PendingChanges(
+                        adapter.Server.AllowCookies,
+                        adapter.Server.SupportedHashingAlgorithms,
+                        adapter.Server.SupportedMethods),
+                    Is.Empty);
+                Assert.That(
+                    adapter.ValueItems.All(v => v.Writeable == EwsValueWriteableEnum.ReadOnly),
+                    Is.True);
+            }
+        }
+
+        // A server keeps the address it was created with. When that address
+        // is http:// and the development property is off, the cycle must stop
+        // before it writes any data. Run this against a new server.
+        [Test, Explicit("Requires SmartConnector runtime (StructureMap)")]
+        [Category("Integration")]
+        public void ExecuteTest_ServerOnHttpWithoutTheOptOut_Stops()
+        {
+            var first = CreateTestableProcessor();
+            first.ServerName = "Test Http Address Server";
+            first.EwsAddress = first.EwsAddress.Replace("https://", "http://");
+            first.AllowUnencryptedEwsForDevelopment = true;
+            this.RunTestableProcessor(first);
+
+            var second = CreateTestableProcessor();
+            second.ServerName = "Test Http Address Server";
+            var prompts = this.RunTestableProcessor(second);
+
+            Assert.That(
+                prompts.Any(p => p.Severity == PromptSeverity.MayNotContinue
+                                 && p.Message.Contains("https://")),
+                Is.True);
         }
     }
 }
