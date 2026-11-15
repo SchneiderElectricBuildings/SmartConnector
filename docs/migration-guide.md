@@ -4,7 +4,6 @@
 <!-- Applies to: Smart Connector SDK v2.6 -->
 <!-- Revision: 1 -->
 <!-- Date: June 2026 -->
-<!-- Author: Karim Hussain -->
 <!-- Audience: Extension developers upgrading existing extensions to Smart Connector v2.6 -->
 
 This guide covers the changes you need to make when upgrading an existing Smart Connector extension to v2.6. It is organized by the action you need to take, not by internal version history.
