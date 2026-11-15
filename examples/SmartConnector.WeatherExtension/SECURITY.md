@@ -47,7 +47,7 @@ This document describes the security posture of the Weather Extension for Smart 
 - `UserName` must not equal `Password`.
 - `City` must not be empty.
 
-The `Units` property is a fixed enumeration, so an unrecognised measurement system cannot be supplied through the Portal.
+The `Units` property is a fixed enumeration, so an unrecognized measurement system cannot be supplied through the Portal.
 
 ### External Data Validation
 
@@ -58,7 +58,7 @@ The `Units` property is a fixed enumeration, so an unrecognised measurement syst
 
 ## Error Handling
 
-| Condition | Behaviour |
+| Condition | Behavior |
 | --- | --- |
 | HTTP 401/403 | Reported as a configuration error. No retry. The key may be invalid or not yet activated. |
 | HTTP 429 (rate limit) | Exponential backoff (2s, 4s, 8s), maximum 3 retries. |
@@ -72,7 +72,7 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 ## Logging Practices
 
 - No `Logger.Log*` call includes `Password`, `ApiKey`, or any credential value.
-- Log messages include: city, resolved coordinates are not logged, temperature/humidity values, and health status.
+- Log messages include the city, temperature/humidity values, and health status. Resolved coordinates are not logged.
 - The API key is appended to request URLs only inside the client and is never written to a log.
 - The `Meta/DataHealthy` and `Meta/LastError` points expose health status for operator visibility via the EWS client.
 
@@ -81,21 +81,21 @@ Error messages logged via `Logger.LogError` contain the exception type and messa
 - `EwsServerDataAdapter` implements `IDisposable` and is cleaned up in the processor's `Dispose(bool)` override.
 - `OpenWeatherMapClient` wraps `HttpClient` in `IDisposable` and is created/disposed within each cycle via `using`.
 - The `ConnectNew → Dispose → ConnectExisting` pattern ensures a clean database context on every run.
-- API usage is bounded: at most three calls per cycle (geocode + current + forecast), with the geocode result cached and re-fetched only when the City changes.
+- API usage is bounded, at most three calls per cycle (geocode + current + forecast), with the geocode result cached and re-fetched only when the City changes.
 
 ## Threat Model
 
-This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool: the data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide — Threat Modelling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modelling)).
+This threat model follows the STRIDE methodology used by the Microsoft Threat Modeling Tool. The data-flow diagram identifies the elements and the trust boundaries they cross, and the STRIDE table enumerates the threats per element with their mitigations. Revisit it whenever a new API, data store, credential, or network path is added (see [Developer Guide, Threat Modeling](../../docs/developer-guide/smartconnector-developers-guide.md#51-threat-modeling)).
 
 ### Data Flow Diagram
 
 ```mermaid
 flowchart LR
-    subgraph inet["Internet — untrusted"]
+    subgraph inet["Internet (untrusted)"]
         API["OpenWeatherMap API<br/>Geocoding · Current · Forecast<br/>(external entity)"]
     end
-    subgraph host["Smart Connector host — trusted"]
-        subgraph svc["Smart Connector service — process boundary"]
+    subgraph host["Smart Connector host (trusted)"]
+        subgraph svc["Smart Connector service (process boundary)"]
             P["WeatherProcessor<br/>(process)"]
         end
         DB[("EWS Server store<br/>SQL database (data store)")]
@@ -112,15 +112,15 @@ flowchart LR
 
 ### Trust Boundaries
 
-- **Internet boundary** — between the processor and the OpenWeatherMap API (flows 1–2, covering geocoding, current weather, and forecast). Every crossing is HTTPS/TLS 1.2 with certificate validation; the API key (the `appid` query parameter) authenticates the processor.
-- **Network boundary** — between the EWS client/EBO and the EWS endpoint (flow 4). Authenticated with HTTP Digest over the configured realm.
-- **Process / machine boundary** — between the processor and the EWS data store (flows 3, 5), mediated by the Smart Connector runtime on the same host.
+- **Internet boundary:** between the processor and the OpenWeatherMap API (flows 1–2, covering geocoding, current weather, and forecast). Every crossing is HTTPS/TLS 1.2 with certificate validation; the API key (the `appid` query parameter) authenticates the processor.
+- **Network boundary:** between the EWS client/EBO and the EWS endpoint (flow 4). Authenticated with HTTP Digest over the configured realm.
+- **Process / machine boundary:** between the processor and the EWS data store (flows 3, 5), mediated by the Smart Connector runtime on the same host.
 
 ### STRIDE Analysis
 
 | Category | Threat (element / flow) | Mitigation | Status |
 | --- | --- | --- | --- |
-| **Spoofing** | A spoofed OpenWeatherMap endpoint (DNS/MITM) feeds false data (2); an unauthorised EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
+| **Spoofing** | A spoofed OpenWeatherMap endpoint (DNS/MITM) feeds false data (2); an unauthorized EWS client reads or writes data (4) | TLS 1.2 with certificate validation rejects spoofed endpoints; the EWS endpoint requires HTTP Digest authentication | Mitigated |
 | **Tampering** | API response or EWS values modified in transit (2, 4) | TLS protects integrity in transit; parsed values use fallback defaults and are bounded before persisting (3) | Mitigated |
 | **Repudiation** | An action cannot be traced to a cause | The Smart Connector application log records failed Portal sign-ins when the `Portal` log category is included, and syslog forwarding retains it; the processor records cycle count, API-call count, last update, and last error to `Meta/*` | Partly mitigated |
 | **Information Disclosure** | The API key or EWS password leaks via logs, configuration export, or the network (1, 4) | `[EncryptedString]` at rest; no credential in any `Logger` call; the key is sent only over TLS as the `appid` parameter, built inside the client | Mitigated |
@@ -129,4 +129,4 @@ flowchart LR
 
 ## Compliance
 
-This extension follows the security practices documented in the [Smart Connector Developer Guide — Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).
+This extension follows the security practices documented in the [Smart Connector Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments).

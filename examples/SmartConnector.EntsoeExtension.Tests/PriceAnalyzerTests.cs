@@ -215,7 +215,7 @@ namespace SmartConnector.EntsoeExtension.Tests
         [Test]
         public void Analyze_CurrentHourDuringCheapPeriod_ReportsIsCheap()
         {
-            // Hour 4 (position 5) has price 33.50 — should be cheap
+            // Hour 4 (position 5) has price 33.50, so it should be cheap
             var currentHour = new DateTime(2024, 1, 15, 3, 0, 0, DateTimeKind.Utc);
 
             var result = PriceAnalyzer.Analyze(SamplePrices, 25, 75, currentHour);

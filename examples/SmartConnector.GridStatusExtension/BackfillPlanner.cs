@@ -48,7 +48,7 @@ namespace SmartConnector.GridStatusExtension
             if (backfillDays <= 0)
                 return new Plan { ShouldBackfill = false };
 
-            // Initial setup — no prior update timestamp.
+            // Initial setup, with no prior update timestamp.
             if (!lastUpdate.HasValue || lastUpdate.Value == DateTime.MinValue)
             {
                 return new Plan
@@ -60,7 +60,7 @@ namespace SmartConnector.GridStatusExtension
                 };
             }
 
-            // Reconnection — only backfill if the gap is meaningful.
+            // Reconnection. Only backfill if the gap is meaningful.
             var gapHours = (now - lastUpdate.Value).TotalHours;
             if (gapHours < gapThresholdHours)
                 return new Plan { ShouldBackfill = false };

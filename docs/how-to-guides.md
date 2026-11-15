@@ -5,9 +5,9 @@
 <!-- Revision: 1 -->
 <!-- Date: June 2026 -->
 <!-- Author: Karim Hussain -->
-<!-- Audience: Extension developers — system integrators, third-party developers, building automation engineers -->
+<!-- Audience: Extension developers (system integrators, third-party developers, building automation engineers) -->
 
-Task-oriented recipes for common Smart Connector development scenarios. Each recipe is self-contained — jump to the one you need.
+Task-oriented recipes for common Smart Connector development scenarios. Each recipe is self-contained, so jump to the one you need.
 
 For full API reference, see the [Developer Guide](developer-guide/smartconnector-developers-guide.md). For REST endpoint details, see the [RESTful EWS Gateway Guide](developer-guide/smartconnector-restful-ews-gateway.md).
 
@@ -63,7 +63,7 @@ protected override IEnumerable<Prompt> Execute_Subclass()
 
 **Why it works:** With `AutoCommit = true` (the default), every `ModifyValueItemValue` call issues a separate database write. Disabling it batches all changes into a single transaction at `CommitChanges()`, delivering up to 10× faster processing.
 
-**Reference:** [Developer Guide — EwsServerDataAdapter](developer-guide/smartconnector-developers-guide.md#114-ewsserverdataadapter)
+**Reference:** [Developer Guide, EwsServerDataAdapter](developer-guide/smartconnector-developers-guide.md#114-ewsserverdataadapter)
 
 ---
 
@@ -74,7 +74,7 @@ protected override IEnumerable<Prompt> Execute_Subclass()
 **Solution:** Use a cron expression in the schedule configuration.
 
 | Expression | Meaning |
-|------------|---------|
+| --- | --- |
 | `0 */5 * * *` | Every 5 minutes |
 | `0 0 6 * * 1-5` | Weekdays at 06:00 |
 | `0 30 */2 * *` | Every 2 hours at the half-hour mark |
@@ -84,7 +84,7 @@ Cron scheduling uses the [NCrontab](https://github.com/atifaziz/NCrontab) librar
 
 Configure the schedule in the Smart Connector Portal under **Setup → Configuration Schedules → Add New**, selecting the cron expression option.
 
-**Reference:** [Developer Guide — Cron Scheduling](developer-guide/smartconnector-developers-guide.md#1112-cron-scheduling)
+**Reference:** [Developer Guide, Cron Scheduling](developer-guide/smartconnector-developers-guide.md#1112-cron-scheduling)
 
 ---
 
@@ -92,7 +92,7 @@ Configure the schedule in the Smart Connector Portal under **Setup → Configura
 
 **Problem:** Your Processor needs to read current values from an EcoStruxure™ Building Operation or other EWS server.
 
-**Solution:** Use `ValueItemReader` — set the address, credentials, and the points to read (by `Id`), then call `ReadData()`. The reader handles the EWS connection and paging internally:
+**Solution:** Use `ValueItemReader`. Set the address, credentials, and the points to read (by `Id`), then call `ReadData()`. The reader handles the EWS connection and paging internally:
 
 ```csharp
 protected override IEnumerable<Prompt> Execute_Subclass()
@@ -119,18 +119,18 @@ protected override IEnumerable<Prompt> Execute_Subclass()
 }
 ```
 
-`AlarmItemReader`, `HistoryItemReader`, and `SubscriptionReader` follow the same shape — set their properties, then call `ReadData()`.
+`AlarmItemReader`, `HistoryItemReader`, and `SubscriptionReader` follow the same shape. Set their properties, then call `ReadData()`.
 
 **Available readers:**
 
 | Class | Data type | Use case |
-|-------|-----------|----------|
+| --- | --- | --- |
 | `ValueItemReader` | Current values | Real-time point data |
 | `AlarmItemReader` | Active alarms | Alarm monitoring |
 | `HistoryItemReader` | Trend history | Historical data retrieval |
 | `SubscriptionReader` | Change notifications | Event-driven updates |
 
-**Reference:** [Developer Guide — Retrieving Data from an EWS Server](developer-guide/smartconnector-developers-guide.md#61-retrieving-data-from-an-ews-server)
+**Reference:** [Developer Guide, Retrieving Data from an EWS Server](developer-guide/smartconnector-developers-guide.md#61-retrieving-data-from-an-ews-server)
 
 ---
 
@@ -161,7 +161,7 @@ public string ProxyPassword { get; set; }
 - Supports `AllowMultiple = true` for OR logic across multiple conditions.
 - Works on both `Parameter` and `ParameterSet` classes.
 
-**Reference:** [Developer Guide — Smart Connector Attributes](developer-guide/smartconnector-developers-guide.md#113-smart-connector-attributes)
+**Reference:** [Developer Guide, Smart Connector Attributes](developer-guide/smartconnector-developers-guide.md#113-smart-connector-attributes)
 
 ---
 
@@ -203,7 +203,7 @@ while (true)
 
 > **Note:** The maximum `take` value is 5,000. Requests exceeding this limit are silently capped.
 
-**Reference:** [EWS Gateway Guide — Filtering, Sorting, and Paging](developer-guide/smartconnector-restful-ews-gateway.md#66-filtering-sorting-and-paging)
+**Reference:** [EWS Gateway Guide, Filtering, Sorting, and Paging](developer-guide/smartconnector-restful-ews-gateway.md#66-filtering-sorting-and-paging)
 
 ---
 
@@ -213,7 +213,7 @@ while (true)
 
 **Solution:**
 
-### Step 1 — Acquire a bearer token
+### Step 1. Acquire a bearer token
 
 ```bash
 curl -X POST "https://localhost:5000/GetToken" \
@@ -233,26 +233,26 @@ Response:
 
 > **Note:** The token endpoint path (`GetToken` by default) and the token lifetime (`expires_in`, default 299 seconds ≈ 5 minutes) are configurable per endpoint in the Portal. Use the values configured for your endpoint.
 
-### Step 2 — Use the token
+### Step 2. Use the token
 
 ```bash
 curl -H "Authorization: Bearer eyJhbGciOi..." \
   "https://localhost:5000/AlarmEvents?take=10"
 ```
 
-> **Note:** Which resources resolve depends on the data provider. The bulk collection GETs (`/Containers`, `/Values`, `/Alarms`, `/Trends`) return `405` on **every** provider — browse with `/Containers/{id}/Children` against a native Smart Connector EWS Server, or, against EBO via `SoapEwsRestProvider`, read `/AlarmEvents`, `/AlarmEventTypes`, and `/Subscriptions` and navigate by known IDs (`GET /Root` is not available). See [Choosing a Data Provider](developer-guide/smartconnector-restful-ews-gateway.md#331-choosing-a-data-provider).
+> **Note:** Which resources resolve depends on the data provider. The bulk collection GETs (`/Containers`, `/Values`, `/Alarms`, `/Trends`) return `405` on **every** provider. Browse with `/Containers/{id}/Children` against a native Smart Connector EWS Server, or, against EBO via `SoapEwsRestProvider`, read `/AlarmEvents`, `/AlarmEventTypes`, and `/Subscriptions` and navigate by known IDs (`GET /Root` is not available). See [Choosing a Data Provider](developer-guide/smartconnector-restful-ews-gateway.md#331-choosing-a-data-provider).
 
-### Step 3 — Renew before expiry
+### Step 3. Renew before expiry
 
-Track `expires_in` and re-authenticate before the token expires. There is no refresh token endpoint — request a new token using the same credentials.
+Track `expires_in` and re-authenticate before the token expires. There is no refresh token endpoint, so request a new token using the same credentials.
 
-**Reference:** [EWS Gateway Guide — Authentication](developer-guide/smartconnector-restful-ews-gateway.md#5-authentication)
+**Reference:** [EWS Gateway Guide, Authentication](developer-guide/smartconnector-restful-ews-gateway.md#5-authentication)
 
 ---
 
 ## 7 Forward Logs to a Syslog Server
 
-**Problem:** You need Smart Connector logs in a centralised log management system (Splunk, Graylog, Sentinel).
+**Problem:** You need Smart Connector logs in a centralized log management system (Splunk, Graylog, Sentinel).
 
 **Solution:** Add an NLog configuration file to the Smart Connector data folder:
 
@@ -262,7 +262,7 @@ Track `expires_in` and re-authenticate before the token expires. There is no ref
 
 Entries that pass the Smart Connector logging level and filters, including those from your extension's `Logger` calls, are forwarded to the syslog target as your NLog rules allow.
 
-**Reference:** [Developer Guide — Syslog Logging](developer-guide/smartconnector-developers-guide.md#1116-syslog-logging)
+**Reference:** [Developer Guide, Syslog Logging](developer-guide/smartconnector-developers-guide.md#1116-syslog-logging)
 
 ---
 
@@ -306,7 +306,7 @@ using (var adapter = EwsServerDataAdapter.ConnectExisting(ServerName, UserName, 
 }
 ```
 
-**Reference:** [Developer Guide — Resource Disposal](developer-guide/smartconnector-developers-guide.md#1119-resource-disposal)
+**Reference:** [Developer Guide, Resource Disposal](developer-guide/smartconnector-developers-guide.md#1119-resource-disposal)
 
 ---
 
@@ -336,15 +336,15 @@ using (var adapter = EwsServerDataAdapter.ConnectNew(
 }
 ```
 
-> **Tip:** Provision **idempotently** so one self-provisioning processor can both create the structure on the first run and re-run the provisioning step safely on every cycle — wrap each `Add*` call in an "ensure" helper that returns the existing item if it is already present. See [How-To 12](#12-run-a-self-provisioning-processor-safely-on-a-schedule) for the full pattern and [How-To 11](#11-populate-trend-logs-with-per-cycle-samples-and-backfill) for adding trend logs.
+> **Tip:** Provision **idempotently** so one self-provisioning processor can both create the structure on the first run and re-run the provisioning step safely on every cycle. Wrap each `Add*` call in an "ensure" helper that returns the existing item if it is already present. See [How-To 12](#12-run-a-self-provisioning-processor-safely-on-a-schedule) for the full pattern and [How-To 11](#11-populate-trend-logs-with-per-cycle-samples-and-backfill) for adding trend logs.
 
-**Reference:** [Developer Guide — The Processor: A Phased Execution Cycle](developer-guide/smartconnector-developers-guide.md#76-the-processor-a-phased-execution-cycle)
+**Reference:** [Developer Guide, The Processor, A Phased Execution Cycle](developer-guide/smartconnector-developers-guide.md#76-the-processor-a-phased-execution-cycle)
 
 ---
 
 ## 10 Share Data Between Processors
 
-**Problem:** Two Processors need to exchange data — for example, a setup Processor that provisions resources and an update Processor that needs to know what was provisioned.
+**Problem:** Two Processors need to exchange data, for example, a setup Processor that provisions resources and an update Processor that needs to know what was provisioned.
 
 **Solution:** Use a `ProcessorValue` for persistent data, or the injected `ICache` for volatile data.
 
@@ -369,16 +369,16 @@ var saved = this.FindOrCreateProcessorValue("LastProvisionedServer").Value;
 The `ICache` instance is injected into the Processor (see [Section 11.6.1](developer-guide/smartconnector-developers-guide.md#1161-in-memory-cache)):
 
 ```csharp
-// Write — AddOrUpdateItem(item, key, tenantId, minutesUntilExpiry)
+// Write with AddOrUpdateItem(item, key, tenantId, minutesUntilExpiry)
 Cache.AddOrUpdateItem(reading, "LatestReading", "myTenant", 60);
 
-// Read — RetrieveItem(key, tenantId) returns object; cast to your type
+// Read. RetrieveItem(key, tenantId) returns object; cast to your type
 var latest = (Reading)Cache.RetrieveItem("LatestReading", "myTenant");
 ```
 
-> **Caution:** Do not store credentials or personal identifiers in a `ProcessorValue` — it is not encrypted. Use `[EncryptedString]` properties for credentials.
+> **Caution:** Do not store credentials or personal identifiers in a `ProcessorValue`. It is not encrypted. Use `[EncryptedString]` properties for credentials.
 
-**Reference:** [Developer Guide — Sharing Data within Smart Connector](developer-guide/smartconnector-developers-guide.md#116-sharing-data-within-smart-connector)
+**Reference:** [Developer Guide, Sharing Data within Smart Connector](developer-guide/smartconnector-developers-guide.md#116-sharing-data-within-smart-connector)
 
 ---
 
@@ -386,7 +386,7 @@ var latest = (Reading)Cache.RetrieveItem("LatestReading", "myTenant");
 
 **Problem:** You provisioned trend logs (history items) but they stay empty, gain only one sample, or do not show any history until much later. You also want the trend viewer to be populated immediately after the first run, not days later.
 
-**Solution:** Combine three things — enable the history methods on the server, append the current value to each trend every cycle, and seed history once on first run.
+**Solution:** Combine three things. Enable the history methods on the server, append the current value to each trend every cycle, and seed history once on first run.
 
 **1. Enable history when configuring the server.** Without these two methods the EWS Server disables trend logging:
 
@@ -426,9 +426,9 @@ if (item != null && !string.IsNullOrEmpty(item.Value))
 
 **4. Backfill history on first run (and after gaps).** Fetch historical samples from your source and write them at their original timestamps. Make the backfill *idempotent* so a service restart does not duplicate or re-fetch everything:
 
-- Derive the window from a **persisted** timestamp (e.g. a `Meta/LastUpdate` value item read back via `adapter.ValueItems`), not an in-memory field — an in-memory field resets on restart and re-backfills the whole window every time.
+- Derive the window from a **persisted** timestamp (e.g. a `Meta/LastUpdate` value item read back via `adapter.ValueItems`), not an in-memory field. An in-memory field resets on restart and re-backfills the whole window every time.
 - Filter fetched points to those strictly **after** the persisted timestamp to avoid duplicate samples.
-- If your source API caps rows per request, request a **window-sized** limit for backfill (for example `days * 24 + buffer`), not the small per-cycle limit — otherwise an initial multi-day backfill is silently truncated.
+- If your source API caps rows per request, request a **window-sized** limit for backfill (for example `days * 24 + buffer`), not the small per-cycle limit. Otherwise an initial multi-day backfill is silently truncated.
 
 ```csharp
 var samples = new List<Tuple<EwsValueStateEnum, DateTime, string>>();
@@ -441,7 +441,7 @@ adapter.AddHistoryRecordsManually(trendId, samples);
 
 > **Tip:** Run the backfill **last** in the cycle, after the live values and metadata are committed, because it can take minutes. See [How-To 12](#12-run-a-self-provisioning-processor-safely-on-a-schedule).
 
-**Reference:** [Developer Guide — Recommended Patterns for Production Extensions](developer-guide/smartconnector-developers-guide.md#78-recommended-patterns-for-production-extensions) and [RESTful EWS Gateway — Trends and Trend Samples](developer-guide/smartconnector-restful-ews-gateway.md#10-api-reference--trends-and-trend-samples).
+**Reference:** [Developer Guide, Recommended Patterns for Production Extensions](developer-guide/smartconnector-developers-guide.md#78-recommended-patterns-for-production-extensions) and [RESTful EWS Gateway, Trends and Trend Samples](developer-guide/smartconnector-restful-ews-gateway.md#10-api-reference-trends-and-trend-samples).
 
 ---
 
@@ -451,7 +451,7 @@ adapter.AddHistoryRecordsManually(trendId, samples);
 
 **Solution:** Use a single processor that provisions itself idempotently, runs its work in a fixed phase order, and guards against overlapping runs.
 
-**1. Connect, creating the server only on the first run.** Try `ConnectExisting` first; only call `ConnectNew` when it fails. `ConnectNew` validates the server name up front and throws (`AssertEwsServerNameNotUsed`) if it already exists — *before* any row insert — so a name collision is **not** a `DbUpdateException` and cannot be caught as one. Gating `ConnectNew` behind `ConnectExisting` is what keeps a scheduled restart harmless:
+**1. Connect, creating the server only on the first run.** Try `ConnectExisting` first; only call `ConnectNew` when it fails. `ConnectNew` validates the server name up front and throws (`AssertEwsServerNameNotUsed`) if it already exists, *before* any row insert, so a name collision is **not** a `DbUpdateException` and cannot be caught as one. Gating `ConnectNew` behind `ConnectExisting` is what keeps a scheduled restart harmless:
 
 ```csharp
 private EwsServerDataAdapter ConnectOrCreateServer()
@@ -459,7 +459,7 @@ private EwsServerDataAdapter ConnectOrCreateServer()
     try
     {
         _adapter = EwsServerDataAdapter.ConnectExisting(ServerName, UserName, Password);
-        return _adapter;                        // exists already — the common case
+        return _adapter;                        // exists already, the common case
     }
     catch (Exception ex)
     {
@@ -493,8 +493,8 @@ Use the same pattern for value items and history items. This lets one processor 
 
 1. **Provision** all containers, value items, and history items (idempotent).
 2. **Update** all point values from your source.
-3. **Sample** — append the current value to each trend (How-To 11).
-4. **Metadata** — stamp `LastUpdate`, health, and counters.
+3. **Sample:** append the current value to each trend (How-To 11).
+4. **Metadata:** stamp `LastUpdate`, health, and counters.
 5. **Backfill** history (may take minutes).
 
 Capture the backfill decision in phase 1, *before* phase 4 writes a fresh `LastUpdate`, otherwise the new timestamp suppresses the backfill you just decided to run.
@@ -519,11 +519,11 @@ private static bool TryEnter(string key)
 }
 ```
 
-Acquire the lock at the top of `Execute_Subclass`, return immediately if it is held, and release it in a `finally`. The processor remains a normal scheduled processor — it still returns each cycle; the guard only prevents concurrent runs.
+Acquire the lock at the top of `Execute_Subclass`, return immediately if it is held, and release it in a `finally`. The processor remains a normal scheduled processor. It still returns each cycle; the guard only prevents concurrent runs.
 
 > **Tip:** When deriving an estimated "next update" timestamp from the interval between runs, clamp the interval to a sane range (for example 1 minute to 24 hours). Otherwise a long idle gap during development projects the next-run time far into the future.
 
-**Reference:** [Developer Guide — Recommended Patterns for Production Extensions](developer-guide/smartconnector-developers-guide.md#78-recommended-patterns-for-production-extensions). Worked examples: the `SmartConnector.EntsoeExtension` and `SmartConnector.GridStatusExtension` projects under [`examples/`](../examples/).
+**Reference:** [Developer Guide, Recommended Patterns for Production Extensions](developer-guide/smartconnector-developers-guide.md#78-recommended-patterns-for-production-extensions). Worked examples are the `SmartConnector.EntsoeExtension` and `SmartConnector.GridStatusExtension` projects under [`examples/`](../examples/).
 
 ---
 

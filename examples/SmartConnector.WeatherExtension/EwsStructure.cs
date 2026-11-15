@@ -56,7 +56,7 @@ namespace SmartConnector.WeatherExtension
 
         // ── Trend logs ──────────────────────────────────────────────────
         // Current conditions are trended via per-cycle sampling. OpenWeatherMap's
-        // free tier has no historical endpoint, so there is no backfill — trends
+        // free tier has no historical endpoint, so there is no backfill. Trends
         // accumulate from the first run forward.
         public static (string TrendId, string ValueId, string Name)[] TrendDefinitions =>
             new[]

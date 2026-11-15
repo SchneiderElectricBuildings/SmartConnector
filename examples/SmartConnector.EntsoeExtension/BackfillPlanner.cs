@@ -48,7 +48,7 @@ namespace SmartConnector.EntsoeExtension
             if (backfillDays <= 0)
                 return new Plan { ShouldBackfill = false };
 
-            // Initial setup — no prior update timestamp.
+            // Initial setup, with no prior update timestamp.
             if (!lastUpdate.HasValue || lastUpdate.Value == DateTime.MinValue)
             {
                 return new Plan
@@ -60,7 +60,7 @@ namespace SmartConnector.EntsoeExtension
                 };
             }
 
-            // Reconnection — only backfill if the gap is meaningful.
+            // Reconnection. Only backfill if the gap is meaningful.
             var gapHours = (now - lastUpdate.Value).TotalHours;
             if (gapHours < gapThresholdHours)
                 return new Plan { ShouldBackfill = false };
@@ -104,7 +104,7 @@ namespace SmartConnector.EntsoeExtension
         /// <summary>
         /// Reduces a sorted point list to one sample per hour (the first point
         /// in each hour). Keeps the volume of history records written during
-        /// backfill manageable — sub-hourly series (e.g. 15-minute load data)
+        /// backfill manageable. Sub-hourly series (e.g. 15-minute load data)
         /// would otherwise write four times as many records as the hourly
         /// granularity a trend viewer needs. Hourly series are unaffected.
         /// </summary>

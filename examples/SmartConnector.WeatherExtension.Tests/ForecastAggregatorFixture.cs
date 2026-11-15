@@ -32,7 +32,7 @@ namespace SmartConnector.WeatherExtension.Tests
         {
             return new List<ForecastPoint>
             {
-                // Same day as reference — must be excluded
+                // Same day as reference, so it must be excluded
                 Point("2024-06-10T18:00:00Z", 10, 16, 1009, 85, "drizzle"),
                 // Day +1: two steps
                 Point("2024-06-11T06:00:00Z", 8, 14, 1010, 80, "rain"),

@@ -18,12 +18,12 @@ The extension fetches the following data from the ENTSO-E API and publishes it t
 
 ## Use Cases
 
-1. **Load Shifting** — Schedule flexible loads (HVAC preheating, water heating, EV charging) during cheap electricity hours.
-2. **Peak Shaving** — Reduce grid demand during expensive hours to lower energy costs.
-3. **Renewable Following** — Align consumption with periods of high wind/solar generation.
-4. **Cost Optimization** — Use price signals to automate HVAC preconditioning during cheap hours.
-5. **Demand Response** — React to real-time price signals in the BMS control strategy.
-6. **Energy Reporting** — Provide live electricity market data on BMS dashboards.
+1. **Load Shifting:** Schedule flexible loads (HVAC preheating, water heating, EV charging) during cheap electricity hours.
+2. **Peak Shaving:** Reduce grid demand during expensive hours to lower energy costs.
+3. **Renewable Following:** Align consumption with periods of high wind/solar generation.
+4. **Cost Optimization:** Use price signals to automate HVAC preconditioning during cheap hours.
+5. **Demand Response:** React to real-time price signals in the BMS control strategy.
+6. **Energy Reporting:** Provide live electricity market data on BMS dashboards.
 
 ## Prerequisites
 
@@ -34,7 +34,7 @@ The extension fetches the following data from the ENTSO-E API and publishes it t
 | .NET Framework | 4.8 SDK | Required by all Smart Connector extensions |
 | Smart Connector | 2.6 or later | Installed locally; the service must be running |
 | GitHub PAT | `read:packages` scope | For the Smart Connector NuGet feed |
-| ENTSO-E API Token | — | See [Obtain an ENTSO-E API Token](#obtain-an-entso-e-api-token) below |
+| ENTSO-E API Token | n/a | See [Obtain an ENTSO-E API Token](#obtain-an-entso-e-api-token) below |
 
 ### Obtain an ENTSO-E API Token
 
@@ -93,7 +93,7 @@ Obtaining a security token is a multi-step process that involves registration, e
 
 ## Portal Configuration
 
-### Step 1 — Configure the Processor
+### Step 1. Configure the Processor
 
 1. Open the Smart Connector Portal (`http://localhost:8082`).
 2. Authenticate with your portal credentials.
@@ -121,31 +121,31 @@ Obtaining a security token is a multi-step process that involves registration, e
 
 8. Click **Save** → **Validate**.
 
-### Step 2 — Create a Schedule
+### Step 2. Create a Schedule
 
 1. Navigate to **Setup → Configuration Schedules**.
 2. Click **Add New**.
 3. Enter a **Description** (e.g., `Runs every 15 minutes`).
 4. Set the **Start Date** to the current date/time or a future date.
 5. In the **Type** section, select **Cron**.
-6. Enter the cron expression: `*/15 * * * *`.
+6. Enter the cron expression `*/15 * * * *`.
 7. Click **Save**.
 
-### Step 3 — Assign the Schedule and Start
+### Step 3. Assign the Schedule and Start
 
-To ensure the extension actually runs on the schedule, you must enable **Runs On Schedule** on the processor's **Control** sub-tab — creating the schedule in Step 2 alone is not enough.
+To ensure the extension actually runs on the schedule, you must enable **Runs On Schedule** on the processor's **Control** sub-tab. Creating the schedule in Step 2 alone is not enough.
 
 1. Navigate back to **Configurations → Processor** and select the ENTSO-E Processor.
 2. Click the **Control** sub-tab.
-3. Set **Runs On Schedule** to `True`. *(Required — without this the processor will not run on the schedule.)*
+3. Set **Runs On Schedule** to `True`. *(Required. Without this the processor will not run on the schedule.)*
 4. Select the schedule created in Step 2.
 5. Click **Save** → **Start**.
 
 On the first run, the processor creates the EWS Server (if it does not already exist), provisions the data hierarchy for the selected country, backfills trend history (see [Trend Logs](#trend-logs)), and starts fetching data. Subsequent runs only fetch and update values.
 
-> **Multi-zone countries:** Selecting a country with several bidding zones (Sweden, Norway, Denmark) automatically provisions all of its zones. Each zone gets its own subtree under `/ENTSOE/Countries/{Country}/{Zone}/` — for example `/ENTSOE/Countries/Sweden/SE_1/` through `/ENTSOE/Countries/Sweden/SE_4/`.
+> **Multi-zone countries:** Selecting a country with several bidding zones (Sweden, Norway, Denmark) automatically provisions all of its zones. Each zone gets its own subtree under `/ENTSOE/Countries/{Country}/{Zone}/`, for example `/ENTSOE/Countries/Sweden/SE_1/` through `/ENTSOE/Countries/Sweden/SE_4/`.
 
-### Step 4 — Verify
+### Step 4. Verify
 
 1. Wait for the first scheduled execution (or click **Start** to run immediately).
 2. Navigate to **EWS Servers** → click the edit icon for `ENTSOE Energy Data`.
@@ -157,7 +157,7 @@ On the first run, the processor creates the EWS Server (if it does not already e
 
 ## EWS Data Structure
 
-The tree is organised as `/ENTSOE/Countries/{Country}/{Zone}/`, with a root-level `/ENTSOE/Meta` container for overall integration health. Multi-zone countries repeat the zone subtree for each bidding zone (e.g. `Sweden/SE_1` … `Sweden/SE_4`).
+The tree is organized as `/ENTSOE/Countries/{Country}/{Zone}/`, with a root-level `/ENTSOE/Meta` container for overall integration health. Multi-zone countries repeat the zone subtree for each bidding zone (e.g. `Sweden/SE_1` … `Sweden/SE_4`).
 
 ```mermaid
 flowchart LR
@@ -237,7 +237,7 @@ Table – Zone points (/ENTSOE/Countries/{Country}/{Zone}); ★ marks trend logs
 | LoadShifting/RenewablePercent | Analog (%) | Renewable share of generation |
 | LoadShifting/RenewablePercentHistory ★ | Trend | Auto-sampled |
 
-Items marked ★ are **Trend Logs**: the Smart Connector service captures a historical sample (TrendSample) and the processor adds the current value each cycle plus seeds history on first run (see [Trend Logs](#trend-logs)). Trend names include the country and zone (e.g. `Current Price History Sweden SE_1`) so they remain unique when one server hosts multiple zones. They can be queried via the REST API (`GET /TrendSamples?trendId=...`) or consumed directly from EBO as Trend Log objects.
+Items marked ★ are **Trend Logs**. The Smart Connector service captures a historical sample (TrendSample) and the processor adds the current value each cycle plus seeds history on first run (see [Trend Logs](#trend-logs)). Trend names include the country and zone (e.g. `Current Price History Sweden SE_1`) so they remain unique when one server hosts multiple zones. They can be queried via the REST API (`GET /TrendSamples?trendId=...`) or consumed directly from EBO as Trend Log objects.
 
 ## OpenADR 3.0 Signal Mapping
 
@@ -247,28 +247,28 @@ The Standard Energy Market Interface aligns EWS points with [OpenADR 3.0](https:
 | --- | --- | --- | --- | --- |
 | Price/CurrentPrice | `ELECTRICITY_PRICE` | `PRICE` | `qudt:CCY_EUR-PER-KiloW-HR` | Day-ahead price, current hour (EUR/MWh scaled) |
 | Price/NextHour | `ELECTRICITY_PRICE` | `PRICE` | `qudt:CCY_EUR-PER-KiloW-HR` | Day-ahead price, next hour |
-| Price/Level | `SIMPLE` | `SIMPLE` | — | 0=cheap, 1=normal, 2=expensive (OpenADR SimpleLevel) |
-| Price/PriceCategory | — | — | — | Human-readable label for Level |
-| Price/RankToday | — | — | — | Rank of current price among today's hours (1=cheapest) |
-| Price/PercentileToday | — | — | `qudt:PERCENT` | Percentile position of current price (0-100) |
-| Price/NegativeActive | — | — | — | True when current price < 0 |
+| Price/Level | `SIMPLE` | `SIMPLE` | n/a | 0=cheap, 1=normal, 2=expensive (OpenADR SimpleLevel) |
+| Price/PriceCategory | n/a | n/a | n/a | Human-readable label for Level |
+| Price/RankToday | n/a | n/a | n/a | Rank of current price among today's hours (1=cheapest) |
+| Price/PercentileToday | n/a | n/a | `qudt:PERCENT` | Percentile position of current price (0-100) |
+| Price/NegativeActive | n/a | n/a | n/a | True when current price < 0 |
 | Price/CheapThreshold | `ELECTRICITY_PRICE` | `PRICE` | `qudt:CCY_EUR-PER-KiloW-HR` | Computed percentile boundary |
 | Price/ExpensiveThreshold | `ELECTRICITY_PRICE` | `PRICE` | `qudt:CCY_EUR-PER-KiloW-HR` | Computed percentile boundary |
 | Price/Hourly/Hour00..23 | `ELECTRICITY_PRICE` | `PRICE` | `qudt:CCY_EUR-PER-KiloW-HR` | Full 24-hour price curve |
-| LoadShifting/IsCurrentlyCheap | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | — | Boolean DR trigger |
-| LoadShifting/RenewablePercent | — | — | `qudt:PERCENT` | Renewable generation share |
+| LoadShifting/IsCurrentlyCheap | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | n/a | Boolean DR trigger |
+| LoadShifting/RenewablePercent | n/a | n/a | `qudt:PERCENT` | Renewable generation share |
 | Load/Current | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | `qudt:MegaW` | Actual grid load |
 | Load/ForecastPeakToday | `LOAD_DISPATCH` | `DISPATCH_SETPOINT` | `qudt:MegaW` | Peak of today's load forecast |
-| Load/PeakRiskLevel | `SIMPLE` | `SIMPLE` | — | 0=low, 1=medium, 2=high (current load vs. peak) |
-| Generation/ForecastTotal | — | — | `qudt:MegaW` | Total generation forecast |
-| Generation/Wind | — | — | `qudt:MegaW` | Wind generation forecast |
-| Generation/Solar | — | — | `qudt:MegaW` | Solar generation forecast |
+| Load/PeakRiskLevel | `SIMPLE` | `SIMPLE` | n/a | 0=low, 1=medium, 2=high (current load vs. peak) |
+| Generation/ForecastTotal | n/a | n/a | `qudt:MegaW` | Total generation forecast |
+| Generation/Wind | n/a | n/a | `qudt:MegaW` | Wind generation forecast |
+| Generation/Solar | n/a | n/a | `qudt:MegaW` | Solar generation forecast |
 
 **QUDT unit notes:**
 
 - `qudt:CCY_EUR-PER-KiloW-HR` is the closest standard QUDT unit for EUR/MWh (scaled by 1000). QUDT defines EUR as `qudt:CCY_EUR` and energy units separately.
 - `gCO₂/kWh` has no standard QUDT URI. If carbon intensity is added in a future version, it will be reported as a raw numeric value.
-- Full QUDT unit catalogue: <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
+- **Full QUDT unit catalog:** <https://qudt.org/doc/DOC_VOCAB-UNITS.html>
 
 **Brick Schema note:** Brick Schema defines building-side equipment and point classes (`brick:Electrical_Meter`, `brick:Power_Sensor`) but does not model grid-market signals. The OpenADR mapping applies at the SmartConnector extension level; Brick applies at the EBO consumption side when mapping EWS points to equipment models.
 
@@ -294,7 +294,7 @@ The extension provisions 11 trend logs per zone that capture historical data for
 
 Trend logs are filled two ways:
 
-1. **Per-cycle sample.** Every cycle, after updating the point values, the processor writes the current value of each trended point as a history record at the cycle timestamp (Phase 3 below), so the trends grow on every run rather than only when a value happens to change. The EWS Server already auto-samples a trend whenever the linked value *changes*, so the processor skips its manual write for any point the server has already sampled this cycle — this avoids a duplicate record with the same value and timestamp.
+1. **Per-cycle sample.** Every cycle, after updating the point values, the processor writes the current value of each trended point as a history record at the cycle timestamp (Phase 3 below), so the trends grow on every run rather than only when a value happens to change. The EWS Server already auto-samples a trend whenever the linked value *changes*, so the processor skips its manual write for any point the server has already sampled this cycle, which avoids a duplicate record with the same value and timestamp.
 2. **Historical backfill.** On first run, the processor backfills the **CurrentPrice**, **Current Load**, and **ForecastTotal** trends with up to `BackfillDays` days (default 30) of hourly history fetched from ENTSO-E, written at their original timestamps via `AddHistoryRecordsManually`. After a reconnection gap of more than about an hour, only the missed window is backfilled. The window is derived from the persisted `Meta/LastUpdate` timestamp, so a service restart does not re-backfill data that already exists. Set `BackfillDays` to `0` to disable backfill.
 
 > **Note:** All 11 trends receive a per-cycle sample. Backfill seeds only the three continuous series (CurrentPrice, Current Load, ForecastTotal); the boolean, derived, and wind/solar trends start accumulating from first run.
@@ -303,13 +303,13 @@ Trend logs are filled two ways:
 
 Each cycle runs in five explicit phases so the long-running backfill always happens last, after live data and metadata are already committed:
 
-1. **Provision** — create all folders, points, and history items (idempotent).
-2. **Update point values** — fetch ENTSO-E data and write every point.
-3. **Add history samples** — append the current value of each point to its trend.
-4. **Update metadata** — stamp `Meta/LastUpdate`, `DataHealthy`, `CycleCount`, and the other observability points.
-5. **Backfill** — seed/repair historical trend data (may take minutes).
+1. **Provision:** create all folders, points, and history items (idempotent).
+2. **Update point values:** fetch ENTSO-E data and write every point.
+3. **Add history samples:** append the current value of each point to its trend.
+4. **Update metadata:** stamp `Meta/LastUpdate`, `DataHealthy`, `CycleCount`, and the other observability points.
+5. **Backfill:** seed/repair historical trend data (may take minutes).
 
-Because backfill can exceed a short schedule interval, a re-entrancy guard prevents overlap: if the schedule re-triggers while a previous cycle is still running (typically inside a backfill), the new trigger logs a message and returns immediately. A stale lock is released automatically after 30 minutes so a crashed run cannot block the processor permanently.
+Because backfill can exceed a short schedule interval, a re-entrancy guard prevents overlap. If the schedule re-triggers while a previous cycle is still running (typically inside a backfill), the new trigger logs a message and returns immediately. A stale lock is released automatically after 30 minutes so a crashed run cannot block the processor permanently.
 
 ```mermaid
 sequenceDiagram
@@ -364,7 +364,7 @@ curl -X GET "http://YOUR_HOST:YOUR_PORT/TrendSamples?trendId=TREND_ID&sampleOnOr
   -H "Accept: application/json"
 ```
 
-> **Note:** The `trendId` must include the `03` DataType prefix (e.g., `03/ENTSOE/Countries/Netherlands/NL/Price/CurrentPriceHistory`). Double URL encode the ID for REST API calls. See the [RESTful EWS Gateway Guide](../../docs/developer-guide/smartconnector-restful-ews-gateway.md#10-api-reference--trends-and-trend-samples) for the full Trend and TrendSample API reference.
+> **Note:** The `trendId` must include the `03` DataType prefix (e.g., `03/ENTSOE/Countries/Netherlands/NL/Price/CurrentPriceHistory`). Double URL encode the ID for REST API calls. See the [RESTful EWS Gateway Guide](../../docs/developer-guide/smartconnector-restful-ews-gateway.md#10-api-reference-trends-and-trend-samples) for the full Trend and TrendSample API reference.
 
 ## Consuming from EcoStruxure™ Building Operation
 
@@ -386,7 +386,7 @@ A root-level `/ENTSOE/Meta` container reports overall integration health, and ea
 
 | Point | Scope | Use |
 | --- | --- | --- |
-| **DataHealthy** | Root + per-zone | Boolean (`True`/`False`) — use for EBO alarms |
+| **DataHealthy** | Root + per-zone | Boolean (`True`/`False`), use for EBO alarms |
 | **LastUpdate** | Root + per-zone | Timestamp of the most recent successful fetch |
 | **NextUpdate** | Root | Derived next expected run time |
 | **LastError** | Root | Most recent error message |
@@ -396,7 +396,7 @@ A root-level `/ENTSOE/Meta` container reports overall integration health, and ea
 
 ## Error Handling
 
-| Condition | Behaviour |
+| Condition | Behavior |
 | --- | --- |
 | Network failure | Keeps last good values, sets `DataHealthy` to `False`, logs the error |
 | HTTP 401 (invalid token) | Reports as configuration error. Does not retry |
@@ -472,11 +472,11 @@ flowchart TD
 
 ## Security
 
-This extension follows all security practices from the [Developer Guide — Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments). For a detailed breakdown of credential handling, network security, input validation, logging practices, and threat model, see [SECURITY.md](SECURITY.md).
+This extension follows all security practices from the [Developer Guide, Security Advisory for Production Deployments](../../docs/developer-guide/smartconnector-developers-guide.md#5-security-advisory-for-production-deployments). For a detailed breakdown of credential handling, network security, input validation, logging practices, and threat model, see [SECURITY.md](SECURITY.md).
 
 Summary:
 
-- API token and EWS password are marked with `[EncryptedString]` — stored encrypted, never logged.
+- API token and EWS password are marked with `[EncryptedString]`, stored encrypted, never logged.
 - All public properties have `[Required]`, `[Range]`, or `[StringLength]` validation.
 - No credentials appear in any `Logger.Log*` call.
 - `EwsServerDataAdapter` is wrapped in a `Dispose` pattern with `ConnectNew → Dispose → ConnectExisting` lifecycle.
@@ -486,7 +486,7 @@ Summary:
 ## What This Demonstrates
 
 - Standard Energy Market Interface aligned with GridStatus extension (same paths, types, semantics)
-- OpenADR 3.0 signal semantics: Price → `EventType.Price`, Level → `EventType.Simple`
+- **OpenADR 3.0 signal semantics:** Price → `EventType.Price`, Level → `EventType.Simple`
 - Single `Processor` combining setup and scheduled updates (eliminates configuration mismatch)
 - Country drop-down (enum) that auto-expands multi-zone countries into per-zone EWS subtrees (`/ENTSOE/Countries/{Country}/{Zone}/...`)
 - `ConnectNew → Dispose → ConnectExisting` lifecycle for EWS server management (avoids duplicate-key errors)
@@ -513,7 +513,7 @@ Table – Extension source (`SmartConnector.EntsoeExtension/`)
 
 | File | Responsibility |
 | --- | --- |
-| `EntsoeProcessor.cs` | Main processor — five-phase cycle, provisioning, history, backfill, observability, re-entrancy guard |
+| `EntsoeProcessor.cs` | Main processor, with the five-phase cycle, provisioning, history, backfill, observability, re-entrancy guard |
 | `EntsoeProcessorBase.cs` | Configuration properties, semantic validation, `EwsServerDataAdapter` lifecycle |
 | `EntsoeApiClient.cs` | Synchronous HTTPS client for the ENTSO-E REST API (TLS 1.2, URL building, timeout) |
 | `EntsoeResponseParser.cs` | Parses ENTSO-E XML into typed time series; PsrType-aware (wind/solar) |

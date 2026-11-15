@@ -201,7 +201,7 @@ namespace SmartConnector.GridStatusExtension
 
         /// <summary>
         /// Returns the market configuration for the given ISO code,
-        /// or null if the code is not recognised.
+        /// or null if the code is not recognized.
         /// </summary>
         public static MarketConfig Lookup(string isoCode)
         {

@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
-// Quick Start Sample — HelloEwsProcessor
+// Quick Start Sample, HelloEwsProcessor
 //
 // Creates its own EWS Server on the first run (no manual Portal setup),
 // provisions a single value with the idempotent Ensure* pattern, and writes
 // the current UTC time to it on every execution.
-// See: Developer Guide Section 3 — Quick Start
+// See Developer Guide Section 3, Quick Start
 // ---------------------------------------------------------------------------
 
 using System;
@@ -79,7 +79,7 @@ namespace Quickstart.HelloEws
         // Returns an adapter for the EWS Server, creating the server on the
         // first run. ConnectExisting is tried first: on every run after the
         // first it succeeds and we are done. Only when it fails (the server
-        // does not yet exist) do we ConnectNew to create it — ConnectNew throws
+        // does not yet exist) do we ConnectNew to create it. ConnectNew throws
         // up front if the name is already in use, so it must never run for an
         // existing server.
         private EwsServerDataAdapter ConnectOrCreateServer()
@@ -96,7 +96,7 @@ namespace Quickstart.HelloEws
                     + $"'{ServerName}'.");
             }
 
-            // First run — create the server, then reconnect with a clean context.
+            // First run. Create the server, then reconnect with a clean context.
             using (EwsServerDataAdapter.ConnectNew(
                 name: ServerName, address: EwsAddress, realm: Realm,
                 username: UserName, password: Password, autoStart: true))

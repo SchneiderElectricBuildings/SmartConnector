@@ -5,7 +5,7 @@ namespace SmartConnector.EntsoeExtension
         public const string Root = "/ENTSOE";
         public const string CountriesContainer = "/ENTSOE/Countries";
 
-        // Root-level observability (not per-zone) — mirrors GridStatus /Grid/Meta
+        // Root-level observability (not per-zone), which mirrors GridStatus /Grid/Meta
         public const string MetaLastUpdate = "/ENTSOE/Meta/LastUpdate";
         public const string MetaNextUpdate = "/ENTSOE/Meta/NextUpdate";
         public const string MetaDataHealthy = "/ENTSOE/Meta/DataHealthy";
